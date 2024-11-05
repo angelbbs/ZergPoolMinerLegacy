@@ -1,0 +1,69 @@
+{
+  "TimeCached": "2024-11-05T17:01:46.1127385+03:00",
+  "domains": [
+    {
+      "Updated": "2022-03-24T11:37:36.3102588+03:00",
+      "domainName": "github.com",
+      "IPs": [
+        "140.82.121.3"
+      ]
+    },
+    {
+      "Updated": "2024-01-05T08:59:43.3258499+03:00",
+      "domainName": "api.github.com",
+      "IPs": [
+        "140.82.121.6"
+      ]
+    },
+    {
+      "Updated": "0001-01-01T00:00:00",
+      "domainName": "gitlab.com",
+      "IPs": [
+        "172.65.251.78"
+      ]
+    },
+    {
+      "Updated": "2024-11-05T17:01:22.1875016+03:00",
+      "domainName": "zergpool.com",
+      "IPs": [
+        "188.114.99.233",
+        "188.114.98.233"
+      ]
+    },
+    {
+      "Updated": "2024-11-05T17:01:22.3223786+03:00",
+      "domainName": "mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-05T17:01:22.4760458+03:00",
+      "domainName": "na.mine.zergpool.com",
+      "IPs": [
+        "149.56.111.148"
+      ]
+    },
+    {
+      "Updated": "2024-11-05T17:01:22.6162771+03:00",
+      "domainName": "eu.mine.zergpool.com",
+      "IPs": [
+        "141.95.55.97"
+      ]
+    },
+    {
+      "Updated": "2024-11-05T17:01:22.7693868+03:00",
+      "domainName": "asia.mine.zergpool.com",
+      "IPs": [
+        "51.79.251.11"
+      ]
+    },
+    {
+      "Updated": "2024-11-05T17:01:46.1127385+03:00",
+      "domainName": "equihash144.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    }
+  ]
+}

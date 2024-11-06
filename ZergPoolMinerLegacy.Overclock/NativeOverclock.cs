@@ -20,6 +20,7 @@ namespace ZergPoolMinerLegacy.Overclock
 {
     public class NativeOverclock
     {
+        public static bool logging = false;
         public static IntPtr OverclockStart(int _processId, int _CurrentAlgorithmType, int _SecondaryAlgorithmType,
             string _MinerName, string _strPlatform,
             string _w, bool _log)

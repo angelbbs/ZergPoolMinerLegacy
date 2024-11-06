@@ -39,6 +39,7 @@ namespace ZergPoolMiner.Switching
         private static readonly Dictionary<AlgorithmType, AlgorithmHistory> _algosHistory = new Dictionary<AlgorithmType, AlgorithmHistory>();
 
         private static bool _hasStarted;
+        public static bool KawpowLiteGoodEpoch = false;
 
         /// <summary>
         /// Currently used normalized profits
@@ -174,7 +175,7 @@ namespace ZergPoolMiner.Switching
             {
                 AlgosProfitData.TryGetPaying(algo, out var paying);
 
-                if (algo == AlgorithmType.KawPowLite && !NativeOverclock.KawpowLiteGoodEpoch)
+                if (algo == AlgorithmType.KawPowLite && !KawpowLiteGoodEpoch)
                 {
                     paying = 0;
                 }

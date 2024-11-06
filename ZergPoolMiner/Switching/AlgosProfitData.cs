@@ -219,7 +219,7 @@ namespace ZergPoolMiner.Switching
             {
                 paying = sma.Paying;
                 //Helpers.ConsolePrint(algo.ToString(), paying.ToString());
-                if (algo == AlgorithmType.KawPowLite && !NativeOverclock.KawpowLiteGoodEpoch)
+                if (algo == AlgorithmType.KawPowLite && !AlgorithmSwitchingManager.KawpowLiteGoodEpoch)
                 {
                     paying = 0.0d;
                 }

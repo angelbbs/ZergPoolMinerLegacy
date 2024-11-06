@@ -181,8 +181,7 @@ namespace ZergPoolMiner.Configs
 
         public static bool IsRestartNeeded()
         {
-            return GeneralConfig.NVIDIAP0State != _generalConfigBackup.NVIDIAP0State
-                   || GeneralConfig.LogToFile != _generalConfigBackup.LogToFile
+            return GeneralConfig.LogToFile != _generalConfigBackup.LogToFile
                    || GeneralConfig.SwitchMinSecondsFixed != _generalConfigBackup.SwitchMinSecondsFixed
                    || GeneralConfig.SwitchMinSecondsAMD != _generalConfigBackup.SwitchMinSecondsAMD
                    || GeneralConfig.SwitchMinSecondsDynamic != _generalConfigBackup.SwitchMinSecondsDynamic
@@ -190,10 +189,7 @@ namespace ZergPoolMiner.Configs
                    || GeneralConfig.DevicesCountIndex != _generalConfigBackup.DevicesCountIndex
                    || GeneralConfig.ProgramMonitoring != _generalConfigBackup.ProgramMonitoring
                    || GeneralConfig.EnableProxy != _generalConfigBackup.EnableProxy
-                   || GeneralConfig.QM_mode != _generalConfigBackup.QM_mode
                    || GeneralConfig.Show_ShowDeviceMemSize != _generalConfigBackup.Show_ShowDeviceMemSize
-
-                   || GeneralConfig.Send_actual_version_info != _generalConfigBackup.Send_actual_version_info
                    || GeneralConfig.InstallRootCerts != _generalConfigBackup.InstallRootCerts
                    || GeneralConfig.Use_OpenHardwareMonitor != _generalConfigBackup.Use_OpenHardwareMonitor
                    || GeneralConfig.DisableWindowsErrorReporting != _generalConfigBackup.DisableWindowsErrorReporting

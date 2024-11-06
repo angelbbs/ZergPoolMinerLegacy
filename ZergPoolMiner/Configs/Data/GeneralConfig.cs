@@ -12,10 +12,9 @@ namespace ZergPoolMiner.Configs.Data
         public Version ConfigFileVersion;
         public double ForkFixVersion;
         public bool ShowSplash = true;
-        public string NHMVersion = "3.0.6.5";
         public bool DecreasePowerCost = false;
         public bool ShowTotalPower = false;
-        public bool FiatCurrency = false;
+        public bool FiatCurrency = true;
         public bool NoShowApiInLog = true;
         public bool NoForceTRexClose;
         public bool UseNegativeProfit = false;
@@ -38,7 +37,7 @@ namespace ZergPoolMiner.Configs.Data
         public string PayoutCurrency = "";
         public double PayoutCurrencyTreshold = 0;
         public string Wallet = "";
-        public string WorkerName = "worker1";
+        public string WorkerName = "ForkFixWorker1";
         public TimeUnitType TimeUnit = TimeUnitType.Day;
 
         public int PowerTarif = 0;
@@ -59,7 +58,6 @@ namespace ZergPoolMiner.Configs.Data
         public int ProfileIndex = 0;
         public string ProfileName = "Default";
 
-        public string IFTTTKey = "";
         public int ServiceLocation = 0;
         public bool ForceAutoLocation = true;
         public bool AutoStartMining = false;
@@ -132,7 +130,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool StaleProxy = false;
 
         public bool MinimizeMiningWindows = false;
-        public bool ShowMinersVersions = false;
+        public bool ShowMinersVersions = true;
         public bool StandartBenchmarkTime = true;
 
         //public int LessThreads;
@@ -146,8 +144,6 @@ namespace ZergPoolMiner.Configs.Data
         public int SwitchMinSecondsAMD = 60;
         public double SwitchProfitabilityThreshold = 0.05; // percent
         public int MinerRestartDelayMS = 500;
-
-        //        public BenchmarkTimeLimitsConfig BenchmarkTimeLimits = new BenchmarkTimeLimitsConfig();
 
         // TODO deprecate this
         public DeviceDetectionConfig DeviceDetection = new DeviceDetectionConfig();
@@ -168,24 +164,15 @@ namespace ZergPoolMiner.Configs.Data
         public bool ShowDriverVersionWarning = true;
         public bool DisableWindowsErrorReporting = true;
         public bool ShowInternetConnectionWarning = true;
-        public bool NVIDIAP0State = false;
 
-        public int ethminerDefaultBlockHeight = 2000000;
-        public DagGenerationType EthminerDagGenerationType = DagGenerationType.SingleKeep;
         public int ApiBindPortPoolStart = 5100;
         public double MinimumProfit = 0;
         public bool IdleWhenNoInternetAccess = false;
-        public bool UseIFTTT = false;
         public bool DownloadInit = false;
 
-        public bool QM_mode = false;
-        public int NHMWSProtocolVersion = 4;
-        public bool EnableAPIkeys = false;
         public bool CheckingCUDA = false;
         public bool RestartDriverOnCUDA_GPU_Lost = true;
         public bool RestartWindowsOnCUDA_GPU_Lost = false;
-        public bool Allow_remote_management = true;
-        public bool Send_actual_version_info = true;
         public bool ShowPowerOfDisabledDevices = true;
         public bool Force_mining_if_nonprofitable = true;
         public bool Additional_info_about_device = false;
@@ -313,7 +300,6 @@ namespace ZergPoolMiner.Configs.Data
             ShowDriverVersionWarning = true;
             DisableWindowsErrorReporting = true;
             ShowInternetConnectionWarning = true;
-            NVIDIAP0State = false;
             MinerRestartDelayMS = 500;
             SwitchProfitabilityThreshold = 0.05; // percent
             MinIdleSeconds = 60;
@@ -327,12 +313,10 @@ namespace ZergPoolMiner.Configs.Data
             IdleWhenNoInternetAccess = false;
             DownloadInit3rdParty = false;
             AllowMultipleInstances = false;
-            UseIFTTT = false;
             CoolDownCheckEnabled = true;
             CheckingCUDA = false;
             RestartDriverOnCUDA_GPU_Lost = false;
             RestartWindowsOnCUDA_GPU_Lost = false;
-            Allow_remote_management = true;
             ForceSkipAMDNeoscryptLyraCheck = false;
             OverrideAMDBusIds = "";
             SwitchSmaTimeChangeSeconds = new Interval(34, 55);

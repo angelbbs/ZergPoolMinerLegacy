@@ -70,6 +70,7 @@ namespace ZergPoolMiner.Miners
 
         private bool IsCurrentlyIdle => !IsMiningEnabled || !_isConnectedToInternet || !_isProfitable;
         public static int[] _ticks;
+        public static bool KawpowLiteForceStop = false;
 
         public List<int> ActiveDeviceIndexes
         {
@@ -563,7 +564,7 @@ namespace ZergPoolMiner.Miners
                         $"{"Total rig profit"}: Will NOT SWITCH profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
 
                     // RESTORE OLD PROFITS STATE
-                    if (!NativeOverclock.KawpowLiteForceStop)
+                    if (!KawpowLiteForceStop)
                     {
                         foreach (var device in _miningDevices)
                         {
@@ -573,7 +574,7 @@ namespace ZergPoolMiner.Miners
                 }
                 else
                 {
-                    if (!NativeOverclock.KawpowLiteForceStop)
+                    if (!KawpowLiteForceStop)
                     {
                         if (Form_Main.adaptiveRunning)
                         {
@@ -615,7 +616,7 @@ namespace ZergPoolMiner.Miners
                     {
                         if (prev_percDiff > percDiff + percDiff * 0.2)
                         {
-                            if (!NativeOverclock.KawpowLiteForceStop)
+                            if (!KawpowLiteForceStop)
                             {
                                 _ticks[0] = _ticks[0] - 1;
                                 needSwitch = false;
@@ -654,7 +655,7 @@ namespace ZergPoolMiner.Miners
                             _ticks[0].ToString() + "/" + AlgorithmSwitchingManager._ticksForStable.ToString() + " min");
 
                         // RESTORE OLD PROFITS STATE
-                        if (!NativeOverclock.KawpowLiteForceStop)
+                        if (!KawpowLiteForceStop)
                         {
                             foreach (var device in _miningDevices)
                             {
@@ -695,14 +696,14 @@ namespace ZergPoolMiner.Miners
                         }
 
                         // RESTORE OLD PROFITS STATE
-                        if (!NativeOverclock.KawpowLiteForceStop)
+                        if (!KawpowLiteForceStop)
                         {
                             device.RestoreOldProfitsState();
                         }
                     }
                     else
                     {
-                        if (!NativeOverclock.KawpowLiteForceStop)
+                        if (!KawpowLiteForceStop)
                         {
                             if (Form_Main.adaptiveRunning)
                             {
@@ -731,7 +732,7 @@ namespace ZergPoolMiner.Miners
                         {
                             if (prev_percDiff > percDiff + percDiff * 0.2)
                             {
-                                if (!NativeOverclock.KawpowLiteForceStop)
+                                if (!KawpowLiteForceStop)
                                 {
                                     _ticks[device.Device.Index] = _ticks[device.Device.Index] - 1;
                                     needSwitch = false;
@@ -760,7 +761,7 @@ namespace ZergPoolMiner.Miners
                         {
                             _ticks[device.Device.Index]++;
                             needSwitch = false;
-                            if (!NativeOverclock.KawpowLiteForceStop)
+                            if (!KawpowLiteForceStop)
                             {
                                 Helpers.ConsolePrint(Tag, $"{device.Device.GetFullName()}: Will NOT SWITCH profit diff is {Math.Round(percDiff * 100, 2):f2}%. Switching period has not been exceeded: " +
                                 _ticks[device.Device.Index].ToString() + "/" + AlgorithmSwitchingManager._ticksForStable.ToString() + " min");
@@ -793,10 +794,10 @@ namespace ZergPoolMiner.Miners
             prev_percDiff = percDiff;
             Form_Main._NeedMiningStart = false;
 
-            if (NativeOverclock.KawpowLiteForceStop && Form_Main.KawpowLiteEnabled)
+            if (KawpowLiteForceStop && Form_Main.KawpowLiteEnabled)
             {
                 Helpers.ConsolePrint(Tag, "Force switch from KawpowLite mining");
-                NativeOverclock.KawpowLiteForceStop = false;
+                KawpowLiteForceStop = false;
                 needSwitch = true;
             }
 

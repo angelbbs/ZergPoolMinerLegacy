@@ -2560,13 +2560,10 @@ namespace ZergPoolMiner
 
         public void ShowNotProfitable(string msg)
         {
-            if (ConfigManager.GeneralConfig.UseIFTTT)
-            {
                 if (!_isNotProfitable)
                 {
                     _isNotProfitable = true;
                 }
-            }
 
             if (InvokeRequired)
             {
@@ -2585,13 +2582,10 @@ namespace ZergPoolMiner
 
         public void HideNotProfitable()
         {
-            if (ConfigManager.GeneralConfig.UseIFTTT)
-            {
                 if (_isNotProfitable)
                 {
                     _isNotProfitable = false;
                 }
-            }
 
             try
             {

@@ -24,5 +24,5 @@
 - REST API.
 - ......and many other options and features.
 <p align="center">
-<img src="https://raw.githubusercontent.com/angelbbs/ZergPoolMinerLegacy/master/Utils/screenshot1.png">
+<img src="https://raw.githubusercontent.com/angelbbs/ZergPoolMinerLegacy/master/screenshot1.png">
 </p>

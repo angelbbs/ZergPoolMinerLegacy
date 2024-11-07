@@ -2191,7 +2191,7 @@ namespace ZergPoolMiner.Forms
         private void buttonCheckNewVersion_Click(object sender, EventArgs e)
         {
             Form_Main.githubVersion = Updater.Updater.GetGITHUBVersion();
-            Form_Main.gitlabVersion = Updater.Updater.GetGITLABVersion();
+            //Form_Main.gitlabVersion = Updater.Updater.GetGITLABVersion();
 
             //Form_Main.githubBuild = Updater.Updater.GetVersion().Item2;
 
@@ -3636,20 +3636,16 @@ namespace ZergPoolMiner.Forms
         {
             // should not happen ever
             if (lvi == null) return;
-
             _computeDevice = computeDevice;
             if (lvi.Tag is Algorithm algorithm)
             {
                 _selected = true;
                 _currentlySelectedAlgorithm = algorithm;
                 _currentlySelectedLvi = lvi;
-                Enabled = lvi.Checked;
-
+//                Enabled = lvi.Checked;
                 groupBoxSelectedAlgorithmSettings.Text = string.Format(
                     International.GetText("AlgorithmsListView_GroupBox"),
                     $"{algorithm.AlgorithmName} ({algorithm.MinerBaseTypeName})");
-
-
                 field_PowerUsage.EntryText = ParseDoubleDefault(Math.Round(algorithm.PowerUsage, 0));
                 fieldBoxBenchmarkSpeed.EntryText = ParseDoubleDefault(algorithm.BenchmarkSpeed);
                 richTextBoxExtraLaunchParameters.Text = ParseStringDefault(algorithm.ExtraLaunchParameters);
@@ -3667,7 +3663,6 @@ namespace ZergPoolMiner.Forms
                     secondaryFieldBoxBenchmarkSpeed.EntryText = "";
                     secondaryFieldBoxBenchmarkSpeed.Enabled = false;
                 }
-
                 Update();
             }
             else

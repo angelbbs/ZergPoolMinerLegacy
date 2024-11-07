@@ -1381,11 +1381,13 @@ namespace ZergPoolMiner
                             //new Task(() => Updater.Updater.EmergencyDownloader(Form_Main.miners_url)).Start();
                             Updater.Updater.EmergencyDownloader(Form_Main.miners_url);
                         }
+                        /*
                         else if (Updater.Updater.GetGITLABVersion() > 0)
                         {
                             //new Task(() => Updater.Updater.EmergencyDownloader(Form_Main.miners_url)).Start();
                             Updater.Updater.EmergencyDownloader(Form_Main.miners_url);
                         }
+                        */
                     }
                     //блокировка формы блокирует всё
                     /*
@@ -2323,10 +2325,9 @@ namespace ZergPoolMiner
         }
         private bool CheckNewVersion()
         {
-            return false;
             bool ret = false;
             Form_Main.githubVersion = Updater.Updater.GetGITHUBVersion();
-            Form_Main.gitlabVersion = Updater.Updater.GetGITLABVersion();
+            //Form_Main.gitlabVersion = Updater.Updater.GetGITLABVersion();
 
             if (linkLabelNewVersion != null)
             {
@@ -2344,6 +2345,7 @@ namespace ZergPoolMiner
                     linkLabelNewVersion.Visible = true;
                     return true;
                 }
+                /*
                 if (Form_Main.currentVersion < Form_Main.gitlabVersion)
                 {
                     Form_Main.NewVersionExist = true;
@@ -2357,7 +2359,7 @@ namespace ZergPoolMiner
                     Helpers.ConsolePrint("CheckNewVersion", "FATAL ERROR! GITHUB and GITLAB down");
                     return false;
                 }
-
+                */
             }
             return ret;
         }

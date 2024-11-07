@@ -1048,7 +1048,7 @@ namespace ZergPoolMiner.Stats
             double _btc = 0d;
             if (ExchangesFiat.TryGetValue(ActiveDisplayCurrency, out var CoinExchangeRate))
             {
-                _btc = coin / BTCcostUSD * CoinExchangeRate;
+                _btc = coin / BTCcostUSD / CoinExchangeRate;
             }
             return _btc;
         }

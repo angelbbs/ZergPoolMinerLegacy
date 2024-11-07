@@ -23,3 +23,6 @@
 - Remote desktop viewer via browser;
 - REST API.
 - ......and many other options and features.
+<p align="center">
+<img src="https://raw.githubusercontent.com/angelbbs/ZergPoolMinerLegacy/master/Utils/screenshot1.png">
+</p>

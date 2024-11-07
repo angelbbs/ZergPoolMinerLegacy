@@ -408,15 +408,17 @@ namespace ZergPoolMiner.Updater
                         string published_at = vers.published_at;
                         //Helpers.ConsolePrint(published_at, "*** " + tag_name.Replace("_", " "));
                         ret = ret + published_at + " *** " + tag_name.Replace("_", " ") + " ***";
+                        /*
                         if (ConfigManager.GeneralConfig.Language == LanguageType.Ru)
                         {
                             //Helpers.ConsolePrint("****gitbody:", betweenStrings(gitbody, "RUS:", "Обсуждение тут"));
                             ret = ret + betweenStrings(gitbody, "RUS:", "Обсуждение тут");
                         } else
+                        */
                         {
-                            Helpers.ConsolePrint("----gitbody:", gitbody);
-                            Helpers.ConsolePrint("****gitbody:", betweenStrings(gitbody, "EN:", "Russian discussion forum"));
-                            ret = ret + betweenStrings(gitbody, "EN:", "Russian discussion forum");
+                            //Helpers.ConsolePrint("----gitbody:", gitbody);
+                            //Helpers.ConsolePrint("****gitbody:", betweenStrings(gitbody, "\r\n", ""));
+                            ret = ret + betweenStrings(gitbody, "\r\n", "");
                         }
                     }
                 }

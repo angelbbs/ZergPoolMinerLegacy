@@ -46,6 +46,29 @@ namespace ZergPoolMiner.Stats
             public bool ASIC { get; set; }
         }
 
+        public static List<Coin> CoinList = new();
+        public class Coin
+        {
+            public string name { get; set; }
+            public string algo { get; set; }
+            public int port { get; set; }
+            public int tls_port { get; set; }
+            public double hashrate { get; set; }
+            public double estimate_current { get; set; }
+            public double estimate_last24h { get; set; }
+            public double actual_last24h { get; set; }
+            public double mbtc_mh_factor { get; set; }
+            public double pool_ttf { get; set; }
+            public double real_ttf { get; set; }
+            public double minpay { get; set; }
+            public double minpay_sunday { get; set; }
+            public bool apibug { get; set; }
+            public bool CPU { get; set; }
+            public bool GPU { get; set; }
+            public bool FPGA { get; set; }
+            public bool ASIC { get; set; }
+        }
+
         public static string GetPoolApiData(string url)
         {
             var uri = new Uri(url);
@@ -87,6 +110,81 @@ namespace ZergPoolMiner.Stats
             }
             Form_Main.apiConnectionsErrors = 0;
             return responseFromServer;
+        }
+
+        public static List<Coin> GetCoins()
+        {
+            Helpers.ConsolePrint("Stats", "Trying GetCoins");
+            try
+            {
+                string ResponseFromAPI = GetPoolApiData(Links.Currencies);
+                if (ResponseFromAPI != null)
+                {
+                    var data = JObject.Parse(ResponseFromAPI);
+                    CoinList.Clear();
+                    foreach (var item in data)
+                    {
+                        var coin = item.Value;
+                        string name = coin.Value<string>("name");
+                        string algo = coin.Value<string>("algo");
+                        var port = coin.Value<int>("port");
+                        var tls_port = coin.Value<int>("tls_port");
+                        var _estimate_current = coin.Value<string>("estimate_current");
+                        double.TryParse(_estimate_current, out double estimate_current);
+                        var _estimate_last24h = coin.Value<string>("estimate_last24h");
+                        double.TryParse(_estimate_last24h, out double estimate_last24h);
+                        var _actual_last24h = coin.Value<string>("actual_last24h");
+                        double.TryParse(_actual_last24h, out double actual_last24h);
+                        var mbtc_mh_factor = coin.Value<double>("mbtc_mh_factor");
+                        var algotype = coin.Value<int>("algotype");
+                        var hashrate = coin.Value<double>("hashrate");
+                        var pool_ttf = coin.Value<double>("pool_ttf");
+                        var real_ttf = coin.Value<double>("real_ttf");
+                        var minpay = coin.Value<double>("minpay");
+                        var minpay_sunday = coin.Value<double>("minpay_sunday");
+
+                        Coin _coin = new();
+                        _coin.name = name;
+                        _coin.algo = algo;
+                        _coin.pool_ttf = pool_ttf;
+                        _coin.real_ttf = real_ttf;
+                        _coin.minpay = minpay;
+                        _coin.minpay_sunday = minpay_sunday;
+                        _coin.port = port;
+                        _coin.tls_port = tls_port;
+                        _coin.hashrate = hashrate;
+                        _coin.estimate_current = (estimate_current / mbtc_mh_factor * 1000000);//mBTC/GH
+                        _coin.estimate_last24h = (estimate_last24h / mbtc_mh_factor * 1000000);
+                        _coin.actual_last24h = (actual_last24h / mbtc_mh_factor / 1000 * 1000000);//zergpool api bug
+                        _coin.mbtc_mh_factor = mbtc_mh_factor;//multiplier,
+                                                                         //value 1 represents Mh,
+                                                                         //1000 represents GH,
+                                                                         //1000000 represents TH,
+                                                                         //0.001 represents KH
+                                                                         //miningAlgorithms.algotype = algotype;//integer value of a 4-bit value
+                                                                         //representing platforms supported.
+                                                                         //Bit 3 = CPU, bit 2 = GPU,
+                                                                         //bit 1 = ASIC, bit 0 = FPGA
+
+                        BitArray b = new BitArray(new int[] { algotype });
+                        _coin.CPU = b[3];
+                        _coin.GPU = b[2];
+                        _coin.ASIC = b[1];
+                        _coin.FPGA = b[0];
+                        
+                        CoinList.Add(_coin);
+                    }
+                    /*
+                    var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
+                    Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
+                    */
+                }
+            }
+            catch (Exception ex)
+            {
+                Helpers.ConsolePrint("GetCoins", ex.ToString());
+            }
+            return CoinList;
         }
 
         public static List<MiningAlgorithms> GetZergPoolAlgosList()

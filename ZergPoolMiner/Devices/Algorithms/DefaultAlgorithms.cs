@@ -248,10 +248,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            /*
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            */
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.HooHash, "HooHash")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
@@ -261,11 +263,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            /*
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.PyrinHashV2, "KarlsenHashV2+PyrinHashV2")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            */
                         }
             },
             {
@@ -392,10 +396,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
                             */
+                            /*
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            */
                             /*
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.Yescrypt, "Yescrypt")
                             {
@@ -423,11 +429,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            /*
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.PyrinHashV2, "KarlsenHashV2+PyrinHashV2")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            */
                         }
             },
             {
@@ -505,10 +513,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--keepfree 1024"
                             },
+                            /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                             {
                                 ExtraLaunchParameters = ""
                             },
+                            */
                             /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.SHA512256d, "SHA512256d")
                             {
@@ -520,10 +530,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                                 ExtraLaunchParameters = "--enablezilcache=1"
                             },
                             //duals
+                            /*
                             new DualAlgorithm(MinerBaseType.lolMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.PyrinHashV2, "KarlsenHashV2+PyrinHashV2")
                             {
                             },
+                            */
                         }
             },
             {
@@ -663,11 +675,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            /*
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.PyrinHashV2, "KarlsenHashV2+PyrinHashV2")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            */
                         }
             },
             { MinerBaseType.CryptoDredge,
@@ -794,21 +808,25 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--keepfree 1024"
                             },
+                            /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                             {
                                 ExtraLaunchParameters = ""
                             },
+                            */
                             /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.SHA512256d, "SHA512256d")
                             {
                                 ExtraLaunchParameters = ""
                             },
                             */
+                            /*
                             new DualAlgorithm(MinerBaseType.lolMiner, AlgorithmType.KarlsenHashV2, 
                                 AlgorithmType.PyrinHashV2, "KarlsenHashV2+PyrinHashV2")
                             {
                             },
-                                                        new Algorithm(MinerBaseType.lolMiner, AlgorithmType.Ethash, "Ethash")
+                            */
+                            new Algorithm(MinerBaseType.lolMiner, AlgorithmType.Ethash, "Ethash")
                             {
                                 ExtraLaunchParameters = "--enablezilcache=1"
                             },
@@ -845,10 +863,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                     {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                     },
+                    /*
                     new Algorithm(MinerBaseType.Rigel, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                     {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                     },
+                    */
                     /*
                     new Algorithm(MinerBaseType.Rigel, AlgorithmType.SHA512256d, "SHA512256d")
                     {
@@ -863,11 +883,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                     },
                     */
+                    /*
                     new DualAlgorithm(MinerBaseType.Rigel, AlgorithmType.Ethash, AlgorithmType.PyrinHashV2,
                         "Ethash+PyrinHashV2")
                     {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                     },
+                    */
                     /*
                      new DualAlgorithm(MinerBaseType.Rigel, AlgorithmType.Ethash, AlgorithmType.SHA512256d,
                         "Ethash+SHA512256d")
@@ -882,11 +904,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                      },
                     */
+                    /*
                      new DualAlgorithm(MinerBaseType.Rigel, AlgorithmType.Ethashb3, AlgorithmType.PyrinHashV2,
                         "Ethashb3+PyrinHashV2")
                      {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                      },
+                    */
                      /*
                      new DualAlgorithm(MinerBaseType.Rigel, AlgorithmType.Ethashb3, AlgorithmType.SHA512256d,
                         "Ethashb3+SHA512256d")
@@ -894,11 +918,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                      },
                      */
+                     /*
                      new DualAlgorithm(MinerBaseType.Rigel, AlgorithmType.KarlsenHashV2, AlgorithmType.PyrinHashV2,
                         "KarlsenHashV2+PyrinHashV2")
                      {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                      },
+                     */
                 }
             }
 

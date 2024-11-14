@@ -39,6 +39,7 @@ namespace ZergPoolMiner.Forms
             this.label_Worker = new System.Windows.Forms.Label();
             this.labelPayoutThreshold = new System.Windows.Forms.Label();
             this.textBox_PayoutThreshold = new System.Windows.Forms.TextBox();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // label_Payout_Currency
@@ -141,12 +142,24 @@ namespace ZergPoolMiner.Forms
             this.textBox_PayoutThreshold.Size = new System.Drawing.Size(152, 20);
             this.textBox_PayoutThreshold.TabIndex = 393;
             // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(418, 67);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(55, 13);
+            this.linkLabel1.TabIndex = 394;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "linkLabel1";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
             // Form_AddWallet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 156);
             this.ControlBox = false;
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.textBox_PayoutThreshold);
             this.Controls.Add(this.labelPayoutThreshold);
             this.Controls.Add(this.textBox_worker);
@@ -179,5 +192,6 @@ namespace ZergPoolMiner.Forms
         private System.Windows.Forms.Label label_Worker;
         private System.Windows.Forms.Label labelPayoutThreshold;
         private System.Windows.Forms.TextBox textBox_PayoutThreshold;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }

@@ -20,6 +20,8 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static ZergPoolMiner.Wallets.Wallets;
+using System.Collections.Generic;
 
 namespace ZergPoolMiner
 {
@@ -251,6 +253,26 @@ namespace ZergPoolMiner
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.1;
                 }
+
+                try
+                {
+                    if (File.Exists("configs\\wallets.json"))
+                    {
+                        string json = File.ReadAllText("configs\\wallets.json");
+                        WalletDataList = JsonConvert.DeserializeObject<List<WalletData>>(json);
+                        foreach (var w in WalletDataList)
+                        {
+                            w.Treshold = 0;
+                        }
+                        var _json = JsonConvert.SerializeObject(WalletDataList, Formatting.Indented);
+                        Helpers.WriteAllTextWithBackup("configs\\wallets.json", _json);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.ConsolePrint("MinerLegacy", ex.ToString());
+                }
+                
 
 
                 if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;

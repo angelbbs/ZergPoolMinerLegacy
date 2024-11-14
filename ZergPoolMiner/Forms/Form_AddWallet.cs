@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -27,9 +28,16 @@ namespace ZergPoolMiner.Forms
             buttonCancel.Text = International.GetText("Button_Cancel");
 
             textBox_PayoutThreshold.KeyPress += TextBoxKeyPressEvents.TextBoxDoubleOnly_KeyPress;
-
+            linkLabel1.LinkBehavior = LinkBehavior.HoverUnderline;
+            linkLabel1.Text = "https://zergpool.com/payouts";
             if (ConfigManager.GeneralConfig.ColorProfileIndex != 0)
             {
+                if (ConfigManager.GeneralConfig.ColorProfileIndex == 14)
+                {
+                    linkLabel1.LinkColor = Color.DarkOliveGreen;
+                    linkLabel1.ActiveLinkColor = Color.DarkCyan;
+                }
+
                 this.BackColor = Form_Main._backColor;
                 this.ForeColor = Form_Main._foreColor;
 
@@ -120,6 +128,11 @@ namespace ZergPoolMiner.Forms
                 e.Graphics.DrawString(cmb.Items[e.Index].ToString(), cmb.Font, brush, e.Bounds);
                 e.DrawFocusRectangle();
             }
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("https://zergpool.com/payouts");
         }
     }
 }

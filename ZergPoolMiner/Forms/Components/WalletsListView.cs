@@ -45,7 +45,14 @@ namespace ZergPoolMiner.Forms.Components
                 var lvi = new ListViewItem();
                 lvi.Checked = wal.Use;
                 lvi.SubItems.Add(wal.Coin);
-                lvi.SubItems.Add(wal.Treshold.ToString());
+                if (wal.Treshold == 0)
+                {
+                    lvi.SubItems.Add("Default");
+                }
+                else
+                {
+                    lvi.SubItems.Add(wal.Treshold.ToString());
+                }
                 lvi.SubItems.Add(wal.Wallet);
                 lvi.SubItems.Add(wal.ID);
                 lvi.Font = fontRegular;
@@ -148,7 +155,15 @@ namespace ZergPoolMiner.Forms.Components
             var lvi = new ListViewItem();
             lvi.Checked = false;
             lvi.SubItems.Add(coin);
-            lvi.SubItems.Add(treshold.ToString());
+            if (treshold == 0)
+            {
+                lvi.SubItems.Add("Default");
+            }
+            else
+            {
+                lvi.SubItems.Add(treshold.ToString());
+            }
+
             lvi.SubItems.Add(wallet);
             lvi.SubItems.Add(worker);
             listViewWallets.Items.Add(lvi);

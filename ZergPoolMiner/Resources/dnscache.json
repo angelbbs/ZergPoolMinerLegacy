@@ -1,5 +1,5 @@
 {
-  "TimeCached": "2024-11-05T17:01:46.1127385+03:00",
+  "TimeCached": "2024-11-25T23:00:10.0437559+03:00",
   "domains": [
     {
       "Updated": "2022-03-24T11:37:36.3102588+03:00",
@@ -9,10 +9,10 @@
       ]
     },
     {
-      "Updated": "2024-01-05T08:59:43.3258499+03:00",
+      "Updated": "2024-11-25T22:14:06.1306211+03:00",
       "domainName": "api.github.com",
       "IPs": [
-        "140.82.121.6"
+        "140.82.121.5"
       ]
     },
     {
@@ -61,6 +61,48 @@
     {
       "Updated": "2024-11-05T17:01:46.1127385+03:00",
       "domainName": "equihash144.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-06T15:20:46.4972066+03:00",
+      "domainName": "evrprogpow.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-06T16:30:21.0725678+03:00",
+      "domainName": "ethash.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-06T21:07:56.6405347+03:00",
+      "domainName": "karlsenhashv2.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-06T21:07:56.7627611+03:00",
+      "domainName": "hoohash.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-06T21:10:25.2463762+03:00",
+      "domainName": "kawpow.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2024-11-06T21:11:41.2235326+03:00",
+      "domainName": "verushash.mine.zergpool.com",
       "IPs": [
         "103.249.70.7"
       ]

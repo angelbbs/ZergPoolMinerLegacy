@@ -151,6 +151,7 @@ namespace ZergPoolMiner.Forms
             this.checkBoxEnableProxy = new System.Windows.Forms.CheckBox();
             this.checkBoxProxySSL = new System.Windows.Forms.CheckBox();
             this.groupBox_Miners = new System.Windows.Forms.GroupBox();
+            this.checkBoxAdaptive = new System.Windows.Forms.CheckBox();
             this.checkBox24hActual = new System.Windows.Forms.CheckBox();
             this.checkBox24hEstimate = new System.Windows.Forms.CheckBox();
             this.checkBoxShortTerm = new System.Windows.Forms.CheckBox();
@@ -237,7 +238,6 @@ namespace ZergPoolMiner.Forms
             this.buttonLicence = new System.Windows.Forms.Button();
             this.label_profile = new System.Windows.Forms.Label();
             this.comboBox_profile = new System.Windows.Forms.ComboBox();
-            this.checkBoxAdaptive = new System.Windows.Forms.CheckBox();
             this.tabControlGeneral.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
             this.groupBox_Idle.SuspendLayout();
@@ -421,7 +421,7 @@ namespace ZergPoolMiner.Forms
             // 
             // textBox_MinIdleSeconds
             // 
-            this.textBox_MinIdleSeconds.Location = new System.Drawing.Point(165, 17);
+            this.textBox_MinIdleSeconds.Location = new System.Drawing.Point(169, 17);
             this.textBox_MinIdleSeconds.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.textBox_MinIdleSeconds.Name = "textBox_MinIdleSeconds";
             this.textBox_MinIdleSeconds.Size = new System.Drawing.Size(28, 20);
@@ -1141,7 +1141,7 @@ namespace ZergPoolMiner.Forms
             // 
             // textBox_mb
             // 
-            this.textBox_mb.Location = new System.Drawing.Point(280, 46);
+            this.textBox_mb.Location = new System.Drawing.Point(290, 46);
             this.textBox_mb.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.textBox_mb.Name = "textBox_mb";
             this.textBox_mb.Size = new System.Drawing.Size(35, 20);
@@ -1843,6 +1843,19 @@ namespace ZergPoolMiner.Forms
             this.groupBox_Miners.Text = "Miners:";
             this.groupBox_Miners.Paint += new System.Windows.Forms.PaintEventHandler(this.groupBox_Miners_Paint);
             // 
+            // checkBoxAdaptive
+            // 
+            this.checkBoxAdaptive.AutoSize = true;
+            this.checkBoxAdaptive.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.checkBoxAdaptive.Location = new System.Drawing.Point(11, 153);
+            this.checkBoxAdaptive.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.checkBoxAdaptive.Name = "checkBoxAdaptive";
+            this.checkBoxAdaptive.Size = new System.Drawing.Size(134, 17);
+            this.checkBoxAdaptive.TabIndex = 426;
+            this.checkBoxAdaptive.Text = "Use adaptive algorithm";
+            this.checkBoxAdaptive.UseVisualStyleBackColor = true;
+            this.checkBoxAdaptive.CheckedChanged += new System.EventHandler(this.checkBoxAdaptive_CheckedChanged);
+            // 
             // checkBox24hActual
             // 
             this.checkBox24hActual.AutoSize = true;
@@ -2079,7 +2092,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox_show_INTELdevice_manufacturer.AutoSize = true;
             this.checkBox_show_INTELdevice_manufacturer.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox_show_INTELdevice_manufacturer.Location = new System.Drawing.Point(560, 19);
+            this.checkBox_show_INTELdevice_manufacturer.Location = new System.Drawing.Point(572, 19);
             this.checkBox_show_INTELdevice_manufacturer.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_show_INTELdevice_manufacturer.Name = "checkBox_show_INTELdevice_manufacturer";
             this.checkBox_show_INTELdevice_manufacturer.Size = new System.Drawing.Size(57, 17);
@@ -2157,7 +2170,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox_show_AMDdevice_manufacturer.AutoSize = true;
             this.checkBox_show_AMDdevice_manufacturer.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox_show_AMDdevice_manufacturer.Location = new System.Drawing.Point(506, 19);
+            this.checkBox_show_AMDdevice_manufacturer.Location = new System.Drawing.Point(518, 19);
             this.checkBox_show_AMDdevice_manufacturer.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_show_AMDdevice_manufacturer.Name = "checkBox_show_AMDdevice_manufacturer";
             this.checkBox_show_AMDdevice_manufacturer.Size = new System.Drawing.Size(50, 17);
@@ -2181,7 +2194,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox_show_NVdevice_manufacturer.AutoSize = true;
             this.checkBox_show_NVdevice_manufacturer.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox_show_NVdevice_manufacturer.Location = new System.Drawing.Point(440, 19);
+            this.checkBox_show_NVdevice_manufacturer.Location = new System.Drawing.Point(452, 19);
             this.checkBox_show_NVdevice_manufacturer.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_show_NVdevice_manufacturer.Name = "checkBox_show_NVdevice_manufacturer";
             this.checkBox_show_NVdevice_manufacturer.Size = new System.Drawing.Size(62, 17);
@@ -2936,19 +2949,6 @@ namespace ZergPoolMiner.Forms
             this.comboBox_profile.TabIndex = 359;
             this.comboBox_profile.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboBox_profile_DrawItem);
             this.comboBox_profile.SelectedIndexChanged += new System.EventHandler(this.comboBox_profile_SelectedIndexChanged);
-            // 
-            // checkBoxAdaptive
-            // 
-            this.checkBoxAdaptive.AutoSize = true;
-            this.checkBoxAdaptive.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxAdaptive.Location = new System.Drawing.Point(11, 153);
-            this.checkBoxAdaptive.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.checkBoxAdaptive.Name = "checkBoxAdaptive";
-            this.checkBoxAdaptive.Size = new System.Drawing.Size(134, 17);
-            this.checkBoxAdaptive.TabIndex = 426;
-            this.checkBoxAdaptive.Text = "Use adaptive algorithm";
-            this.checkBoxAdaptive.UseVisualStyleBackColor = true;
-            this.checkBoxAdaptive.CheckedChanged += new System.EventHandler(this.checkBoxAdaptive_CheckedChanged);
             // 
             // Form_Settings
             // 

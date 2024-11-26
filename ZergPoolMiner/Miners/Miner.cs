@@ -967,7 +967,7 @@ namespace ZergPoolMiner
                 {AlgorithmType.Xelisv2_Pepew, 10},
                 {AlgorithmType.Yescrypt, 10},
                 {AlgorithmType.YescryptR16, 10},
-                {AlgorithmType.YescryptR32, 10},
+                //{AlgorithmType.YescryptR32, 10},
                 {AlgorithmType.YescryptR8, 10},
                 {AlgorithmType.Yespower, 10},
                 {AlgorithmType.YespowerLTNCG, 10},

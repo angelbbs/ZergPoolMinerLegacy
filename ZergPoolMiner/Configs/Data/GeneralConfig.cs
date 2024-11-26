@@ -39,6 +39,7 @@ namespace ZergPoolMiner.Configs.Data
         public string Wallet = "";
         public string WorkerName = "ForkFixWorker1";
         public TimeUnitType TimeUnit = TimeUnitType.Day;
+        public int maxTTF = 60 * 60 * 24 * 3;
 
         public int PowerTarif = 0;
         public string[] ZoneSchedule1 = { "00:00", "23:59:59", "0.00" };

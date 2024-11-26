@@ -28,9 +28,9 @@ namespace ZergPoolMiner.Devices.Algorithms
             {
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
                 {
-                    AlgorithmType.Ethash,
+                    AlgorithmType.Ethash
                     //AlgorithmType.EthashKarlsenHash,
-                    AlgorithmType.EthashPyrinHashV2
+                    //AlgorithmType.EthashPyrinHashV2
                 });
             }
 
@@ -39,8 +39,8 @@ namespace ZergPoolMiner.Devices.Algorithms
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
                 {
                     AlgorithmType.KarlsenHashV2,
-                    AlgorithmType.KarlsenHashV2HooHash,
-                    AlgorithmType.KarlsenHashV2PyrinHashV2
+                    AlgorithmType.KarlsenHashV2HooHash
+                    //AlgorithmType.KarlsenHashV2PyrinHashV2
                 });
             }
 
@@ -141,14 +141,14 @@ namespace ZergPoolMiner.Devices.Algorithms
             {
                 foreach (var algo in algoSettings[MinerBaseType.SRBMiner])
                 {
-                    if (algo.DualZergPoolID == AlgorithmType.KarlsenHashV2HooHash ||
-                        algo.DualZergPoolID == AlgorithmType.KarlsenHashV2PyrinHashV2)
+                    if (algo.DualZergPoolID == AlgorithmType.KarlsenHashV2HooHash)
                     {
                         algo.Enabled = false;
                         algo.Hidden = true;
                     }
                 }
             }
+            /*
             if (device.DeviceType == DeviceType.NVIDIA && algoSettings.ContainsKey(MinerBaseType.SRBMiner))
             {
                 foreach (var algo in algoSettings[MinerBaseType.SRBMiner])
@@ -160,6 +160,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                     }
                 }
             }
+            */
             /*
             if (device.DeviceType == DeviceType.AMD && algoSettings.ContainsKey(MinerBaseType.lolMiner) &&
                 (device.Codename.ToLower().Contains("ellesmere") ||
@@ -206,7 +207,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                 }
             }
             //*********
-
+            /*
             if (device.DeviceType == DeviceType.AMD && algoSettings.ContainsKey(MinerBaseType.lolMiner) &&
                 (device.Codename.ToLower().Contains("ellesmere") ||
                 device.Name.ToLower().Contains("vega") || device.Name.ToLower().Contains("vii")))
@@ -216,7 +217,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                     AlgorithmType.PyrinHashV2,
                 });
             }
-
+            */
             if (algoSettings.ContainsKey(MinerBaseType.Claymore))
             {
                 if ((!device.Codename.ToLower().Contains("ellesmere")))

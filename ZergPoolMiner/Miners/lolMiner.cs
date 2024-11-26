@@ -221,6 +221,7 @@ namespace ZergPoolMiner.Miners
                 " --apiport " + ApiPort +
                 " --devices " + GetDevicesCommandString().Trim();
             }
+            /*
             else if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.PyrinHashV2)
             {
                 CommandLine = _algo +
@@ -234,7 +235,7 @@ namespace ZergPoolMiner.Miners
                     " --devices " + GetDevicesCommandString().Trim() +
                     " --apiport " + ApiPort;
             }
-            
+            */
             //duals
             /*
             if (MiningSetup.CurrentAlgorithmType == AlgorithmType.FishHash && MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.Alephium)

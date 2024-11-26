@@ -40,8 +40,10 @@ namespace ZergPoolMiner.Algorithms
                 {
                     switch (SecondaryZergPoolID)
                     {
+                        /*
                         case AlgorithmType.PyrinHashV2:
                             return AlgorithmType.EthashPyrinHashV2;
+                        */
                     }
                 }
                 if (ZergPoolID == AlgorithmType.Ethash)
@@ -65,8 +67,10 @@ namespace ZergPoolMiner.Algorithms
                 {
                     switch (SecondaryZergPoolID)
                     {
+                        /*
                         case AlgorithmType.PyrinHashV2:
                             return AlgorithmType.Ethashb3PyrinHashV2;
+                        */
                     }
                 }
                 if (ZergPoolID == AlgorithmType.Ethashb3SHA512256d)
@@ -89,8 +93,10 @@ namespace ZergPoolMiner.Algorithms
                 {
                     switch (SecondaryZergPoolID)
                     {
+                        /*
                         case AlgorithmType.PyrinHashV2:
                             return AlgorithmType.KarlsenHashV2PyrinHashV2;
+                        */
                     }
                 }
                 return ZergPoolID;

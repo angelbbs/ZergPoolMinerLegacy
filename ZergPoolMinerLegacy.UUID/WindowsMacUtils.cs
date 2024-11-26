@@ -53,10 +53,33 @@ namespace ZergPoolMinerLegacy.UUID
                         }
                     }
                 }
+                var guid = UUID.GetMachineGuidOrFallback();
+                string f = "";
+                if (guid.Length > 8)
+                {
+                    f = UUID.GetMachineGuidOrFallback().Substring(guid.Length - 4);
+                }
+                return "-" + f;
             } catch (Exception ex)
             {
 
             }
+
+            try
+            {
+                var guid = UUID.GetCpuID();
+                string f = "";
+                if (guid.Length > 8)
+                {
+                    f = UUID.GetMachineGuidOrFallback().Substring(guid.Length - 4);
+                }
+                return "-" + f;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             return "";
             
             /*

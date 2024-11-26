@@ -44,6 +44,7 @@ namespace ZergPoolMiner.Stats
             public bool GPU { get; set; }
             public bool FPGA { get; set; }
             public bool ASIC { get; set; }
+            public bool tempDisabled { get; set; }
         }
 
         public static List<Coin> CoinList = new();
@@ -54,6 +55,7 @@ namespace ZergPoolMiner.Stats
             public int port { get; set; }
             public int tls_port { get; set; }
             public double hashrate { get; set; }
+            public double estimate { get; set; }
             public double estimate_current { get; set; }
             public double estimate_last24h { get; set; }
             public double actual_last24h { get; set; }
@@ -67,6 +69,7 @@ namespace ZergPoolMiner.Stats
             public bool GPU { get; set; }
             public bool FPGA { get; set; }
             public bool ASIC { get; set; }
+            public bool tempDisabled { get; set; }
         }
 
         public static string GetPoolApiData(string url)
@@ -129,6 +132,7 @@ namespace ZergPoolMiner.Stats
                         string algo = coin.Value<string>("algo");
                         var port = coin.Value<int>("port");
                         var tls_port = coin.Value<int>("tls_port");
+                        var _estimate = coin.Value<double>("estimate");
                         var _estimate_current = coin.Value<string>("estimate_current");
                         double.TryParse(_estimate_current, out double estimate_current);
                         var _estimate_last24h = coin.Value<string>("estimate_last24h");
@@ -153,6 +157,7 @@ namespace ZergPoolMiner.Stats
                         _coin.port = port;
                         _coin.tls_port = tls_port;
                         _coin.hashrate = hashrate;
+                        _coin.estimate = (estimate_current / mbtc_mh_factor * 1000);//mBTC/GH
                         _coin.estimate_current = (estimate_current / mbtc_mh_factor * 1000000);//mBTC/GH
                         _coin.estimate_last24h = (estimate_last24h / mbtc_mh_factor * 1000000);
                         _coin.actual_last24h = (actual_last24h / mbtc_mh_factor / 1000 * 1000000);//zergpool api bug
@@ -187,8 +192,142 @@ namespace ZergPoolMiner.Stats
             return CoinList;
         }
 
+        public static List<MiningAlgorithms> GetZergPoolAlgosListEx()
+        {
+            List<string> algosList = new();
+            var coins = GetCoins();
+            try
+            {
+                foreach (AlgorithmType alg in Enum.GetValues(typeof(AlgorithmType)))
+                {
+                    string _alg = alg.ToString().ToLower();
+                    _alg = _alg.Replace("xelisv2_pepew", "xelisv2-pepew");
+                    _alg = _alg.Replace("neoscrypt_xaya", "neoscrypt-xaya");
+                    Coin defcoin = new();
+                    int real_ttf = 0;
+                    if ((int)alg >= 1 && !alg.ToString().Contains("UNUSED"))
+                    {
+                        foreach (var coin in coins)
+                        {
+                            if (coin.algo.ToLower().Equals(_alg))
+                            {
+                                if (coin.hashrate >= defcoin.hashrate)
+                                {
+                                    algosList.Add(_alg);
+                                    defcoin = coin;
+                                    defcoin.algo = _alg;
+                                }
+                            }
+                        }
+                    }
+
+                    if (defcoin.real_ttf > ConfigManager.GeneralConfig.maxTTF)
+                    {
+                        Helpers.ConsolePrint("Stats", alg.ToString() + " TTF " + 
+                            GetTime((int)defcoin.real_ttf) + ". Disabled");
+                        defcoin.tempDisabled = true;
+                    } else
+                    {
+                        defcoin.tempDisabled = false;
+                    }
+                    if (!string.IsNullOrEmpty(defcoin.algo))
+                    {
+                        MiningAlgorithms miningAlgorithms = new();
+                        miningAlgorithms.actual_last24h = defcoin.actual_last24h;
+                        miningAlgorithms.ASIC = defcoin.ASIC;
+                        miningAlgorithms.CPU = defcoin.CPU;
+                        miningAlgorithms.estimate_current = defcoin.estimate_current;
+                        miningAlgorithms.estimate_last24h = defcoin.estimate_last24h;
+                        miningAlgorithms.FPGA = defcoin.FPGA;
+                        miningAlgorithms.GPU = defcoin.GPU;
+                        miningAlgorithms.hashrate = defcoin.hashrate;
+                        miningAlgorithms.mbtc_mh_factor = defcoin.mbtc_mh_factor;
+                        miningAlgorithms.name = alg.ToString().ToLower();
+                        miningAlgorithms.port = defcoin.port;
+                        miningAlgorithms.tls_port = defcoin.tls_port;
+
+                        if (miningAlgorithms.CPU || miningAlgorithms.GPU)
+                        {
+                            if (MiningAlgorithmsList.Any(item => item.name.ToLower() == miningAlgorithms.name.ToLower()))
+                            {
+                                var obj = MiningAlgorithmsList.FirstOrDefault(x => x.name.ToLower() == miningAlgorithms.name.ToLower());
+                                if (obj != null)
+                                {
+                                    obj.hashrate = miningAlgorithms.hashrate;
+                                    obj.estimate_current = miningAlgorithms.estimate_current;
+                                    obj.estimate_last24h = miningAlgorithms.estimate_last24h;
+                                    obj.actual_last24h = miningAlgorithms.actual_last24h;
+                                    obj.mbtc_mh_factor = miningAlgorithms.mbtc_mh_factor;
+                                }
+                            }
+                            else
+                            {
+                                MiningAlgorithmsList.Add(miningAlgorithms);
+                            }
+                        }
+
+                        //MiningAlgorithmsList.Add(miningAlgorithms);
+                        //Helpers.ConsolePrint(miningAlgorithms.name, miningAlgorithms.estimate_current.ToString());
+                    }
+                }
+                var arr = MiningAlgorithmsList.ToList();
+                foreach (var a in arr)
+                {
+                    a.tempDisabled = false;
+                    string _alg = a.name.ToLower();
+                    _alg = _alg.Replace("xelisv2_pepew", "xelisv2-pepew");
+                    _alg = _alg.Replace("neoscrypt_xaya", "neoscrypt-xaya");
+                    if (!algosList.Contains(_alg))
+                    {
+                        Helpers.ConsolePrint("Stats", "Deleted? - " + a.name);
+                        a.tempDisabled = true;
+                        //MiningAlgorithmsList.RemoveAll(x => x.name.ToLower() == a.name.ToLower());
+                        if (a.adaptive_factor == 0)
+                        {
+                            var itemToRemove = MiningAlgorithmsList.SingleOrDefault(r => r.name.ToLower() == a.name.ToLower());
+                            if (itemToRemove != null)
+                            {
+                                MiningAlgorithmsList.Remove(itemToRemove);
+                                //break;
+                            }
+                        }
+                    }
+                }
+
+                var json = JsonConvert.SerializeObject(MiningAlgorithmsList, Formatting.Indented);
+                Helpers.WriteAllTextWithBackup("configs\\AlgoritmsList.json", json);
+            } catch (Exception ex)
+            {
+                Helpers.ConsolePrint("GetZergPoolAlgosListEx", ex.ToString());
+            }
+            return MiningAlgorithmsList;
+        }
+
+        public static string GetTime(int seconds)
+        {
+            TimeSpan ts = new TimeSpan(0, 0, seconds);
+            if (ts.Days > 0)
+            {
+                return ts.Days + " Day(s)";
+            }
+            else if (ts.Hours > 0)
+            {
+                return ts.Hours + " Hour(s)";
+            }
+            else if (ts.Minutes > 0)
+            {
+                return ts.Minutes + " Minute(s)";
+            }
+            else
+            {
+                return ts.Seconds + " Second(s)";
+            }
+            return "?";
+        }
+
         public static List<MiningAlgorithms> GetZergPoolAlgosList()
         {
+            return GetZergPoolAlgosListEx();
             List<string> algosList = new();
             Helpers.ConsolePrint("Stats", "Trying GetZergPoolAlgosList");
             try
@@ -265,10 +404,7 @@ namespace ZergPoolMiner.Stats
                         if (!algosList.Contains(a.name.ToLower()))
                         {
                             Helpers.ConsolePrint("Stats", "Deleted? - " + a.name);
-                            a.actual_last24h = 0;
-                            //a.estimate_current = 0;
-                            //a.estimate_last24h = 0;
-                            a.hashrate = 0;
+                            a.tempDisabled = true;
                             //MiningAlgorithmsList.RemoveAll(x => x.name.ToLower() == a.name.ToLower());
                             if (a.adaptive_factor == 0)
                             {
@@ -478,7 +614,14 @@ namespace ZergPoolMiner.Stats
                                             {
                                                 average = 1;
                                             }
-                                            alg.adaptive_factor = average;
+                                            if (!double.IsNaN(average))
+                                            {
+                                                alg.adaptive_factor = average;
+                                            } else
+                                            {
+                                                alg.adaptive_factor = 0;
+                                                alg.adaptive_profit = 0;
+                                            }
                                         }
                                     }
                                 }
@@ -614,9 +757,7 @@ namespace ZergPoolMiner.Stats
                             double _profit = 0d;
                             int profitsCount = 0;
                             //отключение алгоритма
-                            //надо добавить проверку на TTF
-                            if (algo.estimate_current == 0 || algo.estimate_last24h == 0 ||
-                                algo.actual_last24h == 0 || algo.hashrate == 0)
+                            if (algo.estimate_current == 0 || algo.tempDisabled || algo.hashrate == 0)
                             {
                                 _profit = 0;
                                 if (algo.hashrate == 0)
@@ -710,7 +851,15 @@ namespace ZergPoolMiner.Stats
                             {
                                 if (algo.adaptive_factor != 0)
                                 {
-                                    algo.adaptive_profit = algo.adaptive_factor * algo.profit;
+                                    if (!double.IsNaN(algo.adaptive_factor))
+                                    {
+                                        algo.adaptive_profit = algo.adaptive_factor * algo.profit;
+                                    }
+                                    else
+                                    {
+                                        algo.adaptive_profit = 0;
+                                        algo.adaptive_factor = 0;
+                                    }
                                     data.Add(_algo, algo.adaptive_profit);
                                 } else
                                 {

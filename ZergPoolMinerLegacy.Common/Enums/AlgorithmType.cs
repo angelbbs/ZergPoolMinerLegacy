@@ -8,13 +8,13 @@
         KawPowLite = -100,
 
         Ethashb3SHA512256d = -17,
-        Ethashb3PyrinHashV2 = -16,
+        //Ethashb3PyrinHashV2 = -16,
         //Ethashb3KarlsenHash = -15,
 
-        KarlsenHashV2PyrinHashV2 = -14,
+        //KarlsenHashV2PyrinHashV2 = -14,
         KarlsenHashV2HooHash = -13,
         EthashSHA512256d = -12,
-        EthashPyrinHashV2 = -11,
+        //EthashPyrinHashV2 = -11,
         //EthashKarlsenHash = -10,
 
         INVALID = -2,
@@ -54,10 +54,10 @@
         NeoScrypt = 1260,
         Neoscrypt_xaya = 1270,
         NexaPow = 1280,//2gb
-        NxlHash = 1287,
+        //NxlHash = 1287,
         Panthera = 1290,
         Power2b = 1295,
-        PyrinHashV2 = 1300,
+        //PyrinHashV2 = 1300,
         RandomX = 1310,
         RandomARQ = 1320,
         RandomXEQ = 1330,
@@ -78,7 +78,7 @@
         Yescrypt = 1480,
         YescryptR8 = 1490,
         YescryptR16 = 1500,
-        YescryptR32 = 1510,
+        //YescryptR32 = 1510,
         Yespower = 1520,
         YespowerLTNCG = 1530,
         YespowerMGPC = 1540,

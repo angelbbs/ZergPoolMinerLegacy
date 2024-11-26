@@ -549,7 +549,13 @@ namespace ZergPoolMiner
             textBoxWallet.Text = " " + ConfigManager.GeneralConfig.Wallet.Trim();
             textBoxWorkerName.Text = " " + ConfigManager.GeneralConfig.WorkerName.Trim();
             textBoxPayoutCurrency.Text = " " + ConfigManager.GeneralConfig.PayoutCurrency.Trim();
-            textBoxTreshold.Text = " " + ConfigManager.GeneralConfig.PayoutCurrencyTreshold.ToString("G");
+            if (ConfigManager.GeneralConfig.PayoutCurrencyTreshold > 0)
+            {
+                textBoxTreshold.Text = " " + ConfigManager.GeneralConfig.PayoutCurrencyTreshold.ToString("G");
+            } else
+            {
+                textBoxTreshold.Text = " Default";
+            }
 
             regionList.Clear();
             Region region = new Region();

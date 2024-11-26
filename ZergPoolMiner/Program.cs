@@ -253,7 +253,7 @@ namespace ZergPoolMiner
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.1;
                 }
-
+                //0.2
                 try
                 {
                     if (File.Exists("configs\\wallets.json"))
@@ -267,6 +267,7 @@ namespace ZergPoolMiner
                         var _json = JsonConvert.SerializeObject(WalletDataList, Formatting.Indented);
                         Helpers.WriteAllTextWithBackup("configs\\wallets.json", _json);
                     }
+                    ConfigManager.GeneralConfig.PayoutCurrencyTreshold = 0;
                 }
                 catch (Exception ex)
                 {

@@ -449,16 +449,16 @@ namespace ZergPoolMiner
             this.labelTreshold.AutoSize = true;
             this.labelTreshold.Location = new System.Drawing.Point(200, 41);
             this.labelTreshold.Name = "labelTreshold";
-            this.labelTreshold.Size = new System.Drawing.Size(83, 13);
+            this.labelTreshold.Size = new System.Drawing.Size(91, 13);
             this.labelTreshold.TabIndex = 121;
-            this.labelTreshold.Text = "Payout treshold:";
+            this.labelTreshold.Text = "Payment treshold:";
             // 
             // textBoxTreshold
             // 
-            this.textBoxTreshold.Location = new System.Drawing.Point(289, 38);
+            this.textBoxTreshold.Location = new System.Drawing.Point(297, 38);
             this.textBoxTreshold.Name = "textBoxTreshold";
             this.textBoxTreshold.ReadOnly = true;
-            this.textBoxTreshold.Size = new System.Drawing.Size(93, 20);
+            this.textBoxTreshold.Size = new System.Drawing.Size(85, 20);
             this.textBoxTreshold.TabIndex = 120;
             // 
             // devicesListViewEnableControl1

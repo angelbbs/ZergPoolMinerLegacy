@@ -254,24 +254,30 @@ namespace ZergPoolMiner
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.1;
                 }
                 //0.2
-                try
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.2)
                 {
-                    if (File.Exists("configs\\wallets.json"))
+                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 0.2;
+                    try
                     {
-                        string json = File.ReadAllText("configs\\wallets.json");
-                        WalletDataList = JsonConvert.DeserializeObject<List<WalletData>>(json);
-                        foreach (var w in WalletDataList)
+                        if (File.Exists("configs\\wallets.json"))
                         {
-                            w.Treshold = 0;
+                            string json = File.ReadAllText("configs\\wallets.json");
+                            WalletDataList = JsonConvert.DeserializeObject<List<WalletData>>(json);
+                            foreach (var w in WalletDataList)
+                            {
+                                w.Treshold = 0;
+                            }
+                            var _json = JsonConvert.SerializeObject(WalletDataList, Formatting.Indented);
+                            Helpers.WriteAllTextWithBackup("configs\\wallets.json", _json);
                         }
-                        var _json = JsonConvert.SerializeObject(WalletDataList, Formatting.Indented);
-                        Helpers.WriteAllTextWithBackup("configs\\wallets.json", _json);
+                        ConfigManager.GeneralConfig.PayoutCurrencyTreshold = 0;
                     }
-                    ConfigManager.GeneralConfig.PayoutCurrencyTreshold = 0;
-                }
-                catch (Exception ex)
-                {
-                    Helpers.ConsolePrint("MinerLegacy", ex.ToString());
+                    catch (Exception ex)
+                    {
+                        Helpers.ConsolePrint("MinerLegacy", ex.ToString());
+                    }
                 }
                 
 

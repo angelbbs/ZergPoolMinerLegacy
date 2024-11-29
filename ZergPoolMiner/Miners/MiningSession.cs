@@ -107,19 +107,13 @@ namespace ZergPoolMiner.Miners
             _mainFormRatesComunication = mainFormRatesComunication;
             // _miningLocation = miningLocation;
             _switchingManager = new AlgorithmSwitchingManager();
-            if (!FuncAttached)
-            {
-                Helpers.ConsolePrint("MiningSession", "Process attached");
-                ZergPoolMiner.Switching.AlgorithmSwitchingManager.SmaCheck += SwichMostProfitableGroupUpMethod;
+            _miningDevices = GroupSetupUtils.GetMiningDevices(devices, true);
 
-                FuncAttached = true;
-            }
             _btcAdress = btcAdress;
             _payoutCurrency = payoutCurrency;
             _worker = worker;
 
             // initial settup
-            _miningDevices = GroupSetupUtils.GetMiningDevices(devices, true);
             if (_miningDevices.Count > 0)
             {
                 GroupSetupUtils.AvarageSpeeds(_miningDevices);
@@ -139,6 +133,22 @@ namespace ZergPoolMiner.Miners
             _isProfitable = true;
             // assume we have internet
             _isConnectedToInternet = true;
+
+            if (!FuncAttached)
+            {
+                Helpers.ConsolePrint("MiningSession", "Process attached");
+                ZergPoolMiner.Switching.AlgorithmSwitchingManager.SmaCheck += SwichMostProfitableGroupUpMethod;
+                /*
+                if (_miningDevices.Count > 0)
+                {
+                    SwichMostProfitableGroupUpMethod(null, null);
+                }
+                */
+                //ZergPoolMiner.Switching.AlgorithmSwitchingManager.Stop();
+                //ZergPoolMiner.Switching.AlgorithmSwitchingManager.Start();
+                FuncAttached = true;
+            }
+
             if (IsMiningEnabled)
             {
                 _preventSleepTimer.Start();

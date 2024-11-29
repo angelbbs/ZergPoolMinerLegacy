@@ -14,7 +14,7 @@ namespace ZergPoolMiner.Utils
             @"/lolMiner/lolMiner.exe",
             @"/miniZ/miniZ.exe",
             @"/Rigel/rigel.exe",
-            @"/Fork_Fix_0.1.txt"
+            @"/Fork_Fix_0.2.txt"
         };
     }
 }

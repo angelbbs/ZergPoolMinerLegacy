@@ -70,7 +70,13 @@ namespace ZergPoolMiner.Miners
         {
             Stop_cpu_ccminer_sgminer_nheqminer(willswitch);
             Thread.Sleep(200);
-            try { ProcessHandle.SendCtrlC((uint)Process.GetCurrentProcess().Id); } catch { }
+            try {
+                if (ProcessHandle is object)
+                {
+                    ProcessHandle.SendCtrlC((uint)Process.GetCurrentProcess().Id);
+                }
+            } catch 
+            { }
             Thread.Sleep(200);
             foreach (var process in Process.GetProcessesByName("CryptoDredge"))
             {

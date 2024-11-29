@@ -617,11 +617,12 @@ namespace ZergPoolMiner.Stats
                                             if (!double.IsNaN(average))
                                             {
                                                 alg.adaptive_factor = average;
-                                            } else
-                                            {
-                                                alg.adaptive_factor = 0;
-                                                alg.adaptive_profit = 0;
-                                            }
+                                            } 
+                                        }
+                                        else
+                                        {
+                                            alg.adaptive_factor = 0;
+                                            alg.adaptive_profit = 0;
                                         }
                                     }
                                 }

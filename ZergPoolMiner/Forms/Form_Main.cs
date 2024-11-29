@@ -3978,6 +3978,11 @@ namespace ZergPoolMiner
                 e.Graphics.DrawImage(shadowBmp, new Point(0, 0));
             }
         }
+
+        private void Form_Main_Activated(object sender, EventArgs e)
+        {
+            this.Width = ConfigManager.GeneralConfig.FormWidth;
+        }
     }
 
     static class TimeSpanExtensions

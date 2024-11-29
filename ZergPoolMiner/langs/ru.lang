@@ -516,7 +516,7 @@
                 "Form_Settings_groupBoxInfo": "Информация",
                 "Form_Settings_groupBoxUpdates": "Обновление программы",
 		"Form_Settings_groupBoxBackup": "Резервное копирование",
-		"Form_Settings_richTextBoxInfo": " (для ZergPool)",
+		"Form_Settings_richTextBoxInfo": " (для ZergPool) это неофициальная ветка программы, созданная https://github.com/angelbbs при поддержке сообществ https://bitcointalk.org/index.php?topic=5516903.0 и https://github.com/angelbbs/ZergPoolMinerLegacy/issues",
 "Form_Settings_Currentversion": "Текущая версия: ",
 "Form_Settings_Errorwhencheckingnewversion": "Ошибка при проверке новой версии",
 "Form_Settings_Currentbuild": ". Сборка: ",

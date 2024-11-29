@@ -689,7 +689,8 @@ namespace ZergPoolMiner.Devices.Algorithms
             { MinerBaseType.CryptoDredge,
                         new List<Algorithm>() {
                             new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.NeoScrypt, "NeoScrypt"),
-                            new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.Cryptonight_GPU, "Cryptonight_GPU"),
+                            //после переключения монет реджекты
+                            //new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.Cryptonight_GPU, "Cryptonight_GPU"),
                             new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.SHA256csm, "SHA256csm"),
                             //new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.FiroPow, "FiroPow")
                         }

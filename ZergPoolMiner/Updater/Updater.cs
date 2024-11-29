@@ -323,6 +323,7 @@ namespace ZergPoolMiner.Updater
         public static void ShowHistory(bool force)
         {
             string fileHistory = "";
+            /*
             if (ConfigManager.GeneralConfig.Language == LanguageType.Ru)
             {
                 fileHistory = "Help\\history_ru.txt";
@@ -331,6 +332,8 @@ namespace ZergPoolMiner.Updater
             {
                 fileHistory = "Help\\history_en.txt";
             }
+            */
+            fileHistory = "Help\\history.txt";
 
             if (File.Exists(fileHistory))
             {

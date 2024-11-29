@@ -3,9 +3,9 @@
 [![GitHub release](https://img.shields.io/github/release/angelbbs/ZergPoolMinerLegacy/all.svg)](https://github.com/angelbbs/ZergPoolMinerLegacy/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date/angelbbs/ZergPoolMinerLegacy.svg)](https://github.com/angelbbs/ZergPoolMinerLegacy/releases)
 
-[![Github All Releases](https://img.shields.io/github/downloads/angelbbs/ZergPoolMinerLegacy/total.svg)]
+[![Github All Releases](https://img.shields.io/github/downloads/angelbbs/ZergPoolMinerLegacy/total.svg)](https://github.com/angelbbs/ZergPoolMinerLegacy/releases)
 ## Download
-* **[Binary releases](https://github.com/angelbbs/ZergPoolMinerLegacy/releases)**
+* **[Download latest release](https://github.com/angelbbs/ZergPoolMinerLegacy/releases)**
 
 
 "Miner Legacy Fork Fix" is an free open source easy to use CPU & GPU cryptocurrency miner program with classic GUI for Windows. 

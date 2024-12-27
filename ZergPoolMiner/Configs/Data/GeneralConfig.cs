@@ -11,6 +11,8 @@ namespace ZergPoolMiner.Configs.Data
     {
         public Version ConfigFileVersion;
         public double ForkFixVersion;
+        public DateTime updated_at;
+        public DateTime InstallDateTime;
         public bool ShowSplash = true;
         public bool DecreasePowerCost = false;
         public bool ShowTotalPower = false;
@@ -19,7 +21,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool NoForceTRexClose;
         public bool UseNegativeProfit = false;
         public bool ShowHiddenAlgos = false;
-        public double DaggerOrderMaxPay = 0;
+        public double ProfitabilityCorrection = 0.8;
         public int KawpowLiteMaxEpoch3GB = 220;
         public int KawpowLiteMaxEpoch4GB = 354;
         public int KawpowLiteMaxEpoch5GB = 488;

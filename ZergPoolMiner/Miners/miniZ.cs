@@ -60,14 +60,14 @@ namespace ZergPoolMiner.Miners
             ConectionType = NhmConectionType.NONE;
         }
 
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             IsApiReadException = false;
-            LastCommandLine = GetStartCommand(btcAdress, worker);
+            LastCommandLine = GetStartCommand(wallet, password);
             ProcessHandle = _Start();
         }
 
-        private string GetStartCommand(string btcAddress, string worker)
+        private string GetStartCommand(string wallet, string password)
         {
             string ZilMining = "";
             DeviceType devtype = DeviceType.NVIDIA;
@@ -107,7 +107,7 @@ namespace ZergPoolMiner.Miners
             if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype) &&
                 ConfigManager.GeneralConfig.ZIL_mining_state == 2)
             {
-                ZilMining = " --url " + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + worker + "@" +
+                ZilMining = " --url " + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + wallet + "@" +
                     ConfigManager.GeneralConfig.ZIL_mining_pool.Replace("stratum+tcp://", "") + ":" +
                     ConfigManager.GeneralConfig.ZIL_mining_port;
             }
@@ -117,9 +117,8 @@ namespace ZergPoolMiner.Miners
             {
                 sColor = " --nocolour";
             }
-            string wallet = ConfigManager.GeneralConfig.Wallet;
-            string password = " --pass=c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " ";
+
+            string _password = " --pass=" + password.Trim() + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("equihash125", "125,4");
             _algo = _algo.Replace("equihash144", "144,5 --pers auto");
@@ -128,8 +127,8 @@ namespace ZergPoolMiner.Miners
 
             return " --par=" + _algo +
             " " + ZilMining + " --telemetry=" + ApiPort +
-            " --url=" + wallet + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                    password +
+            " --url=ssl://" + wallet + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    _password +
                     GetDevicesCommandString().Trim();
         }
 
@@ -193,7 +192,7 @@ namespace ZergPoolMiner.Miners
                 _algo = _algo.Replace("evrprogpow", "progpow --pers auto");
                 ret = GetDevicesCommandString()
                       + "--nocolour --par=" + _algo +
-                      " --url=" + Globals.DemoUser + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower())
+                      " --url=ssl://" + Globals.DemoUser + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower())
                       + " --pass=c=LTC" + " --telemetry=" + ApiPort;
                 _benchmarkTimeWait = time;
 

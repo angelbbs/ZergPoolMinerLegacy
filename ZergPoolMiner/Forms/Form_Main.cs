@@ -75,6 +75,9 @@ namespace ZergPoolMiner
         public static bool _demoMode;
 
         public static string _PayoutTreshold = ",pl=0";
+        public static string wallet = "";
+        public static string worker = "";
+        public static string payoutCurrency = "";
         private readonly Random R;
 
         private Form_Loading _loadingScreen;
@@ -3403,14 +3406,20 @@ namespace ZergPoolMiner
             InitFlowPanelStart();
             ClearRatesAll();
             bool isMining;
+            payoutCurrency = ConfigManager.GeneralConfig.PayoutCurrency;
             _PayoutTreshold = ",pl=" + ConfigManager.GeneralConfig.PayoutCurrencyTreshold.ToString();
+            worker = Miner.GetFullWorkerName();
+            wallet = ConfigManager.GeneralConfig.Wallet;
             if (_demoMode)
             {
+                worker = "demo";
+                payoutCurrency = "LTC";
                 _PayoutTreshold = ",pl=0";
+                wallet = Globals.DemoUser;
             }
+            var password = " c=" + payoutCurrency + _PayoutTreshold + ",ID=" + worker;
 
-            isMining = MinersManager.StartInitialize(this, textBoxWorkerName.Text.Trim(),
-                ConfigManager.GeneralConfig.Wallet, ConfigManager.GeneralConfig.PayoutCurrency);
+            isMining = MinersManager.StartInitialize(this, wallet, password);
 
             if (!_demoMode) ConfigManager.GeneralConfigFileCommit();
             _minerStatsCheck.Start();
@@ -3982,6 +3991,21 @@ namespace ZergPoolMiner
         private void Form_Main_Activated(object sender, EventArgs e)
         {
             this.Width = ConfigManager.GeneralConfig.FormWidth;
+        }
+
+        private void linkLabelNewVersion_LinkClicked_1(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            settings = new Form_Settings();
+            try
+            {
+                //   SetChildFormCenter(settings);
+                settings.tabControlGeneral.SelectedTab = settings.tabPageAbout;
+                settings.ShowDialog();
+            }
+            catch (Exception er)
+            {
+                Helpers.ConsolePrint("settings", er.ToString());
+            }
         }
     }
 

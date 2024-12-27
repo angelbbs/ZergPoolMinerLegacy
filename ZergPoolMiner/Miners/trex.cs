@@ -33,11 +33,12 @@ namespace ZergPoolMiner.Miners
             string ret = "";
             try
             {
+                algo = algo.Replace("-", "_");
                 var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = " -o " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum2+tcp://") + ":" + _a.port.ToString();
+                ret = " -o " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum2+ssl://") + ":" + _a.tls_port.ToString();
             }
             catch (Exception ex)
             {
@@ -46,7 +47,7 @@ namespace ZergPoolMiner.Miners
             }
             return ret;
         }
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             if (!IsInit)
             {
@@ -56,15 +57,14 @@ namespace ZergPoolMiner.Miners
 
             var apiBind = " --api-bind-http 0.0.0.0:" + ApiPort;
 
-            string wallet = "-u " + ConfigManager.GeneralConfig.Wallet;
-            string password = " -p c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " ";
+            string _wallet = "-u " + wallet;
+            string _password = " -p " + password + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
 
             LastCommandLine = " --algo " + _algo +
             " " + apiBind +
                     GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                    wallet + " " + password +
+                    _wallet + " " + _password +
                     " -d " + GetDevicesCommandString() + " --no-watchdog " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";
 

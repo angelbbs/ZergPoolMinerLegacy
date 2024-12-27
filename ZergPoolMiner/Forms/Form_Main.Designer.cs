@@ -433,6 +433,7 @@ namespace ZergPoolMiner
             this.linkLabelNewVersion.Text = "link";
             this.linkLabelNewVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.linkLabelNewVersion.Visible = false;
+            this.linkLabelNewVersion.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelNewVersion_LinkClicked_1);
             // 
             // flowLayoutPanel1
             // 

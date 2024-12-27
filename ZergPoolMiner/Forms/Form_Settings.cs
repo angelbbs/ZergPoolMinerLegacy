@@ -69,6 +69,7 @@ namespace ZergPoolMiner.Forms
 
             button_ZIL_additional_mining.Visible = false;
             button_Lite_Algo.Visible = false;
+            groupBoxConnection.Visible = false;
             IsChange = false;
             IsChangeSaved = false;
 

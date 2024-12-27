@@ -375,7 +375,7 @@ namespace ZergPoolMiner.Miners
 
             string subscribe = "{\"id\": 1, \"method\": \"mining.subscribe\", \"params\": [\"EthereumMiner/1.0.0\", \"EthereumStratum/1.0.0\"]}" + (char)10;
             string btcAdress = Configs.ConfigManager.GeneralConfig.Wallet;
-            string worker = Stats.Stats.GetFullWorkerName();
+            string worker = "worker";
             string username = btcAdress + "." + worker + "$" + ZergPoolMiner.Stats.Socket.RigID;
             string extranonce = "{\"id\":2, \"method\": \"mining.extranonce.subscribe\", \"params\": []}" + (char)10;
             string authorize = "{\"id\": 2, \"method\": \"mining.authorize\", \"params\": [\"" + username + "\", \"x\"]}" + (char)10;

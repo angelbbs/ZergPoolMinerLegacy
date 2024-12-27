@@ -578,6 +578,9 @@ namespace ZergPoolMiner.Devices.Algorithms
                             */
                             new Algorithm(MinerBaseType.miniZ, AlgorithmType.Ethashb3, "Ethashb3")
                             {
+                            },
+                            new Algorithm(MinerBaseType.miniZ, AlgorithmType.Meraki, "Meraki")
+                            {
                             }
                         }
             },
@@ -691,6 +694,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                             new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.NeoScrypt, "NeoScrypt"),
                             //после переключения монет реджекты
                             //new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.Cryptonight_GPU, "Cryptonight_GPU"),
+                            new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.Allium, "Allium"),
                             new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.SHA256csm, "SHA256csm"),
                             //new Algorithm(MinerBaseType.CryptoDredge, AlgorithmType.FiroPow, "FiroPow")
                         }
@@ -730,6 +734,9 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                             },
                             new Algorithm(MinerBaseType.miniZ, AlgorithmType.Ethashb3, "Ethashb3")
+                            {
+                            },
+                            new Algorithm(MinerBaseType.miniZ, AlgorithmType.Meraki, "Meraki")
                             {
                             }
                         }

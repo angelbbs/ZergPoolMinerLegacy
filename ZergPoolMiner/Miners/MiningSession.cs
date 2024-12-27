@@ -36,9 +36,8 @@ namespace ZergPoolMiner.Miners
         // session varibles fixed
         //public static string _miningLocation;
 
-        public static string _btcAdress;
-        public static string _payoutCurrency;
-        public static string _worker;
+        public static string _wallet;
+        public static string _password;
         public static List<MiningDevice> _miningDevices;
         private readonly IMainFormRatesComunication _mainFormRatesComunication;
 
@@ -96,7 +95,7 @@ namespace ZergPoolMiner.Miners
 
         public MiningSession(List<ComputeDevice> devices,
             IMainFormRatesComunication mainFormRatesComunication,
-            string worker, string btcAdress, string payoutCurrency)
+            string wallet, string password)
         {
             _ticks = new int[devices.Count];
             for (int d = 0; d < _ticks.Length; d++)
@@ -109,9 +108,8 @@ namespace ZergPoolMiner.Miners
             _switchingManager = new AlgorithmSwitchingManager();
             _miningDevices = GroupSetupUtils.GetMiningDevices(devices, true);
 
-            _btcAdress = btcAdress;
-            _payoutCurrency = payoutCurrency;
-            _worker = worker;
+            _wallet = wallet;
+            _password = password;
 
             // initial settup
             if (_miningDevices.Count > 0)
@@ -426,6 +424,7 @@ namespace ZergPoolMiner.Miners
                     }
                     else
                     {
+                        Helpers.ConsolePrint("CheckIfShouldMine", "MINING NOT PROFITABLE!");
                         _mainFormRatesComunication.ShowNotProfitable(
                             International.GetText("Form_Main_MINING_NOT_PROFITABLE"));
                     }
@@ -472,6 +471,8 @@ namespace ZergPoolMiner.Miners
             stringBuilderFull.AppendLine("Current device profits:");
             double smaTmp = 0;
 
+            bool algoZero = false;
+            string algoZeroS = "";
             Form_Main.KawpowLiteEnabled = false;
             foreach (var device in _miningDevices)
             {
@@ -482,6 +483,16 @@ namespace ZergPoolMiner.Miners
                         Form_Main.KawpowLiteEnabled = true;
                     }
                     smaTmp = smaTmp + algo.CurNhmSmaDataVal;
+
+                    if (algo.CurPayingRatio + algo.CurSecondPayingRatio == 0)
+                    {
+                        if ((AlgorithmType)device.Device.AlgorithmID == algo.ZergPoolID ||
+                            (AlgorithmType)device.Device.SecondAlgorithmID == algo.DualZergPoolID)
+                        {
+                            algoZero = true;
+                            algoZeroS = algo.AlgorithmName;
+                        }
+                    }
                 }
                 // most profitable
                 string profitStr = ExchangeRateApi.ConvertBTCToNationalCurrency(device.GetCurrentMostProfitValueWithoutPower).ToString("F2") + " " +
@@ -567,6 +578,13 @@ namespace ZergPoolMiner.Miners
                 double b = Math.Min(prevStateProfit, currentProfit);
                 percDiff = ((a - b)) / Math.Abs(b);
 
+                if (percDiff > 10 && percDiff < 1000) //1000%
+                {
+                    Helpers.ConsolePrint(Tag,
+                    $"SWITCH DISABLED due api error. Profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
+                    return;
+                }
+
                 if (percDiff <= ConfigManager.GeneralConfig.SwitchProfitabilityThreshold)
                 {
                     // don't switch
@@ -586,7 +604,7 @@ namespace ZergPoolMiner.Miners
                 {
                     if (!KawpowLiteForceStop)
                     {
-                        if (Form_Main.adaptiveRunning)
+                        if (Form_Main.adaptiveRunning && !algoZero)
                         {
                             Helpers.ConsolePrint(Tag, "Switching temporary disabled because adaptive algo is running");
                             needSwitch = false;
@@ -687,6 +705,12 @@ namespace ZergPoolMiner.Miners
                     var a = Math.Max(prevStateProfit, currentProfit);
                     var b = Math.Min(prevStateProfit, currentProfit);
                     percDiff = ((a - b)) / Math.Abs(b);
+                    if (percDiff > 10 && percDiff < 1000) //1000%
+                    {
+                        Helpers.ConsolePrint(Tag,
+                        $"SWITCH DISABLED due api error. Profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
+                        return;
+                    }
                     if (percDiff <= ConfigManager.GeneralConfig.SwitchProfitabilityThreshold)
                     {
                         // don't switch
@@ -715,7 +739,7 @@ namespace ZergPoolMiner.Miners
                     {
                         if (!KawpowLiteForceStop)
                         {
-                            if (Form_Main.adaptiveRunning)
+                            if (Form_Main.adaptiveRunning && !algoZero)
                             {
                                 Helpers.ConsolePrint(Tag, "Switching temporary disabled because adaptive algo is running");
                                 needSwitch = false;
@@ -808,6 +832,11 @@ namespace ZergPoolMiner.Miners
             {
                 Helpers.ConsolePrint(Tag, "Force switch from KawpowLite mining");
                 KawpowLiteForceStop = false;
+                needSwitch = true;
+            }
+            if (algoZero)
+            {
+                Helpers.ConsolePrint(Tag, "Force switch from zero or deleted algo " + algoZeroS);
                 needSwitch = true;
             }
 
@@ -972,11 +1001,11 @@ namespace ZergPoolMiner.Miners
 
                         if (ConfigManager.GeneralConfig.ServiceLocation == 0)
                         {
-                            toStart.Start(_btcAdress, _worker);
+                            toStart.Start(_wallet, _password);
                         }
                         else
                         {
-                            toStart.Start(_btcAdress, _worker);
+                            toStart.Start(_wallet, _password);
                         }
                         _runningGroupMiners[toStart.Key] = toStart;
                     }

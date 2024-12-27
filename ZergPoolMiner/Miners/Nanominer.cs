@@ -36,9 +36,9 @@ namespace ZergPoolMiner.Miners
             ConectionType = NhmConectionType.NONE;
         }
 
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
-            LastCommandLine = GetStartCommand(btcAdress, worker);
+            LastCommandLine = GetStartCommand(wallet, password);
             ProcessHandle = _Start();
             try
             {
@@ -59,12 +59,12 @@ namespace ZergPoolMiner.Miners
             string ret = "";
             try
             {
-                algo = algo.Replace("xelisv2_pepew", "xelisv2-pepew");
+                algo = algo.Replace("-", "_");
                 var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = "pool1 = " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.port.ToString();
+                ret = "pool1 = " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.tls_port.ToString();
             }
             catch (Exception ex)
             {
@@ -74,7 +74,7 @@ namespace ZergPoolMiner.Miners
 
             return ret + " ";
         }
-        private string GetStartCommand(string btcAdress, string worker)
+        private string GetStartCommand(string wallet, string password)
         {
             IsInBenchmark = false;
             var param = "";
@@ -155,9 +155,8 @@ namespace ZergPoolMiner.Miners
                    + String.Format(param) + "\n"
                    + String.Format("coin = VRSC\n")
                    + String.Format("devices = {0}", GetDevicesCommandString()) + "\n"
-                   + String.Format("wallet = {0}", ConfigManager.GeneralConfig.Wallet) + "\n"
-                   + String.Format("rigPassword= {0}", "c=" + ConfigManager.GeneralConfig.PayoutCurrency.Trim()
-                   + Form_Main._PayoutTreshold + ",ID=" + Stats.Stats.GetFullWorkerName()) + "\n"
+                   + String.Format("wallet = {0}", wallet.Trim()) + "\n"
+                   + String.Format("rigPassword= {0}", password.Trim()) + "\n"
                    + String.Format("protocol = stratum\n")
                    + String.Format("watchdog = false\n")
                    + GetServer("verushash");
@@ -362,7 +361,7 @@ namespace ZergPoolMiner.Miners
                    + string.Format("devices = {0}", GetDevicesCommandString()) + "\n"
                    + string.Format("wallet = {0}", Globals.DemoUser) + "\n"
                    + string.Format("rigPassword= {0}", "c=LTC" + 
-                   ",ID=" + Stats.Stats.GetFullWorkerName()) + "\n"
+                   ",ID=" + Miner.GetFullWorkerName()) + "\n"
                    + string.Format("protocol = stratum\n")
                    + string.Format("watchdog = false\n")
                    + GetServer("verushash");
@@ -389,7 +388,7 @@ namespace ZergPoolMiner.Miners
                    + String.Format("devices = {0}", GetDevicesCommandString().Trim(' ')) + "\n"
                    + string.Format("wallet = {0}", Globals.DemoUser) + "\n"
                    + string.Format("rigPassword= {0}", "c=LTC" +
-                   ",ID=" + Stats.Stats.GetFullWorkerName()) + "\n"
+                   ",ID=" + Miner.GetFullWorkerName()) + "\n"
                    + string.Format("protocol = stratum\n")
                    + string.Format("watchdog = false\n")
                    + GetServer("kawpow");

@@ -34,11 +34,11 @@ namespace ZergPoolMiner.Miners
             ConectionType = NhmConectionType.NONE;
         }
 
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             string url = "";
             RejectsLimit = ConfigManager.GeneralConfig.KAWPOW_Rigel_Max_Rejects;
-            LastCommandLine = GetStartCommand(url, btcAdress, worker);
+            LastCommandLine = GetStartCommand(url, wallet, password);
             ProcessHandle = _Start();
         }
 
@@ -54,7 +54,7 @@ namespace ZergPoolMiner.Miners
             Stop_cpu_ccminer_sgminer_nheqminer(willswitch);
             KillRigel();
         }
-        private string GetStartCommand(string url, string btcAddress, string worker)
+        private string GetStartCommand(string url, string wallet, string password)
         {
             var algo = "";
             var algo2 = "";
@@ -95,7 +95,7 @@ namespace ZergPoolMiner.Miners
                 {
                     ZilMining = " -o [2]ethstratum+tcp://" +
                         ConfigManager.GeneralConfig.ZIL_mining_pool.Replace("stratum+tcp://", "") + ":" + ConfigManager.GeneralConfig.ZIL_mining_port +
-                        " -u [2]" + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + worker + " ";
+                        " -u [2]" + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + "worker" + " ";
                 }
             }
             if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Rigel, devtype) &&
@@ -112,33 +112,30 @@ namespace ZergPoolMiner.Miners
                 {
                     ZilMining = " -o [3]ethstratum+tcp://" +
                         ConfigManager.GeneralConfig.ZIL_mining_pool.Replace("stratum+tcp://", "") + ":" + ConfigManager.GeneralConfig.ZIL_mining_port +
-                        " -u [3]" + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + worker + " ";
+                        " -u [3]" + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + "worker" + " ";
                 }
             }
 
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
             {
-                string wallet = "-u " + ConfigManager.GeneralConfig.Wallet;
-                string password = " -p c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                    Stats.Stats.GetFullWorkerName() + " ";
+                string _wallet = "-u " + wallet;
+                string _password = "-p " + password + " ";
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
                 _algo = _algo.Replace("equihash125", "equihash125_4");
                 _algo = _algo.Replace("equihash144", "equihash144_5 --pers auto");
 
                 return " -a " + _algo +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
-                        "-o stratum+tcp://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                        wallet + " " + password +
+                        "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                        _wallet + " " + _password +
                         GetDevicesCommandString().Trim();
 
             }
             else //dual
             {
-                string wallet = "-u [1]" + ConfigManager.GeneralConfig.Wallet + " -u [2]" + ConfigManager.GeneralConfig.Wallet;
-                string password = " -p [1]c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                    Stats.Stats.GetFullWorkerName() + " " +
-                    " -p [2]c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                    Stats.Stats.GetFullWorkerName() + " ";
+                string _wallet = "-u [1]" + wallet + " -u [2]" + wallet;
+                string _password = "-p [1]" + password + " " +
+                    " -p [2]" + password + " ";
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
                 var _algo2 = MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower();
 
@@ -146,7 +143,7 @@ namespace ZergPoolMiner.Miners
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         GetServerDual(MiningSetup.CurrentAlgorithmType.ToString().ToLower(),
                         MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
-                        wallet + " " + password + " " +
+                        _wallet + " " + _password + " " +
                         GetDevicesCommandString().Trim();
             }
             return "Ooops";
@@ -157,6 +154,7 @@ namespace ZergPoolMiner.Miners
             string ret = "";
             try
             {
+                algo = algo.Replace("-", "_");
                 var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
                 var _a2 = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo2.ToLower());
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
@@ -345,7 +343,7 @@ namespace ZergPoolMiner.Miners
 
                 ret = " --no-colour -a " + _algo +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
-                        "-o stratum+tcp://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                        "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                         wallet + " " + password + " " +
                         GetDevicesCommandString().Trim();
             }

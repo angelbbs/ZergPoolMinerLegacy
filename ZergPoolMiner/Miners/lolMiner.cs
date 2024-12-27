@@ -99,10 +99,9 @@ namespace ZergPoolMiner.Miners
             }
             return ret;
         }
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             string url = "";
-            worker = worker + "$" + ConfigManager.GeneralConfig.MachineGuid;
             if (!IsInit)
             {
                 Helpers.ConsolePrint(MinerTag(), "MiningSetup is not initialized exiting Start()");
@@ -130,8 +129,7 @@ namespace ZergPoolMiner.Miners
 
             IsApiReadException = false;
 
-            string password = " --pass=c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " ";
+            string _password = " --pass=" + password + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("equihash125", "-a FLUX");
             _algo = _algo.Replace("equihash144", "--coin AUTO144_5");
@@ -148,20 +146,20 @@ namespace ZergPoolMiner.Miners
             {
                 
                 LastCommandLine = _algo +
-                    " -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-                    " -u " + ConfigManager.GeneralConfig.Wallet + password + 
+                    " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
+                    " -u " + wallet + password + 
                    " --apiport " + ApiPort + 
                    " --devices " + GetDevicesCommandString().Trim();
             } else
             {
                 LastCommandLine = _algo +
-                    " -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
+                    " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
                     " -u " + ConfigManager.GeneralConfig.Wallet + password +
                     "--dualmode PYRINV2DUAL " +
                     " --dualpool " + GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) +
                     " --dualuser " + ConfigManager.GeneralConfig.Wallet + 
                     " --dualpass c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold +
-                    ",ID=" + Stats.Stats.GetFullWorkerName() +
+                    ",ID=" + Miner.GetFullWorkerName() +
                    " --devices " + GetDevicesCommandString().Trim() +
                    " --apiport " + ApiPort;
             }
@@ -215,7 +213,7 @@ namespace ZergPoolMiner.Miners
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
                 CommandLine = _algo +
-                " -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
+                " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
                 " -u " + Globals.DemoUser +
                 " --pass c=LTC" +
                 " --apiport " + ApiPort +

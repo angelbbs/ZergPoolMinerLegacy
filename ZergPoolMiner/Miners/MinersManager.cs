@@ -45,10 +45,10 @@ namespace ZergPoolMiner.Miners
         }
 
         public static bool StartInitialize(IMainFormRatesComunication mainFormRatesComunication,
-            string worker, string btcAdress, string payoutCurrency)
+            string wallet, string password)
         {
             _curMiningSession = new MiningSession(ComputeDeviceManager.Available.Devices,
-                mainFormRatesComunication, worker, btcAdress, payoutCurrency);
+                mainFormRatesComunication, wallet, password);
             return _curMiningSession.IsMiningEnabled;
         }
 

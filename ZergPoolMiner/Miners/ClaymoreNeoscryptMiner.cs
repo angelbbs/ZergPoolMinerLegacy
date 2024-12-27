@@ -16,15 +16,11 @@ namespace ZergPoolMiner.Miners
         }
 
         
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
-            string psw = "c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                    Stats.Stats.GetFullWorkerName();
-            if (ConfigManager.GeneralConfig.StaleProxy) psw = "stale";
-            string username = ConfigManager.GeneralConfig.Wallet;
-            LastCommandLine = " " + GetDevicesCommandString() + " -mport -" + ApiPort +
-                GetServer("neoscrypt") +
-                " -wal " + username + " -psw " + psw + " -dbg -1 -ftime 10 -retrydelay 5";
+            LastCommandLine = " " + GetDevicesCommandString() + " -mport -" + ApiPort + " -pool " +
+                GetServer("neoscrypt").Replace("stratum+ssl://", "stratum+tcp://").Replace("14233", "4233") +
+                " -wal " + wallet + " -psw " + password + " -dbg -1 -ftime 10 -retrydelay 5";
 
             ProcessHandle = _Start();
         }

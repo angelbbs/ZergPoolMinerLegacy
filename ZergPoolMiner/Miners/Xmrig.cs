@@ -33,9 +33,9 @@ namespace ZergPoolMiner.Miners
         double _powerUsage = 0;
         public Xmrig() : base("Xmrig")
         { }
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
-            LastCommandLine = GetStartCommand(btcAdress, worker);
+            LastCommandLine = GetStartCommand(wallet, password);
 
             ProcessHandle = _Start();
         }
@@ -53,7 +53,7 @@ namespace ZergPoolMiner.Miners
             return deviceStringCommand;
         }
 
-        private string GetStartCommand(string btcAdress, string worker)
+        private string GetStartCommand(string wallet, string password)
         {
             var extras = ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.CPU);
             foreach (var pair in MiningSetup.MiningPairs)
@@ -72,19 +72,18 @@ namespace ZergPoolMiner.Miners
                 }
             }
 
-            string wallet = "-u " + ConfigManager.GeneralConfig.Wallet.Trim() + "." + Stats.Stats.GetFullWorkerName() +
-                ":c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " "; 
+            string _wallet = "-u " + wallet + ".xmrig" +
+                ":" + password.Trim() + " "; 
 
             if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.RandomX))
             {
-                return " --algo=rx/0 " + GetServer("randomx") + wallet + extras + " --http-port " + ApiPort + 
+                return " --algo=rx/0 " + GetServer("randomx") + _wallet + extras + " --http-port " + ApiPort + 
                platform + " " + $"--http-port { ApiPort} " +
                 GetDevicesCommandString().TrimStart();
             }
             if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.Ghostrider))
             {
-                return " --algo=gr " + GetServer("ghostrider") + wallet + extras + " --http-port " + ApiPort +
+                return " --algo=gr " + GetServer("ghostrider") + _wallet + extras + " --http-port " + ApiPort +
                platform + " " + $"--http-port { ApiPort} "+
                GetDevicesCommandString().TrimStart();
             }
@@ -95,11 +94,12 @@ namespace ZergPoolMiner.Miners
             string ret = "";
             try
             {
+                algo = algo.Replace("-", "_");
                 var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = "-o " + Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
+                ret = "-o " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum+ssl://") + ":" + _a.tls_port.ToString();
             }
             catch (Exception ex)
             {

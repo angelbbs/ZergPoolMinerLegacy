@@ -119,7 +119,7 @@ namespace ZergPoolMiner.Miners.Grouping
             PowerRate = 0;
         }
 
-        public void Start(string btcAdress, string worker)
+        public void Start(string wallet, string password)
         {
             if (Miner.IsRunning)
             {
@@ -128,7 +128,7 @@ namespace ZergPoolMiner.Miners.Grouping
             // Wait before new start
             System.Threading.Thread.Sleep(100);
             //var locationUrl = Globals.GetLocationUrl(AlgorithmType, miningLocation, Miner.ConectionType);
-            Miner.Start(btcAdress, worker);
+            Miner.Start(wallet, password);
             Thread.Sleep(Math.Max(ConfigManager.GeneralConfig.MinerRestartDelayMS, 500));
         }
     }

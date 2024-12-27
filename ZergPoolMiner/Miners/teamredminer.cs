@@ -84,7 +84,7 @@ namespace ZergPoolMiner.Miners
             }
             return ret;
         }
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             if (!IsInit)
             {
@@ -110,40 +110,14 @@ namespace ZergPoolMiner.Miners
                 sc = variables.TRMiner_add1;
             }
 
-
-
-            /*
-            if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.Autolykos) &&
-                MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.IronFish))
-            {
-                algo = "autolykos2";
-                algo2 = "autolykos";
-                port = "3390";
-                LastCommandLine = sc + "" +
-                    " -d " + GetDevicesCommandString() +
-                    " -a " + algo + " " +
-            GetServerDual(algo2, "ironfish", "--iron", username, port, "3397") +
-            " --rig_id=" + username.Split('.')[1] + " --pool_force_ensub " +
-                              apiBind + apiBind2 +
-                              " " +
-                              ExtraLaunchParametersParser.ParseForMiningSetup(
-                                                                MiningSetup,
-                                                                DeviceType.AMD);
-
-                ProcessHandle = _Start();
-                return;
-            }
-            */
-
-            string wallet = " -u " + ConfigManager.GeneralConfig.Wallet;
-            string password = " -p c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " ";
+            string _wallet = " -u " + wallet;
+            string _password = " -p " + password + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("karlsenhash", "karlsen");
 
             LastCommandLine = sc + "" + "-a " + _algo + " " +
-            "-o stratum+tcp://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-            wallet + " " + password +
+            "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
+            _wallet + " " + _password +
             apiBind + apiBind2 + " " +
             ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.AMD) +
             " -d " + GetDevicesCommandString();

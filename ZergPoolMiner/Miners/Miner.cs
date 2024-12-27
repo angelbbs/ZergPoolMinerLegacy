@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using Timer = System.Timers.Timer;
+using ZergPoolMinerLegacy.UUID;
 
 namespace ZergPoolMiner
 {
@@ -446,7 +447,7 @@ namespace ZergPoolMiner
             _allPidData.RemoveAll(x => toRemovePidData.Contains(x));
         }
 
-        public abstract void Start(string btcAdress, string worker);
+        public abstract void Start(string wallet, string password);
 
         protected abstract void _Stop(MinerStopType willswitch);
 
@@ -669,6 +670,11 @@ namespace ZergPoolMiner
                 commandLine.ToLower().Contains("sha256csm")))
             {
                 benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("CryptoDredge.exe", "CryptoDredge.0.25.1.exe");
+            }
+            if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("cryptodredge") &&
+                (commandLine.ToLower().Contains("allium")))
+            {
+                benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("CryptoDredge.exe", "CryptoDredge.0.23.0.exe");
             }
             if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("t-rex") && (commandLine.ToLower().Contains("x16r") ||
                 commandLine.ToLower().Contains("x16rv2") ||
@@ -1202,10 +1208,11 @@ namespace ZergPoolMiner
             string ret = "";
             try
             {
+                algo = algo.Replace("-", "_");
                 var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.port.ToString();
+                ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.tls_port.ToString();
             }
             catch (Exception ex)
             {
@@ -1368,6 +1375,11 @@ namespace ZergPoolMiner
             {
                 Path = MiningSetup.MinerPath.Replace("CryptoDredge.exe", "CryptoDredge.0.25.1.exe");
             }
+            if (MiningSetup.MinerPath.ToLower().Contains("cryptodredge") &&
+                (LastCommandLine.ToLower().Contains("allium")))
+            {
+                Path = MiningSetup.MinerPath.Replace("CryptoDredge.exe", "CryptoDredge.0.23.0.exe");
+            }
             if (MiningSetup.MinerPath.ToLower().Contains("t-rex") && (LastCommandLine.ToLower().Contains("x16r") ||
                 LastCommandLine.ToLower().Contains("x16rv2") ||
                 LastCommandLine.ToLower().Contains("x21s") ||
@@ -1451,7 +1463,7 @@ namespace ZergPoolMiner
 
                     int algo = (int)MiningSetup.CurrentAlgorithmType;
                     int algo2 = (int)MiningSetup.CurrentSecondaryAlgorithmType;
-                    string w = Stats.Stats.GetFullWorkerName();
+                    string w = GetFullWorkerName();
 
                     NativeOverclock.OverclockStart(P.Id, algo, algo2, Path,
                         strPlatform, w, false);
@@ -1469,6 +1481,22 @@ namespace ZergPoolMiner
                 Helpers.ConsolePrint(MinerTag(), ProcessTag() + " _Start: " + ex.Message);
                 return null;
             }
+        }
+
+        public static string GetFullWorkerName()
+        {
+            string mac = WindowsMacUtils.GetMACAddress();
+            string w = "";
+
+            if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.WorkerName.Trim()))
+            {
+                w = "demo";
+            }
+            else
+            {
+                w = ConfigManager.GeneralConfig.WorkerName.Trim();
+            }
+            return w + mac;
         }
 
         protected void StartCoolDownTimerChecker()

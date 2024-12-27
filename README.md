@@ -8,11 +8,12 @@
 * **[Download latest release](https://github.com/angelbbs/ZergPoolMinerLegacy/releases)**
 
 
-"Miner Legacy Fork Fix" is an free open source easy to use CPU & GPU cryptocurrency miner program with classic GUI for Windows. 
+"Miner Legacy Fork Fix" is an free open source easy to use CPU & GPU cryptocurrency miner program with classic GUI for Windows.
 - Easy installer.
 - Support AMD, INTEL, NVIDIA GPUs and CPU.
 - Support wallets with guaranteed payouts coins.
 - Included most profitable miners programs.
+- Dual algorithms.
 - Fast benchmark - 1-2 min per algo.
 - Auto-switch between most profitable algorithms taking into account the consumption of devices and the cost of electricity.
 - Tariff zones for electricity.

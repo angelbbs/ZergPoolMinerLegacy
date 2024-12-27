@@ -464,6 +464,14 @@ namespace ZergPoolMiner.Updater
                             Form_Main.progName = n;
                             Form_Main.browser_download_url = gitassets[i].browser_download_url;
                             DateTime build = gitassets[i].updated_at;
+                            /*
+                            //"2024-11-29T07:30:42Z"
+                            DateTime _published_at = DateTime.ParseExact(published_at, "yyyy-MM-dd HH:mm:ss",
+                                                     System.Globalization.CultureInfo.InvariantCulture);
+                            Helpers.ConsolePrint("_published_at", _published_at.ToString());
+                            */
+                            ConfigManager.GeneralConfig.updated_at = build;
+
                             string buildDate = build.ToString("u").Replace("-", "").Replace(":", "").Replace("Z", "").Replace(" ", ".");
                             Double.TryParse(buildDate.ToString(), out Form_Main.githubBuild);
                         }

@@ -253,12 +253,13 @@ namespace ZergPoolMiner
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.1;
                 }
-                //0.2
+
                 if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.2)
                 {
                     ConfigManager.GeneralConfig.ServiceLocation = 0;
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.2;
+                    ConfigManager.GeneralConfig.InstallDateTime = DateTime.Now;
                     try
                     {
                         if (File.Exists("configs\\wallets.json"))
@@ -279,8 +280,13 @@ namespace ZergPoolMiner
                         Helpers.ConsolePrint("MinerLegacy", ex.ToString());
                     }
                 }
-                
 
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.3)
+                {
+                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 0.3;
+                }
 
                 if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
 

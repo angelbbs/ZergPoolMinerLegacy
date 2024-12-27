@@ -22,6 +22,24 @@
 
         Empty = 0,
 
+        sha256_UNUSED = 100,
+        lyra2z_UNUSED = 101,
+        equihash_UNUSED = 102,
+        qubit_UNUSED = 103,
+        myr_gr_UNUSED = 104,
+        scrypt_UNUSED = 105,
+        skein_UNUSED = 106,
+        token_UNUSED = 107,
+        x11_UNUSED = 108,
+        quark_UNUSED = 109,
+        groestl_UNUSED = 110,
+        sib_UNUSED = 111,
+        kheavyhash_UNUSED = 112,
+        lbry_UNUSED = 113,
+        lyra2v2_UNUSED = 114,
+        x13_UNUSED = 115,
+        blake2s_UNUSED = 116,
+
         Allium = 1000,//_UNUSED
         BMW512 = 1010,//_UNUSED
         CPUPower = 1020,
@@ -56,6 +74,7 @@
         NexaPow = 1280,//2gb
         //NxlHash = 1287,
         Panthera = 1290,
+        //Phi = 1293,
         Power2b = 1295,
         //PyrinHashV2 = 1300,
         RandomX = 1310,

@@ -40,11 +40,11 @@ namespace ZergPoolMiner.Miners
             IsMultiType = true;
         }
 
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             string url = "";
 
-            LastCommandLine = GetStartCommand(url, btcAdress, worker);
+            LastCommandLine = GetStartCommand(url, wallet, password);
             const string vcp = "msvcp120.dll";
             var vcpPath = WorkingDirectory + vcp;
             if (!File.Exists(vcpPath))
@@ -75,7 +75,7 @@ namespace ZergPoolMiner.Miners
             Stop_cpu_ccminer_sgminer_nheqminer(willswitch);
             KillGminer();
         }
-        private string GetStartCommand(string url, string btcAddress, string worker)
+        private string GetStartCommand(string url, string wallet, string password)
         {
             string ZilMining = "";
             DeviceType devtype = DeviceType.NVIDIA;
@@ -101,20 +101,19 @@ namespace ZergPoolMiner.Miners
                 ConfigManager.GeneralConfig.ZIL_mining_state == 2)
             {
                 ZilMining = " --zilserver " + ConfigManager.GeneralConfig.ZIL_mining_pool + ":" +
-                    ConfigManager.GeneralConfig.ZIL_mining_port + " --ziluser " + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + worker + " ";
+                    ConfigManager.GeneralConfig.ZIL_mining_port + " --ziluser " + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + wallet + " ";
             }
 
-            string wallet = "--user " + ConfigManager.GeneralConfig.Wallet;
-            string password = " -p c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " ";
+            string _wallet = "--user " + wallet;
+
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("equihash125", "equihash125_4");
             _algo = _algo.Replace("equihash144", "equihash144_5 --pers auto");
 
             return " --algo " + _algo +
             " " + $"--api {ApiPort} " + " " +
-                    " -s " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                    wallet + " " + password +
+                    " --ssl -s " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    "-u " + wallet + " -p " + password + " " +
                     GetDevicesCommandString().Trim();
         }
 

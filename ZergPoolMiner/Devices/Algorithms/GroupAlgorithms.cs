@@ -52,6 +52,14 @@ namespace ZergPoolMiner.Devices.Algorithms
                 });
             }
 
+            if (device.GpuRam < (ulong)(1024 * 1024 * 1024 * 8.2))
+            {
+                algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
+                {
+                    AlgorithmType.FiroPow
+                });
+            }
+
             //lite algo?
             if (device.GpuRam < (ulong)(1024 * 1024 * 1024 * 7.5))
             {

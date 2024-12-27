@@ -29,7 +29,7 @@ namespace ZergPoolMiner.Miners
             return 60 * 1000 * 8;
         }
 
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
             if (!IsInit)
             {
@@ -40,16 +40,15 @@ namespace ZergPoolMiner.Miners
             var apiBind = " --api-bind 127.0.0.1:" + ApiPort + " ";
             IsApiReadException = false;
 
-            string wallet = "--user " + ConfigManager.GeneralConfig.Wallet;
-            string password = " -p c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-                Stats.Stats.GetFullWorkerName() + " ";
+            string _wallet = "--user " + wallet;
+            string _password = " -p " + password + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("cryptonight_gpu", "cngpu");
 
             LastCommandLine =  " --algo " + _algo +
             " " + apiBind +
-                    " -o " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                    wallet + " " + password +
+                    " -o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    _wallet + " " + _password +
                     " -d " + GetDevicesCommandString() + " " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";
 
@@ -160,6 +159,10 @@ namespace ZergPoolMiner.Miners
                 {
                     delay_before_calc_hashrate = 10;
                     MinerStartDelay = 20;
+                }
+                if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.Allium))
+                {
+                    _benchmarkTimeWait = _benchmarkTimeWait + 120;
                 }
                 Helpers.ConsolePrint("BENCHMARK", "Benchmark starts");
                 Helpers.ConsolePrint(MinerTag(), "Benchmark should end in: " + _benchmarkTimeWait + " seconds");

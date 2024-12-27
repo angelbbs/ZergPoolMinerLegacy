@@ -33,9 +33,9 @@ namespace ZergPoolMiner.Miners
             GPUPlatformNumber = ComputeDeviceManager.Available.AmdOpenCLPlatformNum;
         }
 
-        public override void Start(string btcAdress, string worker)
+        public override void Start(string wallet, string password)
         {
-            LastCommandLine = GetStartCommand(btcAdress, worker);
+            LastCommandLine = GetStartCommand(wallet, password);
             ProcessHandle = _Start();
         }
         private new string GetServer(string algo)
@@ -43,12 +43,14 @@ namespace ZergPoolMiner.Miners
             string ret = "";
             try
             {
-                algo = algo.Replace("xelisv2_pepew", "xelisv2-pepew");
+                algo = algo.Replace("-", "_");
                 var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = "--pool " + Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
+
+                ret = "--pool " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum+ssl://") +
+                    ":" + _a.tls_port.ToString();
             } catch (Exception ex)
             {
                 Helpers.ConsolePrint("GetServer", "Error in " + algo + " " + ex.ToString());
@@ -58,7 +60,7 @@ namespace ZergPoolMiner.Miners
             return ret + " ";
         }
         
-        private string GetStartCommand(string btcAddress, string worker)
+        private string GetStartCommand(string wallet, string password)
         {
             string ZilMining = "";
             string disablePlatform = "--disable-gpu-nvidia ";
@@ -88,7 +90,7 @@ namespace ZergPoolMiner.Miners
                 //прокси не используется
                 ZilMining = " --zil-enable --zil-pool " + ConfigManager.GeneralConfig.ZIL_mining_pool + ":" +
                     ConfigManager.GeneralConfig.ZIL_mining_port + " --zil-wallet " +
-                            ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + worker + " --zil-esm 2 --disable-worker-watchdog ";
+                            ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + "worker" + " --zil-esm 2 --disable-worker-watchdog ";
             }
 
             if (devtype == DeviceType.CPU)
@@ -111,9 +113,8 @@ namespace ZergPoolMiner.Miners
             var extras = ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, devtype);
             try
             {
-                string wallet = "--wallet " + ConfigManager.GeneralConfig.Wallet;
-                string password = " --password c=" + ConfigManager.GeneralConfig.PayoutCurrency + 
-                    Form_Main._PayoutTreshold + ",ID=" + Stats.Stats.GetFullWorkerName();
+                string _wallet = "--wallet " + wallet;
+                string _password = " --password " + password;
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
                 _algo = _algo.Replace("sha512256d", "sha512_256d_radiant");
 
@@ -122,7 +123,7 @@ namespace ZergPoolMiner.Miners
                     return " --algorithm " + _algo + " " +
                 disablePlatform + $"--api-enable --api-port {ApiPort} {extras} " +
                         GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                        wallet + " " + password +
+                        _wallet + " " + _password +
                         " --gpu-id " +
                         GetDevicesCommandString().Trim();
                 } else
@@ -132,10 +133,10 @@ namespace ZergPoolMiner.Miners
 
                     return " --algorithm " + _algo + " " +
                         GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                        wallet + " " + password + " " +
+                        _wallet + " " + _password + " " +
                         " --algorithm " + _algo2 + " " +
                         GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
-                        wallet + " " + password +
+                        _wallet + " " + _password +
                         " " + disablePlatform + $"--api-enable --api-port {ApiPort} {extras} " +
                         " --gpu-id " +
                         GetDevicesCommandString().Trim();
@@ -634,7 +635,7 @@ namespace ZergPoolMiner.Miners
         {
             benchmarkTimeWait = time;
             _benchmarkTimeWait = time;
-            return GetStartBenchmarkCommand(Globals.GetBitcoinUser(), Stats.Stats.GetFullWorkerName());
+            return GetStartBenchmarkCommand(Globals.DemoUser, Miner.GetFullWorkerName());
         }
         
         protected override void BenchmarkOutputErrorDataReceivedImpl(string outdata)

@@ -1299,6 +1299,10 @@ namespace ZergPoolMiner.Miners
             {
                 miner = miner + " 0.25.1";
             }
+            else if (miner.ToLower().Contains("cryptodredge") && (algo.ToLower().Contains("allium")))
+            {
+                miner = miner + " 0.23.0";
+            }
             else
             {
                 miner = miner + MinerVersion.GetMinerVersion(miner);

@@ -116,7 +116,7 @@ namespace ZergPoolMiner.Miners
                     "-u " + wallet + " -p " + password + " " +
                     GetDevicesCommandString().Trim();
         }
-
+        /*
         private string GetServerDual(string algo, string algo2, string username, string port, string port2)
         {
             string ret = "";
@@ -158,7 +158,7 @@ namespace ZergPoolMiner.Miners
             }
             return ret;
         }
-        
+        */
         protected override string GetDevicesCommandString()
         {
             var deviceStringCommand = "  --watchdog 0 --devices ";

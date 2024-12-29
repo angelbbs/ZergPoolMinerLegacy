@@ -44,7 +44,7 @@ namespace ZergPoolMiner.Miners
             //    Killteamredminer();
         }
 
-        
+        /*
         private string GetServerDual(string algo, string algoDual, string algoDualPrefix, string username, string port, string portDual)
         {
             string ret = "";
@@ -84,6 +84,7 @@ namespace ZergPoolMiner.Miners
             }
             return ret;
         }
+        */
         public override void Start(string wallet, string password)
         {
             if (!IsInit)

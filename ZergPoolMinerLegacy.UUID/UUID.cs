@@ -57,13 +57,24 @@ namespace ZergPoolMinerLegacy.UUID
             try
             {
                 var readValue = Registry.GetValue(keyPath, value, new object());
-                //Console.WriteLine("MachineGuid: " + (string)readValue);
-                //return (string)readValue;
+                Console.WriteLine("MachineGuid: " + (string)readValue);
                 return (string)readValue;
             }
             catch (Exception)
             {
-                //                Logger.Error("NHM.UUID", $"GetMachineGuid: {e.Message}");
+            }
+            const string _hklm = "HKEY_LOCAL_MACHINE";
+            const string _keyPath = _hklm + @"\SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+            const string _value = "ProductId";
+
+            try
+            {
+                var readValue = Registry.GetValue(_keyPath, _value, new object());
+                Console.WriteLine("ProductId: " + (string)readValue);
+                return (string)readValue;
+            }
+            catch (Exception) 
+            {
             }
             // fallback
             Console.WriteLine("Using cpuID: " + GetCpuID());

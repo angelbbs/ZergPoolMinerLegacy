@@ -45,7 +45,7 @@ namespace ZergPoolMiner.Miners
         {
             Stop_cpu_ccminer_sgminer_nheqminer(willswitch);
         }
-        
+        /*
         private string GetServerDual(string algo, string algo2, string algo2pool, string btcAdress, string worker, string port, string port2)
         {
             string ret = "";
@@ -99,6 +99,7 @@ namespace ZergPoolMiner.Miners
             }
             return ret;
         }
+        */
         public override void Start(string wallet, string password)
         {
             string url = "";
@@ -129,7 +130,7 @@ namespace ZergPoolMiner.Miners
 
             IsApiReadException = false;
 
-            string _password = " --pass=" + password + " ";
+            string _password = " --pass=" + password.Trim() + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("equihash125", "-a FLUX");
             _algo = _algo.Replace("equihash144", "--coin AUTO144_5");
@@ -147,14 +148,14 @@ namespace ZergPoolMiner.Miners
                 
                 LastCommandLine = _algo +
                     " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-                    " -u " + wallet + password + 
+                    " -u " + wallet + _password + 
                    " --apiport " + ApiPort + 
                    " --devices " + GetDevicesCommandString().Trim();
             } else
             {
                 LastCommandLine = _algo +
                     " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-                    " -u " + ConfigManager.GeneralConfig.Wallet + password +
+                    " -u " + ConfigManager.GeneralConfig.Wallet + _password +
                     "--dualmode PYRINV2DUAL " +
                     " --dualpool " + GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) +
                     " --dualuser " + ConfigManager.GeneralConfig.Wallet + 

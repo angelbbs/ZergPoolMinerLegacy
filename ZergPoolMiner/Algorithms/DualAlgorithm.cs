@@ -277,10 +277,10 @@ namespace ZergPoolMiner.Algorithms
             {
                 foreach (var key in IntensitySpeeds.Keys)
                 {
-                    var profit = IntensitySpeeds[key] * paying;
+                    var profit = IntensitySpeeds[key] * paying.profit;
                     if (SecondaryIntensitySpeeds.TryGetValue(key, out var speed))
                     {
-                        profit += speed * secPaying;
+                        profit += speed * secPaying.profit;
                     }
 
                     if (profit > maxProfit)

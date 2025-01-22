@@ -3757,8 +3757,8 @@ namespace ZergPoolMiner.Forms
             AlgosProfitData.TryGetPaying(algo, out var payingSec);
             AlgosProfitData.TryGetPaying(_currentlySelectedAlgorithm.ZergPoolID, out var paying);
 
-            var payingRate = speed * paying * 0.000000001;
-            var payingRateSec = secondarySpeed * payingSec * 0.000000001;
+            var payingRate = speed * paying.profit * 0.000000001;
+            var payingRateSec = secondarySpeed * payingSec.profit * 0.000000001;
             var rate = (payingRate + payingRateSec).ToString("F8");
 
             var WithPowerRate = payingRate + payingRateSec - ExchangeRateApi.GetKwhPriceInBtc() * _currentlySelectedAlgorithm.PowerUsage * 24 * Form_Main._factorTimeUnit / 1000;

@@ -131,12 +131,15 @@ namespace ZergPoolMiner.Miners
                     var _algo2 = MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower();
                     _algo2 = _algo2.Replace("sha512256d", "sha512_256d_radiant");
 
+                    var pass1 = password.Split(',')[2].Replace("mc=", "").Split('+')[0];
+                    var pass2 = password.Split(',')[2].Replace("mc=", "").Split('+')[1];
+
                     return " --algorithm " + _algo + " " +
                         GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                        _wallet + " " + _password + " " +
+                        _wallet + " " + _password.Replace("mc=" + pass1 + "+" + pass2, "mc=" + pass1) + " " +
                         " --algorithm " + _algo2 + " " +
                         GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
-                        _wallet + " " + _password +
+                        _wallet + " " + _password.Replace("mc=" + pass1 + "+" + pass2, "mc=" + pass2) + " " +
                         " " + disablePlatform + $"--api-enable --api-port {ApiPort} {extras} " +
                         " --gpu-id " +
                         GetDevicesCommandString().Trim();
@@ -439,6 +442,11 @@ namespace ZergPoolMiner.Miners
                                 mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
                                 mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
                                 mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
+                            }
+                            catch (OverflowException ex)
+                            {
+                                Helpers.ConsolePrint("API OverflowException Exception:", ex.ToString());
+                                Restart();
                             }
                             catch (Exception ex)
                             {

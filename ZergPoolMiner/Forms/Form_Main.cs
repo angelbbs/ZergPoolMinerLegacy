@@ -2531,7 +2531,7 @@ namespace ZergPoolMiner
             }
 
             speedString = International.GetText("ListView_Speed") + " " + speedString;
-
+            speedString = speedString + " (" + groupMiners.Coin + ")";
             if (!ConfigManager.GeneralConfig.DecreasePowerCost)
             {
                 power = 0;
@@ -3417,7 +3417,7 @@ namespace ZergPoolMiner
                 _PayoutTreshold = ",pl=0";
                 wallet = Globals.DemoUser;
             }
-            var password = " c=" + payoutCurrency + _PayoutTreshold + ",ID=" + worker;
+            var password = " c=" + payoutCurrency + _PayoutTreshold + ",mc=none,ID=" + worker;
 
             isMining = MinersManager.StartInitialize(this, wallet, password);
 

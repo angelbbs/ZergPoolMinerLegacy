@@ -514,7 +514,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.NexaPow, "NexaPow")
                             {
                                 ExtraLaunchParameters = "--keepfree 1024"
-                            },
+                            }
                             /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                             {
@@ -527,10 +527,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                                 ExtraLaunchParameters = ""
                             },
                             */
+                            /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.Ethash, "Ethash")
                             {
                                 ExtraLaunchParameters = "--enablezilcache=1"
                             },
+                            */
                             //duals
                             /*
                             new DualAlgorithm(MinerBaseType.lolMiner, AlgorithmType.KarlsenHashV2,
@@ -817,7 +819,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.NexaPow, "NexaPow")
                             {
                                 ExtraLaunchParameters = "--keepfree 1024"
-                            },
+                            }
                             /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
                             {
@@ -836,10 +838,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                             },
                             */
+                            /*
                             new Algorithm(MinerBaseType.lolMiner, AlgorithmType.Ethash, "Ethash")
                             {
                                 ExtraLaunchParameters = "--enablezilcache=1"
                             },
+                            */
                         }
             },
 

@@ -22,6 +22,8 @@ namespace ZergPoolMiner.Algorithms
         /// Friendly display name for this algorithm
         /// </summary>
         public string AlgorithmName { get; protected set; }
+        public string CurrentMiningCoin = "nonE";
+        public string MostProfitCoin = "nonE";
         /// <summary>
         /// Friendly name for miner type
         /// </summary>
@@ -176,32 +178,33 @@ namespace ZergPoolMiner.Algorithms
 
         public bool IsBenchmarkPending { get; private set; }
 
+        public double _CurPayingRatio = 0d;
         public double CurPayingRatio
         {
             get
             {
                 var ratio = International.GetText("BenchmarkRatioRateN_A");
                 AlgorithmType _ZergPoolID = ZergPoolID;
-                double paying = 0d;
+                AlgorithmSwitchingManager.MostProfitableCoin paying = new();
                 if (AlgosProfitData.TryGetPaying(_ZergPoolID, out paying))
                 {
-                    ratio = paying.ToString("F8");
+                    ratio = paying.profit.ToString("F8");
                 }
-                return paying;
+                return paying.profit;
             }
         }
         public double CurSecondPayingRatio
         {
             get
             {
-                double paying2 = 0d;
+                AlgorithmSwitchingManager.MostProfitableCoin paying2 = new();
                 var ratio = International.GetText("BenchmarkRatioRateN_A");
                 if (AlgosProfitData.TryGetPaying(SecondaryZergPoolID, out paying2))
                 {
                     //paying2 = ExchangeRateApi.ConvertBTCToPayoutCurrency(paying2);
-                    ratio = paying2.ToString("F8");
+                    ratio = paying2.profit.ToString("F8");
                 }
-                return paying2;
+                return paying2.profit;
             }
         }
         public virtual double CurPayingRate
@@ -215,7 +218,7 @@ namespace ZergPoolMiner.Algorithms
                 if (BenchmarkSpeed > 0 && AlgosProfitData.TryGetPaying(_ZergPoolID, out var paying))
                 {
                     //paying = ExchangeRateApi.ConvertBTCToPayoutCurrency(paying);
-                    payingRate = BenchmarkSpeed * paying * Mult;
+                    payingRate = BenchmarkSpeed * paying.profit * Mult;
                     rate = payingRate.ToString("F8");
                 }
                 return payingRate;
@@ -229,7 +232,7 @@ namespace ZergPoolMiner.Algorithms
                 {
                     //paying = ExchangeRateApi.ConvertBTCToPayoutCurrency(paying);
                     //double.TryParse(value, out var valueBench);
-                    var payingRate = value * paying * Mult;
+                    var payingRate = value * paying.profit * Mult;
                     rate = payingRate.ToString("F8");
                 }
             }
@@ -244,7 +247,7 @@ namespace ZergPoolMiner.Algorithms
                 if ( BenchmarkSecondarySpeed> 0 && AlgosProfitData.TryGetPaying(SecondaryZergPoolID, out var paying))
                 {
                     //paying = ExchangeRateApi.ConvertBTCToPayoutCurrency(paying);
-                    payingRate = BenchmarkSecondarySpeed * paying * Mult;
+                    payingRate = BenchmarkSecondarySpeed * paying.profit * Mult;
                     rate = payingRate.ToString("F8");
                 }
                 return payingRate;
@@ -256,7 +259,7 @@ namespace ZergPoolMiner.Algorithms
                 {
                     //paying = ExchangeRateApi.ConvertBTCToPayoutCurrency(paying);
                     //double.TryParse(value, out var valueBench);
-                    var payingRate = value * paying * Mult;
+                    var payingRate = value * paying.profit * Mult;
                     rate = payingRate.ToString("F8");
                 }
             }
@@ -330,15 +333,23 @@ namespace ZergPoolMiner.Algorithms
 
         #region Profitability methods
 
-        public virtual void UpdateCurProfit(Dictionary<AlgorithmType, double> profits, DeviceType devtype, MinerBaseType mbt)
+        public virtual void UpdateCurProfit(Dictionary<AlgorithmType, AlgorithmSwitchingManager.MostProfitableCoin> profits, DeviceType devtype, MinerBaseType mbt)
         {
             profits.TryGetValue(ZergPoolID, out var paying);
-            //paying = ExchangeRateApi.ConvertBTCToPayoutCurrency(paying);
             profits.TryGetValue(SecondaryZergPoolID, out var payingSecond);
-            //payingSecond = ExchangeRateApi.ConvertBTCToPayoutCurrency(payingSecond);
-            CurNhmSmaDataVal = paying;
+            double _paying = 0d;
+            double _payingSecond = 0d;
+            if (paying != null)
+            {
+                _paying = paying.profit;
+            }
+            if (payingSecond != null)
+            {
+                _payingSecond = payingSecond.profit;
+            }
+            CurNhmSmaDataVal = _paying;
 
-            CurrentProfit = (CurNhmSmaDataVal * AvaragedSpeed + payingSecond * BenchmarkSecondarySpeed) * Mult;
+            CurrentProfit = (CurNhmSmaDataVal * AvaragedSpeed + _payingSecond * BenchmarkSecondarySpeed) * Mult;
 
             if (Form_additional_mining.isAlgoZIL(AlgorithmName, mbt, devtype))
             {

@@ -78,6 +78,7 @@ namespace ZergPoolMiner.Devices
         public int AlgorithmID = -1;
         public int SecondAlgorithmID = -1;
         public int ThirdAlgorithmID = -1;
+        public string Coin = "";
         public string MinerName = "";
         public string MinerVersion = "";
 

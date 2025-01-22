@@ -15,6 +15,7 @@ namespace ZergPoolMiner.Miners.Grouping
         public AlgorithmType AlgorithmType { get; }
 
         public AlgorithmType DualAlgorithmType { get; }
+        public string Coin { get; }
 
         // for now used only for dagger identification AMD or NVIDIA
         public DeviceType DeviceType { get; }
@@ -33,6 +34,7 @@ namespace ZergPoolMiner.Miners.Grouping
         {
             AlgorithmType = AlgorithmType.NONE;
             DualAlgorithmType = AlgorithmType.NONE;
+            Coin = "NONE";
             DevicesInfoString = "N/A";
             CurrentRate = 0;
             PowerRate = 0;
@@ -94,6 +96,8 @@ namespace ZergPoolMiner.Miners.Grouping
                         Miner.InitMiningSetup(new MiningSetup(miningPairs));
                         AlgorithmType = mPair.Algorithm.ZergPoolID;
                         DualAlgorithmType = mPair.Algorithm.DualZergPoolID;
+
+                        Coin = mPair.Algorithm.MostProfitCoin;
                         //StartMinerTime = DateTime.Now;
                     }
                 }

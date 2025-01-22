@@ -37,6 +37,7 @@ namespace ZergPoolMiner
         public AlgorithmType ThirdAlgorithmID;
         public string AlgorithmName;
         public string AlgorithmNameCustom;
+        public string Coin;
         public double Speed;
         public double SecondarySpeed;
         public double ThirdSpeed;
@@ -51,16 +52,19 @@ namespace ZergPoolMiner
             if (mpairs == null)
             {
                 AlgorithmName = AlgorithmNames.GetName(DualAlgorithmID());
+                Coin = "None";
             }
             else
             {
                 if (mpairs.Algorithm is DualAlgorithm dualAlg)
                 {
                     AlgorithmName = dualAlg.DualAlgorithmNameCustom;
+                    Coin = dualAlg.CurrentMiningCoin;
                 }
                 else
                 {
                     AlgorithmName = mpairs.Algorithm.AlgorithmNameCustom;
+                    Coin = mpairs.Algorithm.CurrentMiningCoin;
                 }
             }
             Speed = 0.0;
@@ -1247,16 +1251,6 @@ namespace ZergPoolMiner
 
         protected abstract bool BenchmarkParseLine(string outdata);
 
-        protected string GetServiceUrl(AlgorithmType algo)
-        {
-            int _location = ConfigManager.GeneralConfig.ServiceLocation;
-            if (ConfigManager.GeneralConfig.ServiceLocation >= Globals.MiningLocation.Length)
-            {
-                _location = ConfigManager.GeneralConfig.ServiceLocation - 1;
-            }
-            return Globals.GetLocationUrl(algo, Globals.MiningLocation[_location],
-                ConectionType);
-        }
         protected bool IsActiveProcess(int pid)
         {
             try
@@ -1415,6 +1409,9 @@ namespace ZergPoolMiner
 
             P.StartInfo.UseShellExecute = false;
 
+            var coin = LastCommandLine.Substring(LastCommandLine.IndexOf(",mc=") + 4)
+                .Substring(0, LastCommandLine.Substring(LastCommandLine.IndexOf(",mc=") + 4).IndexOf(",ID="));
+
             try
             {
                 string strPlatform = "";
@@ -1426,7 +1423,8 @@ namespace ZergPoolMiner
                     pair.Device.SecondAlgorithmID = b;
                     pair.Device.MinerName = MinerDeviceName;
                     pair.Device.State = DeviceState.Mining;
-
+                    pair.Device.Coin = coin;
+                    
                     if (pair.Device.DeviceType == DeviceType.NVIDIA)
                     {
                         strPlatform = "NVIDIA";
@@ -1466,7 +1464,7 @@ namespace ZergPoolMiner
                     string w = GetFullWorkerName();
 
                     NativeOverclock.OverclockStart(P.Id, algo, algo2, Path,
-                        strPlatform, w, false);
+                        strPlatform, coin, false);
 
                     new Task(() => StartCoolDownTimerChecker()).Start();
                     //StartCoolDownTimerChecker();

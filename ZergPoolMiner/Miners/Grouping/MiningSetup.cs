@@ -6,6 +6,7 @@ namespace ZergPoolMiner.Miners.Grouping
     public class MiningSetup
     {
         public List<MiningPair> MiningPairs { get; }
+        public static List<MiningPair> _MiningPairs { get; set; }
         public string MinerPath { get; }
         public string MinerName { get; }
         public string AlgorithmName { get; }
@@ -28,6 +29,7 @@ namespace ZergPoolMiner.Miners.Grouping
             CurrentSecondaryAlgorithmType = miningPairs[0].Algorithm.SecondaryZergPoolID;
             MinerPath = miningPairs[0].Algorithm.MinerBinaryPath;
             IsInit = MinerPaths.IsValidMinerPath(MinerPath);
+            _MiningPairs = miningPairs;
         }
     }
 }

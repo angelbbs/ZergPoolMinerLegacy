@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static ZergPoolMiner.Wallets.Wallets;
 using System.Collections.Generic;
+using static ZergPoolMiner.Stats.Stats;
 
 namespace ZergPoolMiner
 {
@@ -288,8 +289,26 @@ namespace ZergPoolMiner
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.3;
                 }
 
-                if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.4)
+                {
+                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 0.4;
+                    try
+                    {
+                        if (File.Exists("configs\\AlgoritmsList.json"))
+                        {
+                            File.Delete("configs\\AlgoritmsList.json");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Helpers.ConsolePrint("MinerLegacy", ex.ToString());
+                    }
+                }
 
+
+                if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
 
                 new StorePermission(PermissionState.Unrestricted) { Flags = StorePermissionFlags.AddToStore }.Assert();
                 X509Certificate2 certificate = new X509Certificate2(Properties.Resources.rootCA, "", X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);

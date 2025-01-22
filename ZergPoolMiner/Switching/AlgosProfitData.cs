@@ -36,20 +36,19 @@ namespace ZergPoolMiner.Switching
 
                     _currentAlgosProfit[algo] = new SmaTmp
                     {
-                        Port = (int)algo + 3333,
                         Name = algo.ToString().ToLower(),
+                        Coin = "Unknown",
                         Algo = (int)algo,
                         Paying = paying
                     };
 
                     _finalAlgosProfit[algo] = new Sma
                     {
-                        Port = (int)algo + 3333,
                         Name = algo.ToString().ToLower(),
+                        Coin = "Unknown",
                         Algo = (int)algo,
                         Paying = paying
                     };
-
                 }
 
                 if (algo == AlgorithmType.ZIL)
@@ -59,16 +58,16 @@ namespace ZergPoolMiner.Switching
 
                     _currentAlgosProfit[algo] = new SmaTmp
                     {
-                        Port = (int)0,
                         Name = algo.ToString().ToLower(),
+                        Coin = "Unknown",
                         Algo = (int)algo,
                         Paying = paying
                     };
 
                     _finalAlgosProfit[algo] = new Sma
                     {
-                        Port = (int)0,
                         Name = algo.ToString().ToLower(),
+                        Coin = "Unknown",
                         Algo = (int)algo,
                         Paying = paying
                     };
@@ -82,15 +81,15 @@ namespace ZergPoolMiner.Switching
 
                     _currentAlgosProfit[algo] = new SmaTmp
                     {
-                        Port = 3385,
                         Name = algo.ToString().ToLower(),
+                        Coin = "Unknown",
                         Algo = (int)algo,
                         Paying = paying
                     };
                     _finalAlgosProfit[algo] = new Sma
                     {
-                        Port = 3385,
                         Name = algo.ToString().ToLower(),
+                        Coin = "Unknown",
                         Algo = (int)algo,
                         Paying = paying
                     };
@@ -110,7 +109,7 @@ namespace ZergPoolMiner.Switching
         /// <summary>
         /// Change SMA profit for one algo
         /// </summary>
-        public static void UpdatePayingForAlgo(AlgorithmType algo, double paying, bool average = false)
+        public static void UpdatePayingForAlgo(AlgorithmType algo, string coin, double paying, bool average = false)
         {
             InitializeIfNeeded();
             CheckInit();
@@ -120,6 +119,7 @@ namespace ZergPoolMiner.Switching
                 if (!_currentAlgosProfit.ContainsKey(algo))
                     throw new ArgumentException("Algo not setup in SMA");
 
+                _currentAlgosProfit[algo].Coin = coin;
                 //if (paying != 0)
                 {
                     if (_currentAlgosProfit[algo].Paying > 0 && paying > _currentAlgosProfit[algo].Paying * 15000)
@@ -129,7 +129,28 @@ namespace ZergPoolMiner.Switching
                         return;
                     }
 
-                    if (average)
+                    if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
+                        paying > _currentAlgosProfit[algo].Paying * 2)
+                    {
+                        Helpers.ConsolePrint("AlgosProfitData", "(" + algo.ToString() + ") New profit is above 100%. Averaging.");
+                        paying = _currentAlgosProfit[algo].Paying + paying / 50;
+                    }
+
+                    if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
+                        paying > _currentAlgosProfit[algo].Paying * 1.5)
+                    {
+                        Helpers.ConsolePrint("AlgosProfitData", "(" + algo.ToString() + ") New profit is above 50%. Averaging.");
+                        paying = _currentAlgosProfit[algo].Paying + paying / 25;
+                    }
+
+                    if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
+                        paying > _currentAlgosProfit[algo].Paying * 1.2)
+                    {
+                        Helpers.ConsolePrint("AlgosProfitData", "(" + algo.ToString() + ") New profit is above 20%. Averaging.");
+                        paying = _currentAlgosProfit[algo].Paying + paying / 10;
+                    }
+
+                    if (average && paying > 0 && _currentAlgosProfit[algo].Paying > 0)
                     {
                         _currentAlgosProfit[algo].Paying = (paying + _currentAlgosProfit[algo].Paying) / 2;
                     }
@@ -192,14 +213,10 @@ namespace ZergPoolMiner.Switching
                     foreach (var final_sma in _currentAlgosProfit)
                     {
                         Sma v = new Sma();
-                        v.Algo = final_sma.Value.Algo;
                         v.Name = final_sma.Value.Name;
+                        v.Coin = final_sma.Value.Coin;
+                        v.Algo = final_sma.Value.Algo;
                         v.Paying = final_sma.Value.Paying;
-                        v.Port = final_sma.Value.Port;
-                        if (!((AlgorithmType)v.Algo).ToString().Contains("UNUSED"))
-                        {
-                            //Helpers.ConsolePrint("AlgosProfitData", ((AlgorithmType)v.Algo).ToString() + ":\t" + v.Paying.ToString());
-                        }
                         _finalAlgosProfit.Add(final_sma.Key, v);
                     }
                 }
@@ -210,23 +227,35 @@ namespace ZergPoolMiner.Switching
             }
         }
 
-        public static bool TryGetPaying(AlgorithmType algo, out double paying)
+        public static bool TryGetPaying(AlgorithmType algo, out AlgorithmSwitchingManager.MostProfitableCoin paying)
         {
             InitializeIfNeeded();
             CheckInit();
-
+            paying = new AlgorithmSwitchingManager.MostProfitableCoin();
             if (TryGetSma(algo, out Sma sma))
             {
-                paying = sma.Paying;
-                //Helpers.ConsolePrint(algo.ToString(), paying.ToString());
+                paying.profit = sma.Paying;
+                paying.coin = sma.Coin;
                 if (algo == AlgorithmType.KawPowLite && !AlgorithmSwitchingManager.KawpowLiteGoodEpoch)
                 {
-                    paying = 0.0d;
+                    paying.profit = 0.0d;
+                }
+
+                //чтоб отображалась правильная ставка алгоритма и текущей монеты
+                paying.currentProfit = paying.profit;
+                var c = Stats.Stats.CoinList.Find(e => e.symbol.Equals(sma.Coin));
+                if (c is object && c != null)
+                {
+                    if (algo.ToString().ToLower().Equals(c.algo.ToLower()))
+                    {
+                        var current_profit = c.estimate_current * c.adaptive_factor;
+                        paying.currentProfit = current_profit;
+                    }
                 }
                 return true;
             }
 
-            paying = default(double);
+            paying = new AlgorithmSwitchingManager.MostProfitableCoin();
             return false;
         }
 
@@ -234,18 +263,29 @@ namespace ZergPoolMiner.Switching
 
         #region Get Methods
 
-        public static Dictionary<AlgorithmType, double> FilteredCurrentProfits()
+
+        public static Dictionary<AlgorithmType, AlgorithmSwitchingManager.MostProfitableCoin> FilteredCurrentProfits()
         {
             CheckInit();
-            var dict = new Dictionary<AlgorithmType, double>();
-            lock (_finalAlgosProfit)
+            var dict = new Dictionary<AlgorithmType, AlgorithmSwitchingManager.MostProfitableCoin>();
+            try
             {
-                foreach (var kvp in _finalAlgosProfit)
+                lock (_finalAlgosProfit)
                 {
-                    dict[kvp.Key] = kvp.Value.Paying;
+                    foreach (var kvp in _finalAlgosProfit)
+                    {
+                        AlgorithmSwitchingManager.MostProfitableCoin mpc = new();
+                        mpc.coin = kvp.Value.Coin;
+                        mpc.profit = kvp.Value.Paying;
+                        dict.Add(kvp.Key, mpc);
+                        //dict[kvp.Key].coin = kvp.Value.Coin;
+                        //dict[kvp.Key].profit = kvp.Value.Paying;
+                    }
                 }
+            } catch (Exception ex)
+            {
+                Helpers.ConsolePrint("FilteredCurrentProfits", ex.ToString());
             }
-
             return dict;
         }
 

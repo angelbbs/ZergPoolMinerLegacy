@@ -28,6 +28,7 @@ namespace ZergPoolMiner.Stats
         public class MiningAlgorithms
         {
             public string name { get; set; }
+            public string coin { get; set; }
             public int port { get; set; }
             public int tls_port { get; set; }
             public double hashrate { get; set; }
@@ -53,9 +54,11 @@ namespace ZergPoolMiner.Stats
         {
             public string name { get; set; }
             public string algo { get; set; }
+            public string symbol { get; set; }
             public int port { get; set; }
             public int tls_port { get; set; }
             public double hashrate { get; set; }
+            public double adaptive_factor { get; set; }
             public double estimate { get; set; }
             public double estimate_current { get; set; }
             public double estimate_last24h { get; set; }
@@ -72,6 +75,7 @@ namespace ZergPoolMiner.Stats
             public bool ASIC { get; set; }
             public bool tempTTF_Disabled { get; set; }
             public bool tempDeleted { get; set; }
+            public int noautotrade { get; set; }
         }
 
         public static string GetPoolApiData(string url)
@@ -101,7 +105,7 @@ namespace ZergPoolMiner.Stats
                     responseFromServer = reader.ReadToEnd();
                     if (responseFromServer.Length == 0 || responseFromServer[0] != '{')
                     {
-                        Helpers.ConsolePrint("GetPoolApiData", "Error! Not JSON from " +url);
+                        Helpers.ConsolePrintError("GetPoolApiData", "Error! Not JSON from " +url);
                     }
                     reader.Close();
                 }
@@ -109,7 +113,7 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("ERROR", ex.ToString());
+                Helpers.ConsolePrintError("GetPoolApiData", ex.ToString());
                 Form_Main.apiConnectionsErrors++;
                 return null;
             }
@@ -120,15 +124,17 @@ namespace ZergPoolMiner.Stats
         public static List<Coin> GetCoins()
         {
             Helpers.ConsolePrint("Stats", "Trying GetCoins");
-            double correction = ConfigManager.GeneralConfig.ProfitabilityCorrection;
+            //double correction = ConfigManager.GeneralConfig.ProfitabilityCorrection;
+            double correction = 0.8;
+            /*
             if (ConfigManager.GeneralConfig.ForkFixVersion == 0.3)
             {
                 var days = (DateTime.Now - ConfigManager.GeneralConfig.updated_at).TotalDays;
                 //Непонятно откуда zergpool берет данные о прибыльности алгоритмов и монет, но они явно завышены
-                //процентов на 20-30. Поэтому понижаем фиктивную прибыльность до реальной на 0.8 плавно за 10 дней
+                //процентов на 20-30. Поэтому понижаем фиктивную прибыльность до реальной на 0.85 плавно за 10 дней
                 correction = Math.Max(ConfigManager.GeneralConfig.ProfitabilityCorrection, 1 - (days / 50));
             }
-
+            */
             try
             {
                 string ResponseFromAPI = GetPoolApiData(Links.Currencies);
@@ -141,6 +147,7 @@ namespace ZergPoolMiner.Stats
                         var coin = item.Value;
                         string name = coin.Value<string>("name");
                         string algo = coin.Value<string>("algo");
+                        string symbol = coin.Value<string>("symbol");
                         var port = coin.Value<int>("port");
                         var tls_port = coin.Value<int>("tls_port");
                         var _estimate = coin.Value<double>("estimate");
@@ -157,10 +164,12 @@ namespace ZergPoolMiner.Stats
                         var real_ttf = coin.Value<double>("real_ttf");
                         var minpay = coin.Value<double>("minpay");
                         var minpay_sunday = coin.Value<double>("minpay_sunday");
+                        var noautotrade = coin.Value<int>("noautotrade");
 
                         Coin _coin = new();
                         _coin.name = name;
                         _coin.algo = algo;
+                        _coin.symbol = symbol;
                         _coin.pool_ttf = pool_ttf;
                         _coin.real_ttf = real_ttf;
                         _coin.minpay = minpay;
@@ -168,6 +177,7 @@ namespace ZergPoolMiner.Stats
                         _coin.port = port;
                         _coin.tls_port = tls_port;
                         _coin.hashrate = hashrate;
+                        _coin.adaptive_factor = 1;
                         _coin.estimate = (estimate_current / mbtc_mh_factor * 1000) * correction;//mBTC/GH
                         _coin.estimate_current = (estimate_current / mbtc_mh_factor * 1000000) * correction;//mBTC/GH
                         _coin.estimate_last24h = (estimate_last24h / mbtc_mh_factor * 1000000) * correction;
@@ -188,42 +198,113 @@ namespace ZergPoolMiner.Stats
                         _coin.GPU = b[2];
                         _coin.ASIC = b[1];
                         _coin.FPGA = b[0];
+                        _coin.noautotrade = noautotrade;
+
+                        if (!_coin.CPU && !_coin.GPU) continue;
 
                         if (real_ttf > ConfigManager.GeneralConfig.maxTTF && (_coin.CPU || _coin.GPU))
                         {
-                            Helpers.ConsolePrint("Stats", _coin.name.ToString() + "(" +
-                                _coin.algo.ToString() + ") TTF " +
+                            Helpers.ConsolePrint("Stats", _coin.algo.ToString() + "(" +
+                                _coin.symbol.ToString() + ") TTF " +
                                 GetTime((int)real_ttf) + ". Disabled");
                             _coin.tempTTF_Disabled = true;
+                            _coin.estimate = _coin.estimate / 99;
+                            _coin.estimate_current = _coin.estimate_current / 99;
+                            _coin.estimate_last24h = _coin.estimate_last24h / 99;
+                            _coin.actual_last24h = _coin.actual_last24h / 99;
                         }
                         else
                         {
                             _coin.tempTTF_Disabled = false;
                         }
-                        
-                        if (algo == "allium" || algo == "x16rv2" || algo == "x21s" || algo == "x25x")
+
+
+                        var unstableAlgosList = AlgorithmSwitchingManager.unstableAlgosList.Select(s => s.ToString().ToLower()).ToList();
+                        if (unstableAlgosList.Contains(algo.ToLower()))
                         {
-                            _coin.estimate = _coin.estimate * 0.9;
-                            _coin.estimate_current = _coin.estimate_current * 0.9;
-                            _coin.estimate_last24h = _coin.estimate_last24h * 0.9;
-                            _coin.actual_last24h = _coin.actual_last24h * 0.9;
+                            _coin.estimate = _coin.estimate * 0.5;
+                            _coin.estimate_current = _coin.estimate_current * 0.5;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.5;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.5;
                         }
-                        
-                        if (algo == "equihash125" || algo == "equihash192")
+                        /*
+                        if (algo == "equihash125" || algo == "equihash192" || algo == "kawpow")
                         {
-                            _coin.estimate = _coin.estimate * 0.95;
-                            _coin.estimate_current = _coin.estimate_current * 0.95;
-                            _coin.estimate_last24h = _coin.estimate_last24h * 0.95;
-                            _coin.actual_last24h = _coin.actual_last24h * 0.95;
+                            _coin.estimate = _coin.estimate * 0.90;
+                            _coin.estimate_current = _coin.estimate_current * 0.90;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.90;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.90;
+                        }
+                        */
+                        //test
+                        /*
+                        if (symbol.ToLower().Equals("glink"))
+                        {
+                            _coin.estimate_current = _coin.estimate_current * 5;
+                            _coin.tempTTF_Disabled = false;
+                        }
+                        */
+
+                        foreach (var c in Stats.coinsBlocked)
+                        {
+                            if (c.Key.Equals(_coin.symbol) && c.Value.checkTime >= 15)//15 min checking
+                            {
+                                Helpers.ConsolePrint("Stats", "No pool hashrate for " + _coin.algo + "(" + c.Key + "). Temporary block");
+                                _coin.estimate = _coin.estimate / 99;
+                                _coin.estimate_current = _coin.estimate_current / 99;
+                                _coin.estimate_last24h = _coin.estimate_last24h / 99;
+                                _coin.actual_last24h = _coin.actual_last24h / 99;
+                                _coin.hashrate = 0;
+                                foreach (var miningDevice in MiningSession._miningDevices)
+                                {
+                                    //условие не успеет выполниться, т.к. произойдет переключение монеты
+                                    if (miningDevice.DeviceCurrentMiningCoin.Equals(c.Key) &&
+                                        _coin.tempTTF_Disabled)//уже заблокировано
+                                    {
+                                        _coin.estimate = _coin.estimate / 99;
+                                        _coin.estimate_current = _coin.estimate_current / 99;
+                                        _coin.estimate_last24h = _coin.estimate_last24h / 99;
+                                        _coin.actual_last24h = _coin.actual_last24h / 99;
+                                        _coin.hashrate = 0;
+                                    }
+                                    //
+
+                                    if (miningDevice.DeviceCurrentMiningCoin.Equals(c.Key) &&
+                                                   !_coin.tempTTF_Disabled)//блокируем
+                                    {
+                                        miningDevice.needSwitch = true;
+                                        _coin.tempTTF_Disabled = true;
+                                        _coin.estimate = _coin.estimate / 99;
+                                        _coin.estimate_current = _coin.estimate_current / 99;
+                                        _coin.estimate_last24h = _coin.estimate_last24h / 99;
+                                        _coin.actual_last24h = _coin.actual_last24h / 99;
+                                        _coin.hashrate = 0;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (MiningAlgorithmsList is object && MiningAlgorithmsList != null &&
+                            MiningAlgorithmsList.Count > 0)
+                        {
+                            var ma = MiningAlgorithmsList.Find(a => a.name.ToLower() == _coin.algo.ToLower());
+                            if (ma != null)
+                            {
+                                if (ma.adaptive_factor != 0) _coin.adaptive_factor = ma.adaptive_factor;
+                            }
                         }
 
                         CoinList.Add(_coin);
                     }
                 }
+                
+                var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
+                Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
+                
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("GetCoins", ex.ToString());
+                Helpers.ConsolePrintError("GetCoins", ex.ToString());
             }
             return CoinList;
         }
@@ -258,11 +339,25 @@ namespace ZergPoolMiner.Stats
 
                             if (coin.algo.ToLower().Equals(_alg))
                             {
-                                if (coin.hashrate >= defcoin.hashrate && !coin.tempTTF_Disabled && !coin.tempDeleted)
+                                /*
+                                //по хешрейту
+                                if (coin.hashrate >= defcoin.hashrate && !coin.tempTTF_Disabled &&
+                                    !coin.tempDeleted && coin.noautotrade == 0)
                                 {
                                     defcoin = coin;
                                     defcoin.algo = _alg;
-                                } 
+                                }
+                                */
+
+                                //по монете
+                                if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current && 
+                                    !coin.tempTTF_Disabled &&
+                                    !coin.tempDeleted && coin.noautotrade == 0)
+                                {
+                                    defcoin = coin;
+                                    defcoin.algo = _alg;
+                                }
+                                
                             }
                         }
                     }
@@ -282,6 +377,7 @@ namespace ZergPoolMiner.Stats
                         miningAlgorithms.name = alg.ToString().ToLower();
                         miningAlgorithms.port = defcoin.port;
                         miningAlgorithms.tls_port = defcoin.tls_port;
+                        miningAlgorithms.coin = defcoin.symbol;
 
                         if (miningAlgorithms.CPU || miningAlgorithms.GPU)
                         {
@@ -295,6 +391,7 @@ namespace ZergPoolMiner.Stats
                                     obj.estimate_last24h = miningAlgorithms.estimate_last24h;
                                     obj.actual_last24h = miningAlgorithms.actual_last24h;
                                     obj.mbtc_mh_factor = miningAlgorithms.mbtc_mh_factor;
+                                    obj.coin = miningAlgorithms.coin;
                                 }
                             }
                             else
@@ -328,7 +425,7 @@ namespace ZergPoolMiner.Stats
                 Helpers.WriteAllTextWithBackup("configs\\AlgoritmsList.json", json);
             } catch (Exception ex)
             {
-                Helpers.ConsolePrint("GetZergPoolAlgosListEx", ex.ToString());
+                Helpers.ConsolePrintError("GetZergPoolAlgosListEx", ex.ToString());
             }
             return MiningAlgorithmsList;
         }
@@ -453,7 +550,7 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("GetZergPoolAlgosList", ex.ToString());
+                Helpers.ConsolePrintError("GetZergPoolAlgosList", ex.ToString());
             }
             return MiningAlgorithmsList;
         }
@@ -486,7 +583,7 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("GetWalletBalance", ex.ToString());
+                Helpers.ConsolePrintError("GetWalletBalance", ex.ToString());
             }
             Helpers.ConsolePrint("Stats", "Wallet balance: " + Balance.ToString() + " " +
                 ConfigManager.GeneralConfig.PayoutCurrency + 
@@ -498,6 +595,7 @@ namespace ZergPoolMiner.Stats
         public class AlgoProperty
         {
             public string name;
+            public string hashrate;
             public double localhashrate;
             public double actualhashrate;
             public double localProfit;
@@ -508,51 +606,17 @@ namespace ZergPoolMiner.Stats
             public int ticks;
             public List<double> factorsList = new();
         }
-        public static string GetFullWorkerName0()
-        {
-            string mac = WindowsMacUtils.GetMACAddress();
-            string w = "";
-            string u = "";
-            string c = "";
-            string pl = "";
-            if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.Wallet.Trim()))
-            {
-                u = Globals.DemoUser;
-            }
-            else
-            {
-                u = ConfigManager.GeneralConfig.Wallet.Trim();
-            }
-            if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.PayoutCurrency.Trim()))
-            {
-                c = "LTC";
-            }
-            else
-            {
-                c = ConfigManager.GeneralConfig.PayoutCurrency.Trim();
-            }
 
-            pl = ConfigManager.GeneralConfig.PayoutCurrencyTreshold.ToString();
-
-            if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.WorkerName.Trim()))
-            {
-                w = "demo";
-            } else
-            {
-                w = ConfigManager.GeneralConfig.WorkerName.Trim();
-            }
-            //string password = " --pass=c=" + ConfigManager.GeneralConfig.PayoutCurrency + Form_Main._PayoutTreshold + ",ID=" +
-            //Stats.Stats.GetFullWorkerName() + " ";
-            //ConfigManager.GeneralConfig.Wallet
-            return " -u " + u + " --pass=" + c + ",pl=" + pl + ",ID=" + w + mac + " ";
-        }
         public static ConcurrentDictionary<string, AlgoProperty> algosProperty = new();
+        public static List<CoinProperty> coinsMining = new();
+        public class CoinProperty
+        {
+            public string symbol;
+            public string hashrate_shared;
+        }
         public static void GetWalletBalanceEx(object sender, EventArgs e)
         {
             Form_Main.adaptiveRunning = false;
-            if (MiningSession._miningDevices is not object) return;
-            if (MiningSession._miningDevices.Count == 0) return;
-
             if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.Wallet))
             {
                 Helpers.ConsolePrint("Stats", "Error getting wallet balance. Wallet not entered");
@@ -563,14 +627,26 @@ namespace ZergPoolMiner.Stats
                 string ResponseFromAPI = GetPoolApiData(Links.WalletBalanceEx + ConfigManager.GeneralConfig.Wallet);
                 if (!string.IsNullOrEmpty(ResponseFromAPI))
                 {
-                    dynamic _data = JsonConvert.DeserializeObject(ResponseFromAPI);
-                    //var a = JsonConvert.SerializeObject(_data, Formatting.Indented);
-                    //Helpers.ConsolePrint("<-", a);
-
+                    coinsMining.Clear();
                     double overallBTC = 0;
                     dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
+                    foreach (var cur in data.SelectToken("summary"))
+                    {
+                        string _symbol = cur.SelectToken("symbol");
+                        string _hashrate_shared = cur.SelectToken("hashrate_shared");
+                        if (!coinsMining.Exists(a => a.symbol == _symbol))
+                        {
+                            CoinProperty cp = new();
+                            cp.symbol = _symbol;
+                            cp.hashrate_shared = _hashrate_shared;
+                            coinsMining.Add(cp);
+                        }
+                    }
+
+                    if (MiningSession._miningDevices is not object) return;
+                    if (MiningSession._miningDevices.Count == 0) return;
+
                     double localProfit = 0d;
-                    double localProfitSecond = 0d;
                     double actualProfit = 0d;
                     List<string> currentminingAlgos = new();
                     foreach (var alg in MiningAlgorithmsList)
@@ -581,6 +657,7 @@ namespace ZergPoolMiner.Stats
                         foreach (var cur in data.SelectToken("miners"))
                         {
                             string _algo = cur.SelectToken("algo");
+                            string _hashrate = cur.SelectToken("hashrate");
                             string _ID = cur.SelectToken("ID");
                             int _subscribe = cur.SelectToken("subscribe");
                             double _accepted = cur.SelectToken("accepted");
@@ -630,6 +707,7 @@ namespace ZergPoolMiner.Stats
                                 _algoProperty.profitRatio = alg.profit;
                                 _algoProperty.actualhashrate = actualHashrate;
                                 _algoProperty.name = alg.name.ToLower();
+                                _algoProperty.hashrate = _hashrate;
                                 _algoProperty.adaptive_factor = alg.adaptive_factor;
                                 _algoProperty.adaptive_profit = alg.adaptive_profit;
                                 algosProperty.AddOrUpdate(alg.name.ToLower(), _algoProperty, (k, v) => _algoProperty);
@@ -642,15 +720,21 @@ namespace ZergPoolMiner.Stats
                         double average = 1;
                         var _algoProperty = __algoProperty.Value;
                         var alg = MiningAlgorithmsList.FirstOrDefault(x => x.name.ToLower() == __algoProperty.Key.ToLower());
-                        //Helpers.ConsolePrint("Stats", alg.name);
-                        //Helpers.ConsolePrint("Stats", alg.name + " _algoProperty.ticks: " + _algoProperty.ticks.ToString());
+
                         //пусть на графике присутствуют предыдущие значения
-                        actualProfit = actualProfit + (_algoProperty.actualhashrate * alg.profit);
+                        if (alg.adaptive_factor == 0)
+                        {
+                            actualProfit = actualProfit + (_algoProperty.actualhashrate * alg.profit);
+                        } else
+                        {
+                            actualProfit = actualProfit + (_algoProperty.actualhashrate * alg.adaptive_profit);
+                        }
                         if (_algoProperty.localhashrate != 0)
                         {
                             _algoProperty.ticks++;
                             //а для расчета только текущие
                             _algoProperty.actualProfit = (_algoProperty.actualhashrate * alg.profit);
+                            /*
                             if (_algoProperty.ticks >= ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart &&//15 
                                 _algoProperty.ticks <= ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart +
                                 ConfigManager.GeneralConfig.ticksAdaptiveTuning &&
@@ -659,57 +743,51 @@ namespace ZergPoolMiner.Stats
                                 Helpers.ConsolePrint("Stats", alg.name + " adaptive tuning in process");
                                 Form_Main.adaptiveRunning = true;
                             }
-
-                            if (_algoProperty.factorsList.Count < 100 && _algoProperty.adaptive_factor != 0)
+                            */
+                            //if (_algoProperty.factorsList.Count < 100 && _algoProperty.adaptive_factor != 0)
+                            if (_algoProperty.factorsList.Count < 100)
                             {
-                                for (int i = 0; i < 100; i++)
+                                for (int i = _algoProperty.factorsList.Count; i < 100; i++)
                                 {
-                                    _algoProperty.factorsList.Add(_algoProperty.adaptive_factor);
+                                    if (_algoProperty.adaptive_factor != 0)
+                                    {
+                                        _algoProperty.factorsList.Add(_algoProperty.adaptive_factor);
+                                    }
+                                    else
+                                    {
+                                        _algoProperty.factorsList.Add(1.0);
+                                    }
                                 }
                             }
 
-                            if (_algoProperty.ticks >= ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart)//15
+                            double factorNow = _algoProperty.actualProfit / _algoProperty.localProfit;
+                            double preaverage = _algoProperty.factorsList.Sum() / _algoProperty.factorsList.Count;
+
+                            if (_algoProperty.ticks >= 15)
                             {
-                                double factorNow = _algoProperty.actualProfit / _algoProperty.localProfit;
                                 _algoProperty.factorsList.Add(factorNow);
 
                                 if (ConfigManager.GeneralConfig.AdaptiveAlgo)//включен по умолчанию
                                 {
                                     average = _algoProperty.factorsList.Sum() / _algoProperty.factorsList.Count;
-                                    /*
-                                    Helpers.ConsolePrint("Stats", alg.name + " average: " + average.ToString("F5"));
-                                    Helpers.ConsolePrint("Stats", alg.name + " adaptive_profit: " + _algoProperty.adaptive_profit.ToString("F5"));
-                                    Helpers.ConsolePrint("Stats", alg.name + " adaptive_factor: " + _algoProperty.adaptive_factor.ToString("F5"));
-                                    Helpers.ConsolePrint("Stats", alg.name + " factorNow: " + factorNow.ToString("F5"));
-                                    //if (double.IsNaN(average))
+                                    //Form_Main.adaptiveRunning = true;
+                                    //if (_algoProperty.ticks > 
+                                    //  ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart +
+                                    //    ConfigManager.GeneralConfig.ticksAdaptiveTuning)//105
+                                    if (_algoProperty.ticks > 60)
                                     {
-                                        Helpers.ConsolePrint("Stats", alg.name + " _algoProperty.ratioList.Sum(): " + _algoProperty.factorsList.Sum().ToString("F5"));
-                                        Helpers.ConsolePrint("Stats", alg.name + " _algoProperty.ratioList.Count: " + _algoProperty.factorsList.Count.ToString("F5"));
-                                    }
-                                    */
-                                    if (_algoProperty.ticks > 
-                                        ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart +
-                                            ConfigManager.GeneralConfig.ticksAdaptiveTuning)//105
-                                    {
+                                        //Form_Main.adaptiveRunning = false;
                                         if (!double.IsInfinity(average) && !double.IsNaN(average))
                                         {
-                                            if (alg.adaptive_factor == 0 && average < 0.85)
+                                            if (average < 0.75)
                                             {
-                                                average = 0.85;
+                                                average = 0.75;
                                             }
-                                            if (alg.adaptive_factor == 0 && average > 1)
+                                            if (average > 1.1)
                                             {
-                                                average = 1;
+                                                average = 1.1;
                                             }
-                                            if (!double.IsNaN(average))
-                                            {
-                                                alg.adaptive_factor = average;
-                                            } 
-                                        }
-                                        else
-                                        {
-                                            //alg.adaptive_factor = 0;
-                                            //alg.adaptive_profit = 0;
+                                            alg.adaptive_factor = average;
                                         }
                                     }
                                 }
@@ -720,27 +798,15 @@ namespace ZergPoolMiner.Stats
                             //algosProperty.TryRemove(_algoProperty.name, out var r);
                         }
                         /*
-                        foreach (var a in currentminingAlgos)
-                        {
-                            Helpers.ConsolePrint("Stats", "currentminingAlgos: " + _algoProperty.name);
-                        }
-                        */
-                        if (!currentminingAlgos.Contains(_algoProperty.name.ToLower()))
+                        List<string> stringMiningAlgorithmsList = MiningAlgorithmsList.Select(s => s.name.ToString().ToLower()).ToList();
+                        if (!stringMiningAlgorithmsList.Contains(_algoProperty.name.ToLower()))
                         {
                             Helpers.ConsolePrint("Stats", "Deleted current mining algo: " + _algoProperty.name);
-                            /*
-                            foreach (var a in algosProperty)
-                            {
-                                if (a.Key.ToLower().Equals(_algoProperty.name.ToLower()))
-                                {
-
-                                }
-                            }
-                            */
                             algosProperty.TryRemove(_algoProperty.name, out var r);
-                            
                             Form_Main.adaptiveRunning = false;
                         }
+                        */
+                        //alg.adaptive_factor = Math.Max(alg.adaptive_factor, 0.6);
                     }
                     overallBTC = actualProfit;
                     Form_Main.TotalActualProfitability = overallBTC;
@@ -753,7 +819,7 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("GetWalletBalance", ex.ToString());
+                Helpers.ConsolePrintError("GetWalletBalance", ex.ToString());
             }
             return;
         }
@@ -787,7 +853,7 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("LoadAlgoritmsList", ex.ToString());
+                Helpers.ConsolePrintError("LoadAlgoritmsList", ex.ToString());
             }
             setAlgos(algolist);
             if (onlyCached) return;
@@ -829,6 +895,12 @@ namespace ZergPoolMiner.Stats
         }
         private static List<string> delalgos = new();
         private static List<MiningAlgorithms> newalgolist = new();
+        private class MostProfitableCoin
+        {
+            public string coin { get; set; }
+            public double mostProfit { get; set; }
+            public double currentProfit { get; set; }
+        }
         private static void setAlgos(List<MiningAlgorithms> algolist)
         {
             try
@@ -844,7 +916,7 @@ namespace ZergPoolMiner.Stats
                         }
                     }
                 }
-                Dictionary<AlgorithmType, double> data = new();
+                Dictionary<AlgorithmType, MostProfitableCoin> data = new();
                 var zeroAlgos = new List<string>();
 
                 foreach (var algo in algolist)
@@ -952,6 +1024,7 @@ namespace ZergPoolMiner.Stats
                                    // _profit = _profit / 2;
                                 }
                             }
+
                             algo.profit = _profit;
                             if (!data.ContainsKey(_algo))
                             {
@@ -959,21 +1032,23 @@ namespace ZergPoolMiner.Stats
                                 {
                                     if (!double.IsNaN(algo.adaptive_factor))
                                     {
-                                        //Helpers.ConsolePrint("Stats", "algo: " + algo.name);
-                                        //Helpers.ConsolePrint("Stats", "adaptive_factor: " + algo.adaptive_factor.ToString());
-                                        //Helpers.ConsolePrint("Stats", "profit: " + algo.profit.ToString());
                                         algo.adaptive_profit = algo.adaptive_factor * algo.profit;
-                                        //Helpers.ConsolePrint("Stats", "algo.adaptive_profit: " + algo.adaptive_profit.ToString());
                                     }
                                     else
                                     {
                                         //algo.adaptive_profit = 0;
                                         //algo.adaptive_factor = 0;
                                     }
-                                    data.Add(_algo, algo.adaptive_profit);
+                                    MostProfitableCoin _MostProfitableCoin = new();
+                                    _MostProfitableCoin.coin = algo.coin;
+                                    _MostProfitableCoin.mostProfit = algo.adaptive_profit;
+                                    data.Add(_algo, _MostProfitableCoin);
                                 } else
                                 {
-                                    data.Add(_algo, _profit);
+                                    MostProfitableCoin _MostProfitableCoin = new();
+                                    _MostProfitableCoin.coin = algo.coin;
+                                    _MostProfitableCoin.mostProfit = _profit;
+                                    data.Add(_algo, _MostProfitableCoin);
                                 }
                             }
 
@@ -989,12 +1064,11 @@ namespace ZergPoolMiner.Stats
                 }
                 delalgos.Remove("neoscrypt_xaya");
                 delalgos.Remove("xelisv2_pepew");
-
                 SetAlgorithmRates(data, 1, false);
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("setAlgos", ex.ToString());
+                Helpers.ConsolePrintError("setAlgos", ex.ToString());
             }
         }
        
@@ -1013,10 +1087,18 @@ namespace ZergPoolMiner.Stats
                 }
             }
         }
-        public static void SetAlgorithmRates(Dictionary<AlgorithmType, double> data, int multipl = 1, 
+
+        public static ConcurrentDictionary<string, CoinBlocked> coinsBlocked = new();
+        public class CoinBlocked
+        {
+            public string coin;
+            public int checkTime;
+        }
+        private static void SetAlgorithmRates(Dictionary<AlgorithmType, MostProfitableCoin> data, int multipl = 1, 
             bool average = false)
         {
             double paying = 0.0d;
+            string coin = "Unknown";
             try
             {
                 var payingDict = data;
@@ -1030,9 +1112,11 @@ namespace ZergPoolMiner.Stats
                         {
                             continue;
                         }
+
                         var AlgorithmName = AlgorithmNames.GetName(algoKey);
-                        paying = algo.Value;
-                        AlgosProfitData.UpdatePayingForAlgo(algoKey, paying, false);
+                        paying = algo.Value.mostProfit;
+                        coin = algo.Value.coin;
+                        AlgosProfitData.UpdatePayingForAlgo(algoKey, coin, paying, true);
                     }
                 }
                 //testing

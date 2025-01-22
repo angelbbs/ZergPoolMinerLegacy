@@ -142,7 +142,14 @@ namespace ZergPoolMiner.Devices.Algorithms
                         AlgorithmType.NexaPow
                     });
             }
-                        
+            if (device.Name.ToLower().Contains("gtx 10") && device.DeviceType == DeviceType.NVIDIA)
+            {
+                algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
+                    {
+                        AlgorithmType.KarlsenHashV2HooHash
+                    });
+            }
+
             //*******************
             if (device.DeviceType == DeviceType.AMD && algoSettings.ContainsKey(MinerBaseType.SRBMiner) &&
                 (device.Codename.ToLower().Contains("ellesmere")))

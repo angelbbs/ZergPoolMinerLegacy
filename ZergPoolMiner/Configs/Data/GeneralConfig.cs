@@ -21,7 +21,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool NoForceTRexClose;
         public bool UseNegativeProfit = false;
         public bool ShowHiddenAlgos = false;
-        public double ProfitabilityCorrection = 0.8;
+        //public double ProfitabilityCorrection = 0.90;
         public int KawpowLiteMaxEpoch3GB = 220;
         public int KawpowLiteMaxEpoch4GB = 354;
         public int KawpowLiteMaxEpoch5GB = 488;
@@ -119,8 +119,8 @@ namespace ZergPoolMiner.Configs.Data
         public int ProfitFormLeft = 0;
         public bool StartChartWithProgram = false;
         public bool ChartFiat = false;
-        public int ticksBeforeAdaptiveStart = 15;//15 min
-        public int ticksAdaptiveTuning = 105;
+        //public int ticksBeforeAdaptiveStart = 15;//15 min
+        //public int ticksAdaptiveTuning = 105;
         public bool ABEnableOverclock = false;
         public bool ABMaintaiming = false;
         public int ABMaintaiminginterval = 60;

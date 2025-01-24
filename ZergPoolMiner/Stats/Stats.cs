@@ -177,7 +177,7 @@ namespace ZergPoolMiner.Stats
                         _coin.port = port;
                         _coin.tls_port = tls_port;
                         _coin.hashrate = hashrate;
-                        _coin.adaptive_factor = 1;
+                        _coin.adaptive_factor = 0.9;
                         _coin.estimate = (estimate_current / mbtc_mh_factor * 1000) * correction;//mBTC/GH
                         _coin.estimate_current = (estimate_current / mbtc_mh_factor * 1000000) * correction;//mBTC/GH
                         _coin.estimate_last24h = (estimate_last24h / mbtc_mh_factor * 1000000) * correction;
@@ -315,6 +315,10 @@ namespace ZergPoolMiner.Stats
             List<string> progAlgosList = new();
             List<string> poolAlgosList = new();
             var coins = GetCoins();
+            if (coins.Count == 0)
+            {
+                return MiningAlgorithmsList;
+            }
             try
             {
                 foreach (AlgorithmType alg in Enum.GetValues(typeof(AlgorithmType)))
@@ -649,6 +653,7 @@ namespace ZergPoolMiner.Stats
                     double localProfit = 0d;
                     double actualProfit = 0d;
                     List<string> currentminingAlgos = new();
+                    List<string> currentminingAlgosZergPool = new();
                     foreach (var alg in MiningAlgorithmsList)
                     {
                         if (alg.tempDeleted) continue;
@@ -666,7 +671,7 @@ namespace ZergPoolMiner.Stats
                             {
                                 var _algoProperty = new AlgoProperty();
                                 double localHashrate = 0d;
-
+                                
                                 foreach (var miningDevice in MiningSession._miningDevices)
                                 {
                                     if (alg.name.ToLower().Equals(((AlgorithmType)miningDevice.Device.AlgorithmID).ToString().ToLower()))
@@ -685,6 +690,11 @@ namespace ZergPoolMiner.Stats
                                     {
                                         currentminingAlgos.Add(((AlgorithmType)miningDevice.Device.SecondAlgorithmID).ToString().ToLower());
                                     }
+                                }
+                                
+                                if (!currentminingAlgosZergPool.Contains(_algo.ToLower()))
+                                {
+                                    currentminingAlgosZergPool.Add(_algo.ToLower());
                                 }
 
                                 localProfit = (localHashrate * alg.profit);
@@ -710,18 +720,42 @@ namespace ZergPoolMiner.Stats
                                 _algoProperty.hashrate = _hashrate;
                                 _algoProperty.adaptive_factor = alg.adaptive_factor;
                                 _algoProperty.adaptive_profit = alg.adaptive_profit;
-                                algosProperty.AddOrUpdate(alg.name.ToLower(), _algoProperty, (k, v) => _algoProperty);
+                                /*
+                                List<string> stringMiningAlgorithmsList = MiningAlgorithmsList.Select(s => s.name.ToString().ToLower()).ToList();
+                                if (!currentminingAlgos.Contains(_algoProperty.name.ToLower()))
+                                {
+                                    Helpers.ConsolePrint("Stats", "Delete current mining algo: " + _algoProperty.name);
+                                    algosProperty.TryRemove(_algoProperty.name, out var r);
+                                    //Form_Main.adaptiveRunning = false;
+                                }
+                                */
+                                if (currentminingAlgos.Contains(alg.name.ToLower()))
+                                {
+                                    algosProperty.AddOrUpdate(alg.name.ToLower(), _algoProperty, (k, v) => _algoProperty);
+                                }
                             }
                         }
                     }
 
                     foreach (var __algoProperty in algosProperty)
                     {
-                        double average = 1;
+                        double average = 0.9;
                         var _algoProperty = __algoProperty.Value;
+
+                        /*
+                        List<string> stringMiningAlgorithmsList = MiningAlgorithmsList.Select(s => s.name.ToString().ToLower()).ToList();
+                        if (!stringMiningAlgorithmsList.Contains(_algoProperty.name.ToLower()))
+                        {
+                            Helpers.ConsolePrint("Stats", "Deleted current mining algo: " + _algoProperty.name);
+                            algosProperty.TryRemove(_algoProperty.name, out var r);
+                            //Form_Main.adaptiveRunning = false;
+                        }
+                        */
                         var alg = MiningAlgorithmsList.FirstOrDefault(x => x.name.ToLower() == __algoProperty.Key.ToLower());
 
                         //пусть на графике присутствуют предыдущие значения
+                        actualProfit = actualProfit + (_algoProperty.actualhashrate * alg.profit);
+                        /*
                         if (alg.adaptive_factor == 0)
                         {
                             actualProfit = actualProfit + (_algoProperty.actualhashrate * alg.profit);
@@ -729,10 +763,19 @@ namespace ZergPoolMiner.Stats
                         {
                             actualProfit = actualProfit + (_algoProperty.actualhashrate * alg.adaptive_profit);
                         }
+                        */
+
+                        //а для расчета только текущие
+                        if (!currentminingAlgosZergPool.Contains(_algoProperty.name.ToLower()))
+                        {
+                            Helpers.ConsolePrint("Stats", "Delete current mining algo: " + _algoProperty.name);
+                            algosProperty.TryRemove(_algoProperty.name, out var r);
+                            //Form_Main.adaptiveRunning = false;
+                        }
+
                         if (_algoProperty.localhashrate != 0)
                         {
                             _algoProperty.ticks++;
-                            //а для расчета только текущие
                             _algoProperty.actualProfit = (_algoProperty.actualhashrate * alg.profit);
                             /*
                             if (_algoProperty.ticks >= ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart &&//15 
@@ -755,7 +798,7 @@ namespace ZergPoolMiner.Stats
                                     }
                                     else
                                     {
-                                        _algoProperty.factorsList.Add(1.0);
+                                        _algoProperty.factorsList.Add(0.9);
                                     }
                                 }
                             }
@@ -774,7 +817,7 @@ namespace ZergPoolMiner.Stats
                                     //if (_algoProperty.ticks > 
                                     //  ConfigManager.GeneralConfig.ticksBeforeAdaptiveStart +
                                     //    ConfigManager.GeneralConfig.ticksAdaptiveTuning)//105
-                                    if (_algoProperty.ticks > 60)
+                                    if (_algoProperty.ticks > 30)
                                     {
                                         //Form_Main.adaptiveRunning = false;
                                         if (!double.IsInfinity(average) && !double.IsNaN(average))
@@ -797,16 +840,6 @@ namespace ZergPoolMiner.Stats
                         {
                             //algosProperty.TryRemove(_algoProperty.name, out var r);
                         }
-                        /*
-                        List<string> stringMiningAlgorithmsList = MiningAlgorithmsList.Select(s => s.name.ToString().ToLower()).ToList();
-                        if (!stringMiningAlgorithmsList.Contains(_algoProperty.name.ToLower()))
-                        {
-                            Helpers.ConsolePrint("Stats", "Deleted current mining algo: " + _algoProperty.name);
-                            algosProperty.TryRemove(_algoProperty.name, out var r);
-                            Form_Main.adaptiveRunning = false;
-                        }
-                        */
-                        //alg.adaptive_factor = Math.Max(alg.adaptive_factor, 0.6);
                     }
                     overallBTC = actualProfit;
                     Form_Main.TotalActualProfitability = overallBTC;

@@ -471,6 +471,7 @@ namespace ZergPoolMiner.Miners
                 stringBuilderFull.AppendLine("Current device profits:");
                 double smaTmp = 0;
 
+                bool needSwitch = false;
                 bool forceSwitch = false;
                 bool algoZero = false;
                 string algoZeroS = "";
@@ -530,17 +531,19 @@ namespace ZergPoolMiner.Miners
                             " because diff is " + device.diff.ToString("F2") + " %");
                     }
                     */
+                    
                     if (device.needSwitch &&
                         !device.DeviceCurrentMiningCoin.ToLower().Equals("none") &&
                         !device.DeviceMostProfitableCoin.ToLower().Equals("none"))//coin switch
                     {
-                        //_needswitch = true;
-                        //forceSwitch = true;
+                        needSwitch = true;
+                        forceSwitch = true;
                         device.needSwitch = false;
                         Helpers.ConsolePrint("MiningSession", "Need switch " + ((AlgorithmType)device.Device.AlgorithmID).ToString() + " " +
                             device.DeviceCurrentMiningCoin + " -> " + device.DeviceMostProfitableCoin +
                             " because coin is inactive");
                     }
+                    
                     /*
                     if (device.DeviceCurrentMiningCoin.ToLower().Equals(device.DeviceMostProfitableCoin.ToLower()))
                     {
@@ -584,7 +587,7 @@ namespace ZergPoolMiner.Miners
                     return;
                 }
                 // check profit threshold
-                bool needSwitch = false;
+
                 double percDiff = 0.0d;
 
                 bool bFormSettings = false;
@@ -684,7 +687,7 @@ namespace ZergPoolMiner.Miners
 
                         if (_ticks[0] + 1 >= AlgorithmSwitchingManager._ticksForStable || forceSwitch)
                         {
-                            if (prev_percDiff > percDiff + percDiff * 0.2)
+                            if (prev_percDiff > percDiff + percDiff * 0.2 && !needSwitch)
                             {
                                 if (!KawpowLiteForceStop)
                                 {
@@ -825,7 +828,7 @@ namespace ZergPoolMiner.Miners
                             if (_ticks[device.Device.Index] + 1 >= AlgorithmSwitchingManager._ticksForStable ||
                                 forceSwitch)
                             {
-                                if (prev_percDiff > percDiff + percDiff * 0.2)
+                                if (prev_percDiff > percDiff + percDiff * 0.2 && !needSwitch)
                                 {
                                     if (!KawpowLiteForceStop)
                                     {

@@ -29,8 +29,6 @@ namespace ZergPoolMiner.Devices.Algorithms
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
                 {
                     AlgorithmType.Ethash
-                    //AlgorithmType.EthashKarlsenHash,
-                    //AlgorithmType.EthashPyrinHashV2
                 });
             }
 
@@ -39,8 +37,8 @@ namespace ZergPoolMiner.Devices.Algorithms
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
                 {
                     AlgorithmType.KarlsenHashV2,
-                    AlgorithmType.KarlsenHashV2HooHash
-                    //AlgorithmType.KarlsenHashV2PyrinHashV2
+                    AlgorithmType.KarlsenHashV2HooHash,
+                    AlgorithmType.PhiHash
                 });
             }
 

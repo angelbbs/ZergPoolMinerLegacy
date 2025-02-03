@@ -514,6 +514,7 @@ namespace ZergPoolMiner
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Miner Legacy";
             this.Activated += new System.EventHandler(this.Form_Main_Activated);
+            this.Deactivate += new System.EventHandler(this.Form_Main_Deactivate);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Shown += new System.EventHandler(this.Form_Main_Shown);
             this.ResizeBegin += new System.EventHandler(this.Form_Main_ResizeBegin);

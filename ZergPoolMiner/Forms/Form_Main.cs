@@ -4007,6 +4007,11 @@ namespace ZergPoolMiner
                 Helpers.ConsolePrint("settings", er.ToString());
             }
         }
+
+        private void Form_Main_Deactivate(object sender, EventArgs e)
+        {
+            this.Width = ConfigManager.GeneralConfig.FormWidth;
+        }
     }
 
     static class TimeSpanExtensions

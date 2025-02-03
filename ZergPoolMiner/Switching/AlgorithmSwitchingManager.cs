@@ -304,6 +304,10 @@ namespace ZergPoolMiner.Switching
                         }
                         foreach (var coin in coins)
                         {
+                            foreach (var c in Stats.Stats.coinsMining)
+                            {
+                                //Helpers.ConsolePrint("coin: " + coin + " coinsMining", c.symbol);
+                            }
                             if (Stats.Stats.coinsMining.Exists(a => a.symbol == coin))
                             {
                                 if (Stats.Stats.coinsBlocked.ContainsKey(coin))

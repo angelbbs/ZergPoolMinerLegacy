@@ -2825,9 +2825,9 @@ namespace ZergPoolMiner.Forms
             // buttonUpdate
             // 
             this.buttonUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonUpdate.Location = new System.Drawing.Point(536, 14);
+            this.buttonUpdate.Location = new System.Drawing.Point(549, 14);
             this.buttonUpdate.Name = "buttonUpdate";
-            this.buttonUpdate.Size = new System.Drawing.Size(118, 23);
+            this.buttonUpdate.Size = new System.Drawing.Size(105, 23);
             this.buttonUpdate.TabIndex = 361;
             this.buttonUpdate.Text = "Update now";
             this.buttonUpdate.UseVisualStyleBackColor = true;
@@ -2847,11 +2847,11 @@ namespace ZergPoolMiner.Forms
             // progressBarUpdate
             // 
             this.progressBarUpdate.CustomText = "";
-            this.progressBarUpdate.Location = new System.Drawing.Point(536, 14);
+            this.progressBarUpdate.Location = new System.Drawing.Point(549, 14);
             this.progressBarUpdate.Margin = new System.Windows.Forms.Padding(0);
             this.progressBarUpdate.Name = "progressBarUpdate";
             this.progressBarUpdate.ProgressColor = System.Drawing.Color.Green;
-            this.progressBarUpdate.Size = new System.Drawing.Size(118, 23);
+            this.progressBarUpdate.Size = new System.Drawing.Size(105, 23);
             this.progressBarUpdate.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.progressBarUpdate.TabIndex = 396;
             this.progressBarUpdate.TextColor = System.Drawing.Color.Black;

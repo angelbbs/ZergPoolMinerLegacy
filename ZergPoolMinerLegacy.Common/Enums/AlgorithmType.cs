@@ -74,7 +74,7 @@
         NexaPow = 1280,//2gb
         //NxlHash = 1287,
         Panthera = 1290,
-        //Phi = 1293,
+        PhiHash = 1293,
         Power2b = 1295,
         //PyrinHashV2 = 1300,
         RandomX = 1310,

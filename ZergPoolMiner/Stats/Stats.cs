@@ -75,6 +75,7 @@ namespace ZergPoolMiner.Stats
             public bool ASIC { get; set; }
             public bool tempTTF_Disabled { get; set; }
             public bool tempDeleted { get; set; }
+            public bool tempBlock { get; set; }
             public int noautotrade { get; set; }
         }
 
@@ -125,7 +126,7 @@ namespace ZergPoolMiner.Stats
         {
             Helpers.ConsolePrint("Stats", "Trying GetCoins");
             //double correction = ConfigManager.GeneralConfig.ProfitabilityCorrection;
-            double correction = 0.8;
+            double correction = 0.85;
             /*
             if (ConfigManager.GeneralConfig.ForkFixVersion == 0.3)
             {
@@ -178,11 +179,14 @@ namespace ZergPoolMiner.Stats
                         _coin.tls_port = tls_port;
                         _coin.hashrate = hashrate;
                         _coin.adaptive_factor = 0.9;
-                        _coin.estimate = (estimate_current / mbtc_mh_factor * 1000) * correction;//mBTC/GH
-                        _coin.estimate_current = (estimate_current / mbtc_mh_factor * 1000000) * correction;//mBTC/GH
-                        _coin.estimate_last24h = (estimate_last24h / mbtc_mh_factor * 1000000) * correction;
-                        _coin.actual_last24h = (actual_last24h / mbtc_mh_factor / 1000 * 1000000) *
-                             correction;//zergpool api bug
+                        if (!_coin.tempBlock)
+                        {
+                            _coin.estimate = (estimate_current / mbtc_mh_factor * 1000) * correction;//mBTC/GH
+                            _coin.estimate_current = (estimate_current / mbtc_mh_factor * 1000000) * correction;//mBTC/GH
+                            _coin.estimate_last24h = (estimate_last24h / mbtc_mh_factor * 1000000) * correction;
+                            _coin.actual_last24h = (actual_last24h / mbtc_mh_factor / 1000 * 1000000) *
+                                 correction;//zergpool api bug
+                        }
                         _coin.mbtc_mh_factor = mbtc_mh_factor;//multiplier,
                                                                          //value 1 represents Mh,
                                                                          //1000 represents GH,
@@ -227,58 +231,61 @@ namespace ZergPoolMiner.Stats
                             _coin.estimate_last24h = _coin.estimate_last24h * 0.5;
                             _coin.actual_last24h = _coin.actual_last24h * 0.5;
                         }
-                        /*
-                        if (algo == "equihash125" || algo == "equihash192" || algo == "kawpow")
-                        {
-                            _coin.estimate = _coin.estimate * 0.90;
-                            _coin.estimate_current = _coin.estimate_current * 0.90;
-                            _coin.estimate_last24h = _coin.estimate_last24h * 0.90;
-                            _coin.actual_last24h = _coin.actual_last24h * 0.90;
-                        }
-                        */
+
                         //test
                         /*
-                        if (symbol.ToLower().Equals("glink"))
+                        if (_coin.symbol.ToLower().Equals("btg"))
                         {
-                            _coin.estimate_current = _coin.estimate_current * 5;
+                            _coin.estimate_current = 9999999;
                             _coin.tempTTF_Disabled = false;
                         }
                         */
+                        if (!Stats.coinsBlocked.ContainsKey(_coin.symbol))
+                        {
+                            _coin.tempBlock = false;
+                        }
 
                         foreach (var c in Stats.coinsBlocked)
                         {
                             if (c.Key.Equals(_coin.symbol) && c.Value.checkTime >= 15)//15 min checking
                             {
-                                Helpers.ConsolePrint("Stats", "No pool hashrate for " + _coin.algo + "(" + c.Key + "). Temporary block");
-                                _coin.estimate = _coin.estimate / 99;
-                                _coin.estimate_current = _coin.estimate_current / 99;
-                                _coin.estimate_last24h = _coin.estimate_last24h / 99;
-                                _coin.actual_last24h = _coin.actual_last24h / 99;
-                                _coin.hashrate = 0;
+                                Helpers.ConsolePrint("Stats", "No pool hashrate for " + _coin.algo +
+                                    "(" + c.Key + "). Temporary block");
+                                _coin.estimate = _coin.estimate * 0.5;
+                                _coin.estimate_current = _coin.estimate_current * 0.2;
+                                _coin.estimate_last24h = _coin.estimate_last24h * 0.2;
+                                _coin.actual_last24h = _coin.actual_last24h * 0.2;
+                                _coin.tempBlock = true;
+                                //_coin.hashrate = 0;
+                                //_coin.tempDeleted = true;
+
                                 foreach (var miningDevice in MiningSession._miningDevices)
                                 {
+                                    /*
                                     //условие не успеет выполниться, т.к. произойдет переключение монеты
                                     if (miningDevice.DeviceCurrentMiningCoin.Equals(c.Key) &&
                                         _coin.tempTTF_Disabled)//уже заблокировано
                                     {
-                                        _coin.estimate = _coin.estimate / 99;
-                                        _coin.estimate_current = _coin.estimate_current / 99;
-                                        _coin.estimate_last24h = _coin.estimate_last24h / 99;
-                                        _coin.actual_last24h = _coin.actual_last24h / 99;
-                                        _coin.hashrate = 0;
+                                        _coin.estimate = _coin.estimate * 0.01;
+                                        _coin.estimate_current = _coin.estimate_current * 0.01;
+                                        _coin.estimate_last24h = _coin.estimate_last24h * 0.01;
+                                        _coin.actual_last24h = _coin.actual_last24h * 0.01;
                                     }
+                                    */
                                     //
 
                                     if (miningDevice.DeviceCurrentMiningCoin.Equals(c.Key) &&
                                                    !_coin.tempTTF_Disabled)//блокируем
                                     {
                                         miningDevice.needSwitch = true;
+                                        /*
                                         _coin.tempTTF_Disabled = true;
-                                        _coin.estimate = _coin.estimate / 99;
-                                        _coin.estimate_current = _coin.estimate_current / 99;
-                                        _coin.estimate_last24h = _coin.estimate_last24h / 99;
-                                        _coin.actual_last24h = _coin.actual_last24h / 99;
+                                        _coin.estimate = 0;
+                                        _coin.estimate_current = 0;
+                                        _coin.estimate_last24h = 0;
+                                        _coin.actual_last24h = 0;
                                         _coin.hashrate = 0;
+                                        */
                                     }
                                 }
                             }
@@ -355,7 +362,7 @@ namespace ZergPoolMiner.Stats
 
                                 //по монете
                                 if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current && 
-                                    !coin.tempTTF_Disabled &&
+                                    //!coin.tempTTF_Disabled &&
                                     !coin.tempDeleted && coin.noautotrade == 0)
                                 {
                                     defcoin = coin;
@@ -615,6 +622,7 @@ namespace ZergPoolMiner.Stats
         public static List<CoinProperty> coinsMining = new();
         public class CoinProperty
         {
+            public string algorithm;
             public string symbol;
             public string hashrate_shared;
         }
@@ -634,19 +642,7 @@ namespace ZergPoolMiner.Stats
                     coinsMining.Clear();
                     double overallBTC = 0;
                     dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
-                    foreach (var cur in data.SelectToken("summary"))
-                    {
-                        string _symbol = cur.SelectToken("symbol");
-                        string _hashrate_shared = cur.SelectToken("hashrate_shared");
-                        if (!coinsMining.Exists(a => a.symbol == _symbol))
-                        {
-                            CoinProperty cp = new();
-                            cp.symbol = _symbol;
-                            cp.hashrate_shared = _hashrate_shared;
-                            coinsMining.Add(cp);
-                        }
-                    }
-
+                    
                     if (MiningSession._miningDevices is not object) return;
                     if (MiningSession._miningDevices.Count == 0) return;
 
@@ -737,6 +733,42 @@ namespace ZergPoolMiner.Stats
                         }
                     }
 
+                    foreach (var cur in data.SelectToken("summary"))
+                    {
+                        string _symbol = cur.SelectToken("symbol");
+                        string _hashrate_shared = cur.SelectToken("hashrate_shared");
+                        if (!coinsMining.Exists(a => a.symbol == _symbol))
+                        {
+                            CoinProperty cp = new();
+                            //var alg = MiningAlgorithmsList.FirstOrDefault(x => x.name.ToLower() == __algoProperty.Key.ToLower());
+                            if (CoinList is object && CoinList != null &&
+                            CoinList.Count > 0)
+                            {
+                                var cl = CoinList.FindAll(a => a.symbol == _symbol);
+                                if (cl.Count == 0)
+                                {
+                                    //Helpers.ConsolePrint("*******", "no mining coin " + _symbol);
+                                }
+                                foreach (var c in cl)
+                                {
+                                    cp.algorithm = c.algo;
+                                    cp.symbol = _symbol;
+                                    cp.hashrate_shared = _hashrate_shared;
+
+                                    if (algosProperty.ContainsKey(cp.algorithm))
+                                    {
+                                        //Helpers.ConsolePrint("******** adding " + cp.symbol, _symbol + "worker hashrate for " + cp.algorithm);
+                                        coinsMining.Add(cp);
+                                    }
+                                    else
+                                    {
+                                        //Helpers.ConsolePrint("******** " + cp.symbol, "No worker hashrate for " + cp.algorithm);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     foreach (var __algoProperty in algosProperty)
                     {
                         double average = 0.9;
@@ -822,9 +854,9 @@ namespace ZergPoolMiner.Stats
                                         //Form_Main.adaptiveRunning = false;
                                         if (!double.IsInfinity(average) && !double.IsNaN(average))
                                         {
-                                            if (average < 0.75)
+                                            if (average < 0.6)
                                             {
-                                                average = 0.75;
+                                                average = 0.6;
                                             }
                                             if (average > 1.1)
                                             {

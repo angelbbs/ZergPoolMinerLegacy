@@ -50,6 +50,7 @@ namespace ZergPoolMiner.Stats
         }
 
         public static List<Coin> CoinList = new();
+        public static List<Coin> MinerStatCoinList = new();
         public class Coin
         {
             public string name { get; set; }
@@ -104,7 +105,7 @@ namespace ZergPoolMiner.Stats
                     ss.ReadTimeout = 3 * 1000;
                     var reader = new StreamReader(ss);
                     responseFromServer = reader.ReadToEnd();
-                    if (responseFromServer.Length == 0 || responseFromServer[0] != '{')
+                    if (responseFromServer.Length == 0 || (responseFromServer[0] != '{' && responseFromServer[0] != '['))
                     {
                         Helpers.ConsolePrintError("GetPoolApiData", "Error! Not JSON from " +url);
                     }
@@ -122,11 +123,16 @@ namespace ZergPoolMiner.Stats
             return responseFromServer;
         }
 
+        public class AlgoCoin
+        {
+            public string algo;
+            public string coin;
+        }
         public static List<Coin> GetCoins()
         {
             Helpers.ConsolePrint("Stats", "Trying GetCoins");
             //double correction = ConfigManager.GeneralConfig.ProfitabilityCorrection;
-            double correction = 0.85;
+            double correction = 0.9;
             /*
             if (ConfigManager.GeneralConfig.ForkFixVersion == 0.3)
             {
@@ -136,6 +142,8 @@ namespace ZergPoolMiner.Stats
                 correction = Math.Max(ConfigManager.GeneralConfig.ProfitabilityCorrection, 1 - (days / 50));
             }
             */
+            List<AlgoCoin> noautotradeCoin = new();
+            List<AlgoCoin> zeroHashrateCoin = new();
             try
             {
                 string ResponseFromAPI = GetPoolApiData(Links.Currencies);
@@ -166,7 +174,7 @@ namespace ZergPoolMiner.Stats
                         var minpay = coin.Value<double>("minpay");
                         var minpay_sunday = coin.Value<double>("minpay_sunday");
                         var noautotrade = coin.Value<int>("noautotrade");
-
+                       
                         Coin _coin = new();
                         _coin.name = name;
                         _coin.algo = algo;
@@ -206,10 +214,10 @@ namespace ZergPoolMiner.Stats
 
                         if (!_coin.CPU && !_coin.GPU) continue;
 
-                        if (real_ttf > ConfigManager.GeneralConfig.maxTTF && (_coin.CPU || _coin.GPU))
+                        if ((real_ttf > ConfigManager.GeneralConfig.maxTTF) && (_coin.CPU || _coin.GPU) &&
+                            !_coin.tempTTF_Disabled)
                         {
-                            Helpers.ConsolePrint("Stats", _coin.algo.ToString() + "(" +
-                                _coin.symbol.ToString() + ") TTF " +
+                            Helpers.ConsolePrint("Stats", _coin.algo + " (" + _coin.symbol + ") TTF " +
                                 GetTime((int)real_ttf) + ". Disabled");
                             _coin.tempTTF_Disabled = true;
                             _coin.estimate = _coin.estimate / 99;
@@ -222,7 +230,34 @@ namespace ZergPoolMiner.Stats
                             _coin.tempTTF_Disabled = false;
                         }
 
+                        if ((hashrate == 0) && (_coin.CPU || _coin.GPU))
+                        {
+                            //Helpers.ConsolePrint("Stats", _coin.algo + " (" + _coin.symbol + ") zero hashrate. Disabled");
+                            AlgoCoin zhc = new();
+                            zhc.algo = _coin.algo;
+                            zhc.coin = _coin.symbol;
+                            zeroHashrateCoin.Add(zhc);
+                            _coin.tempTTF_Disabled = true;
+                            _coin.tempBlock = true;
+                            _coin.estimate = _coin.estimate / 99;
+                            _coin.estimate_current = _coin.estimate_current / 99;
+                            _coin.estimate_last24h = _coin.estimate_last24h / 99;
+                            _coin.actual_last24h = _coin.actual_last24h / 99;
+                        }
 
+                        if (noautotrade == 1 && (_coin.CPU || _coin.GPU))
+                        {
+                            AlgoCoin nac = new();
+                            nac.algo = _coin.algo;
+                            nac.coin = _coin.symbol;
+                            noautotradeCoin.Add(nac);
+                            _coin.estimate = _coin.estimate / 99;
+                            _coin.estimate_current = _coin.estimate_current / 99;
+                            _coin.estimate_last24h = _coin.estimate_last24h / 99;
+                            _coin.actual_last24h = _coin.actual_last24h / 99;
+                        }
+
+                        
                         var unstableAlgosList = AlgorithmSwitchingManager.unstableAlgosList.Select(s => s.ToString().ToLower()).ToList();
                         if (unstableAlgosList.Contains(algo.ToLower()))
                         {
@@ -231,7 +266,7 @@ namespace ZergPoolMiner.Stats
                             _coin.estimate_last24h = _coin.estimate_last24h * 0.5;
                             _coin.actual_last24h = _coin.actual_last24h * 0.5;
                         }
-
+                        
                         //test
                         /*
                         if (_coin.symbol.ToLower().Equals("btg"))
@@ -304,7 +339,50 @@ namespace ZergPoolMiner.Stats
                         CoinList.Add(_coin);
                     }
                 }
-                
+
+                noautotradeCoin.Sort((x, y) => x.algo.CompareTo(y.algo));
+                string _algo = "";
+                string coins = "";
+                foreach (var c in noautotradeCoin)
+                {
+                    if (_algo.IsNullOrEmpty())
+                    {
+                        _algo = c.algo;
+                    }
+                    if (c.algo.Equals(_algo))
+                    {
+                        coins = coins + c.coin + ", ";
+                    } else
+                    {
+                        Helpers.ConsolePrint("Stats", _algo + " (" + coins.Substring(0, coins.Length - 2) + ") no autotrade. Disabled");
+                        coins = "";
+                        _algo = c.algo;
+                        coins = coins + c.coin + ", ";
+                    }
+                }
+
+                zeroHashrateCoin.Sort((x, y) => x.algo.CompareTo(y.algo));
+                _algo = "";
+                coins = "";
+                foreach (var c in zeroHashrateCoin)
+                {
+                    if (_algo.IsNullOrEmpty())
+                    {
+                        _algo = c.algo;
+                    }
+                    if (c.algo.Equals(_algo))
+                    {
+                        coins = coins + c.coin + ", ";
+                    }
+                    else
+                    {
+                        Helpers.ConsolePrint("Stats", _algo + " (" + coins.Substring(0, coins.Length - 2) + ") zero hashrate. Disabled");
+                        coins = "";
+                        _algo = c.algo;
+                        coins = coins + c.coin + ", ";
+                    }
+                }
+
                 var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
                 Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
                 
@@ -313,7 +391,247 @@ namespace ZergPoolMiner.Stats
             {
                 Helpers.ConsolePrintError("GetCoins", ex.ToString());
             }
+            CoinList.Sort((x, y) => x.algo.CompareTo(y.algo));
             return CoinList;
+        }
+
+        public static List<Coin> GetZPool()
+        {
+            Helpers.ConsolePrint("Stats", "Trying GetZPool");
+            double correction = 0.9;
+            try
+            {
+                string ResponseFromAPI = GetPoolApiData(Links.CurrenciesZPool);
+                if (ResponseFromAPI != null)
+                {
+                    var data = JObject.Parse(ResponseFromAPI);
+                    MinerStatCoinList.Clear();
+                    foreach (var item in data)
+                    {
+                        var coin = item.Value;
+                        string name = coin.Value<string>("name");
+                        string algo = coin.Value<string>("algo");
+                        string symbol = item.Key;
+                        var _estimate = coin.Value<double>("estimate");
+                        
+                        var mbtc_mh_factor = coin.Value<double>("mbtc_mh_factor");
+
+
+                        Coin _coin = new();
+                        _coin.name = name;
+                        _coin.algo = algo;
+                        _coin.symbol = symbol;
+                        _coin.estimate = (_estimate / mbtc_mh_factor * 1) * correction;//mBTC/GH
+                        _coin.estimate_current = (_estimate / mbtc_mh_factor * 1000) * correction;//mBTC/GH
+                        _coin.estimate_last24h = (_estimate / mbtc_mh_factor * 1000) * correction;
+                        _coin.actual_last24h = (_estimate / mbtc_mh_factor / 1000 * 1000) *
+                             correction;//zergpool api bug
+                       
+                        _coin.mbtc_mh_factor = mbtc_mh_factor;//multiplier,
+                                                              //value 1 represents Mh,
+                                                              //1000 represents GH,
+                                                              //1000000 represents TH,
+                                                              //0.001 represents KH
+                                                              //miningAlgorithms.algotype = algotype;//integer value of a 4-bit value
+                                                              //representing platforms supported.
+                                                              //Bit 3 = CPU, bit 2 = GPU,
+                                                              //bit 1 = ASIC, bit 0 = FPGA
+
+
+                        MinerStatCoinList.Add(_coin);
+                    }
+                }
+
+                //var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
+                //Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
+
+            }
+            catch (Exception ex)
+            {
+                Helpers.ConsolePrintError("GetMinerStat", ex.ToString());
+            }
+            return MinerStatCoinList;
+        }
+
+        //hashrate.no 5d3c49fe72c884c1c8522d13d8edbdd1
+        //test cb4a618e1fd885361563c881a1ce3e25
+        //ошибки на монетах. нет половины монет. не используется
+        public static List<Coin> GetHashrateNo()
+        {
+            Helpers.ConsolePrint("Stats", "Trying GetHashrateNo");
+            try
+            {
+                string ResponseFromAPI = GetPoolApiData(Links.hashrateno + "cb4a618e1fd885361563c881a1ce3e25");
+                if (ResponseFromAPI != null)
+                {
+                    Helpers.ConsolePrint("*", ResponseFromAPI);
+                    dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
+                    MinerStatCoinList.Clear();
+                    foreach (var item in data)
+                    {
+                        string name = item.name;
+                        string algo = item.algo;
+                        algo = algo.ToLower().Replace("cryptonightgpu", "cryptonight_gpu");
+                        algo = algo.ToLower().Replace("zelhash", "equihash125");
+                        algo = algo.ToLower().Replace("zhash", "equihash144");
+                        string symbol = item.coin;
+                        algo = algo.Replace("PLSR-CURVE", "PLSR");
+                        algo = algo.Replace("PLSR-MINO", "PLSR");
+                        string coinEstimateUnit = item.coinEstimateUnit;
+                        string _usdEstimate = item.usdEstimate;
+                        double.TryParse(_usdEstimate, out double usdEstimate);
+
+                        double mult = 0;
+                        coinEstimateUnit = coinEstimateUnit.ToLower();
+                        if (coinEstimateUnit.Equals("h"))
+                        {//cryptonight_gpu, dynexsolve, randomx, ghostrider
+                            mult = 10000000000;
+                        }
+                        if (coinEstimateUnit.Equals("kh"))
+                        {//flex, xelisv2-pepew, minotaurx, spectrex, verthash, xehash, xelishashv2, cryptonightturtle
+                            Helpers.ConsolePrint("*********** " + algo, symbol);
+                            mult = 10000000;
+                        }
+                        if (coinEstimateUnit.Equals("mh"))
+                        {//abelhash, kawpow, astrixhash, x16rt, autolykos2, ethash, etchash, octopus,
+                         //cryptixhash, scrypt, evrprogpow, firopow, hoohash, fishhash, meowpow, nexapow,
+                         //progpowz, sha256dt, phihash, curvehash, sha512256d, skydoge, meraki, verushash,
+                         //warthog, zilhash
+                            mult = 0.01;
+                        }
+                        if (coinEstimateUnit.Equals("gh"))
+                        {
+                            mult = 1000000;
+                        }
+                        if (coinEstimateUnit.Equals("th"))
+                        {
+                            mult = 1000;
+                        }
+
+                        if (coinEstimateUnit.Equals("sol"))
+                        {//BEAM, Zhash, ZelHash
+                            mult = 10000000000;
+                        }
+                        if (coinEstimateUnit.Equals("ksol"))
+                        {
+                            mult = 1;
+                        }
+
+                        if (coinEstimateUnit.Equals("it"))
+                        {
+                            mult = 1000000000;
+                        }
+
+                        if (coinEstimateUnit.Equals("mproof"))
+                        {
+                            mult = 1000;
+                        }
+                        if (coinEstimateUnit.Equals("gp"))
+                        {
+                            mult = 1;
+                        }
+
+                        double _estimate = ExchangeRateApi.ConvertUSDToNationalCurrency(
+                            ExchangeRateApi.ConvertNationalCurrencyToBTC(usdEstimate)) * mult;
+                        double estimate_current = _estimate;
+                        double estimate_last24h = _estimate;
+                        double actual_last24h = _estimate;
+
+                        Coin _coin = new();
+                        _coin.name = name;
+                        _coin.algo = algo.ToLower();
+                        _coin.symbol = symbol;
+                        _coin.estimate = estimate_current;
+                        _coin.estimate_current = estimate_current;
+                        _coin.estimate_last24h = estimate_current;
+                        _coin.actual_last24h = estimate_current;
+
+
+                        MinerStatCoinList.Add(_coin);
+                        
+                    }
+                }
+
+                //var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
+                //Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
+
+            }
+            catch (Exception ex)
+            {
+                Helpers.ConsolePrintError("GetMinerStat", ex.ToString());
+            }
+            return MinerStatCoinList;
+        }
+
+        //ошибки на порядок на разных монетах - не используется
+        public static List<Coin> GetMinerStat()
+        {
+            Helpers.ConsolePrint("Stats", "Trying GetMinerStat");
+            try
+            {
+                string ResponseFromAPI = GetPoolApiData(Links.minerstat);
+                if (ResponseFromAPI != null)
+                {
+                    dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
+                    //double unpaid = data.@unpaid;
+                    //var data = JObject.Parse(ResponseFromAPI);
+                    MinerStatCoinList.Clear();
+                    foreach (var item in data)
+                    {
+                        /*
+                        var coin = item.Value;
+                        string name = coin.Value<string>("name");
+                        string algo = coin.Value<string>("algorithm");
+                        string symbol = coin.Value<string>("coin");
+                        var _estimate = coin.Value<double>("reward") * 24;
+                        double estimate_current = _estimate;
+                        var estimate_last24h = _estimate;
+                        var actual_last24h = _estimate;
+                        */
+                        string name = item.name;
+                        string algo = item.algorithm;
+                        string symbol = item.coin;
+                        string reward_unit = item.reward_unit;
+                        double price = item.price;
+                        if (price == 0)
+                        {
+                            price = ExchangeRateApi.MarketRatesList.FirstOrDefault(c => c.Key == symbol).Value;
+                        }
+                        double _estimate = 0d;
+                        double estimate_current = 0d;
+                        double estimate_last24h = 0d;
+                        double actual_last24h = 0d;
+                        if (symbol.Equals(reward_unit))
+                        {
+                            _estimate = item.reward * price * 24 * 10000;
+                            estimate_current = _estimate;
+                            estimate_last24h = _estimate;
+                            actual_last24h = _estimate;
+                        }
+
+                        Coin _coin = new();
+                        _coin.name = name;
+                        _coin.algo = algo;
+                        _coin.symbol = symbol;
+                        _coin.estimate = estimate_current;
+                        _coin.estimate_current = estimate_current;
+                        _coin.estimate_last24h = estimate_current;
+                        _coin.actual_last24h = estimate_current;
+
+
+                        MinerStatCoinList.Add(_coin);
+                    }
+                }
+
+                //var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
+                //Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
+
+            }
+            catch (Exception ex)
+            {
+                Helpers.ConsolePrintError("GetMinerStat", ex.ToString());
+            }
+            return MinerStatCoinList;
         }
 
         public static List<string> zergpoolAlgos = new();
@@ -322,6 +640,9 @@ namespace ZergPoolMiner.Stats
             List<string> progAlgosList = new();
             List<string> poolAlgosList = new();
             var coins = GetCoins();
+            //var hashratenocoins = GetHashrateNo();
+            //var minerStatcoins = GetMinerStat();
+            //var ZPoolcoins = GetZPool();
             if (coins.Count == 0)
             {
                 return MiningAlgorithmsList;
@@ -347,28 +668,40 @@ namespace ZergPoolMiner.Stats
                             {
                                 zergpoolAlgos.Add(coin.algo.ToLower());
                             }
-
+                            
                             if (coin.algo.ToLower().Equals(_alg))
                             {
-                                /*
-                                //по хешрейту
-                                if (coin.hashrate >= defcoin.hashrate && !coin.tempTTF_Disabled &&
-                                    !coin.tempDeleted && coin.noautotrade == 0)
+                                //foreach (var hashratencoin in ZPoolcoins)
                                 {
-                                    defcoin = coin;
-                                    defcoin.algo = _alg;
-                                }
-                                */
+                                    //Helpers.ConsolePrint(coin.symbol, minerStatcoin.symbol);
+                                    /*
+                                    if (coin.symbol.Equals(hashratencoin.symbol) && coin.algo.Equals(hashratencoin.algo))
+                                    {
+                                        Helpers.ConsolePrint(coin.algo.ToLower(), coin.symbol + ": " + 
+                                            coin.estimate_current.ToString() + " " +
+                                            hashratencoin.symbol + ": " + 
+                                            (hashratencoin.estimate_current * coin.mbtc_mh_factor).ToString());
+                                    }
+                                    */
+                                    /*
+                                    //по хешрейту
+                                    if (coin.hashrate >= defcoin.hashrate && !coin.tempTTF_Disabled &&
+                                        !coin.tempDeleted && coin.noautotrade == 0)
+                                    {
+                                        defcoin = coin;
+                                        defcoin.algo = _alg;
+                                    }
+                                    */
 
-                                //по монете
-                                if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current && 
+                                    //по монете
+                                    if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current &&
                                     //!coin.tempTTF_Disabled &&
-                                    !coin.tempDeleted && coin.noautotrade == 0)
-                                {
-                                    defcoin = coin;
-                                    defcoin.algo = _alg;
+                                    !coin.tempDeleted)
+                                    {
+                                        defcoin = coin;
+                                        defcoin.algo = _alg;
+                                    }
                                 }
-                                
                             }
                         }
                     }

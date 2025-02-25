@@ -321,6 +321,13 @@ namespace ZergPoolMiner
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.6;
                 }
 
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.7)
+                {
+                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 0.7;
+                }
+
                 if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
 
                 new StorePermission(PermissionState.Unrestricted) { Flags = StorePermissionFlags.AddToStore }.Assert();

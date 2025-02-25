@@ -7,9 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Management;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -149,6 +151,11 @@ namespace NvidiaGPUGetDataHost
                         //537.58++ на 4060 не работает потребление (546.17, 551.86, 552.44)
                         //537.13 работает
                         ret = NvmlNativeMethods.nvmlDeviceGetPowerUsage(_nvmlDevice, ref _power);// <- mem leak 461.40+
+                        NvmlNativeMethods.nvmlDeviceGetName(_nvmlDevice, out string devName);
+                        if (devName.Contains("2070"))//570+ driver
+                        {
+                            _power = _power ^ 512;
+                        }
                         //Logger.ConsolePrint("NvidiaGPUGetDataHost", "_power: " + _power.ToString());
                         if (ret != nvmlReturn.Success && ret != nvmlReturn.NVML_ERROR_NO_DATA)
                         {
@@ -426,7 +433,104 @@ namespace NvidiaGPUGetDataHost
             return false;
         }
 
+        private static string SafeGetProperty(ManagementBaseObject mbo, string key)
+        {
+            try
+            {
+                var o = mbo.GetPropertyValue(key);
+                if (o != null)
+                {
+                    return o.ToString();
+                }
+            }
+            catch { }
+
+            return "key is null";
+        }
+        private static string NVIDIADriver;
         private static string GetNVMLFiles()
+        {
+            var moc = new ManagementObjectSearcher("root\\CIMV2",
+                           "SELECT * FROM Win32_VideoController WHERE PNPDeviceID LIKE 'PCI%'").Get();
+            string DriverVersion;
+            string Name;
+            string PnpDeviceID;
+            foreach (var manObj in moc)
+            {
+                DriverVersion = SafeGetProperty(manObj, "DriverVersion");
+                Name = SafeGetProperty(manObj, "Name");
+                PnpDeviceID = SafeGetProperty(manObj, "PNPDeviceID");
+                if (Name.ToLower().Contains("nvidia") ||
+                                PnpDeviceID.Contains("10DE"))
+                {
+                    NVIDIADriver = DriverVersion;
+                }
+            }
+
+                DateTime dt = new DateTime();
+            string pathToFiles = null;
+            string DriverFolder = "C:\\Windows\\System32\\DriverStore\\FileRepository";
+            string nvFolder = "\\nv_dispig.inf_amd64_7e5fd280efaa5445";
+            /*
+            if (File.Exists(DriverFolder + nvFolder + "\\nvidia-smi.exe"))
+            {
+                return DriverFolder + nvFolder;
+            }
+            */
+            string driverline = "Unknown driver version";
+            try
+            {
+                string[] folders = Directory.GetDirectories(DriverFolder);
+                foreach (string folder in folders)
+                {
+                    string[] files = Directory.GetFiles(folder);
+                    foreach (string filename in files)
+                    {
+                        if (filename.Contains("nvml.dll"))
+                        {
+                            var inf0 = folder.IndexOf("FileRepository\\", 0) + 15;
+                            var inf1 = folder.IndexOf(".inf", 0);
+                            var inf = folder.Substring(inf0, inf1 - inf0) + ".inf";
+
+                            DateTime DriverDate = new DateTime();
+                            var fdata = File.ReadAllLines(folder + "\\" + inf);
+
+                            foreach (string line in fdata)
+                            {
+                                if (line.ToLower().Contains("driverver"))
+                                {
+                                    var i0 = line.IndexOf("= ", 0) + 2;
+                                    var i1 = line.IndexOf(", ", 0);
+                                    var dd = line.Substring(i0, i1 - i0);
+                                    DriverDate = DateTime.ParseExact(dd, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+                                    driverline = line;
+                                    break;
+                                }
+                            }
+
+                            //FileInfo fi = new FileInfo(filename);
+                            Logger.ConsolePrint("GetNVMLFiles", "Found " + folder + " " + driverline);
+                            if (DateTime.Compare(DriverDate, dt) > 0)
+                            {
+                                dt = DriverDate;
+                                pathToFiles = folder;
+                            }
+                        }
+                    }
+                    if (driverline.Contains(NVIDIADriver))
+                    {
+                        pathToFiles = folder;
+                        break;
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Logger.ConsolePrint("GetNVMLFiles", e.ToString());
+            }
+            return pathToFiles;
+        }
+        private static string GetNVMLFiles0()
         {
             DateTime dt = new DateTime();
             string pathToFiles = null;

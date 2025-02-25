@@ -519,6 +519,7 @@ namespace ZergPoolMiner
             this.Shown += new System.EventHandler(this.Form_Main_Shown);
             this.ResizeBegin += new System.EventHandler(this.Form_Main_ResizeBegin);
             this.ResizeEnd += new System.EventHandler(this.Form_Main_ResizeEnd);
+            this.LocationChanged += new System.EventHandler(this.Form_Main_LocationChanged);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form_Main_Paint);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             this.statusStrip1.ResumeLayout(false);

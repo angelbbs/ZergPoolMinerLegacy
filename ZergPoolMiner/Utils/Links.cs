@@ -26,6 +26,9 @@ namespace ZergPoolMiner
         public static string WalletBalance = ("https://zergpool.com/api/wallet?address=");
         public static string WalletBalanceEx = ("https://zergpool.com/api/walletEx?address=");
         public static string Currencies = ("https://zergpool.com/api/currencies");
+        public static string CurrenciesZPool = ("https://zpool.ca/api/currencies");
+        public static string minerstat = ("https://api.minerstat.com/v2/coins");
+        public static string hashrateno = ("https://api.hashrate.no/v1/coins?apiKey=");
 
         //https://www.cbr-xml-daily.ru/daily_json.js
         //public static string XeggexMarket = ("https://api.xeggex.com/api/v2/market/getbysymbol/BTC%2FUSDT");

@@ -545,6 +545,7 @@ namespace ZergPoolMiner
 
             label_NotProfitable.Text = International.GetText("Form_Main_MINING_NOT_PROFITABLE");
             groupBox1.Text = International.GetText("Form_Main_Group_Device_Rates");
+            groupBox1.DoubleBuffer();
 
         }
         public void InitMainConfigGuiData()
@@ -1322,7 +1323,7 @@ namespace ZergPoolMiner
 
             _updateSMATimer = new Timer();
             _updateSMATimer.Tick += UpdateSMATimer_Tick;
-            _updateSMATimer.Interval = 1000 * 30;
+            _updateSMATimer.Interval = 1000 * 60;
             _updateTimerCount = 0;
             _updateSMATimer.Start();
             new Task(() => UpdateSMATimer_Tick(null, null)).Start();
@@ -3829,11 +3830,6 @@ namespace ZergPoolMiner
 
         }
 
-        private void textBoxBTCAddress_new_TextChanged(object sender, EventArgs e)
-        {
-            
-        }
-
         private void flowLayoutPanelRates_Paint(object sender, PaintEventArgs e)
         {
 
@@ -4009,6 +4005,11 @@ namespace ZergPoolMiner
         }
 
         private void Form_Main_Deactivate(object sender, EventArgs e)
+        {
+            this.Width = ConfigManager.GeneralConfig.FormWidth;
+        }
+
+        private void Form_Main_LocationChanged(object sender, EventArgs e)
         {
             this.Width = ConfigManager.GeneralConfig.FormWidth;
         }

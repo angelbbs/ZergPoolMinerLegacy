@@ -243,12 +243,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
-                            /*
-                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.PyrinHashV2, "PyrinHashV2")
+                            
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.Cryptonight_GPU, "Cryptonight_GPU")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
-                            */
+                            
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.HooHash, "HooHash")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
@@ -658,10 +658,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
                             */
+                            /*
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.VerusHash, "VerusHash")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            */
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.HooHash, "HooHash")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"

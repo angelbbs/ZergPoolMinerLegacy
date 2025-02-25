@@ -15,7 +15,7 @@
 - Included most profitable miners programs.
 - Dual algorithms.
 - Fast benchmark - 1-2 min per algo.
-- Auto-switch between most profitable algorithms taking into account the consumption of devices and the cost of electricity.
+- Auto-switch between most profitable algorithms and coins taking into account the consumption of devices and the cost of electricity.
 - Tariff zones for electricity.
 - GPU overclocking via MSI Afterburner.
 - Support overclocking profiles, benchmarks, miners additional parameters.

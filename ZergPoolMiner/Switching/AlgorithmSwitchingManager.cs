@@ -54,8 +54,8 @@ namespace ZergPoolMiner.Switching
             AlgorithmType.X21S,
             AlgorithmType.X25X,
             AlgorithmType.SHA256csm,
-            //AlgorithmType.SHA256dt,
             AlgorithmType.SHA512256d,
+            AlgorithmType.Equihash144//пока не уберут btg
         };
 
         /// <summary>

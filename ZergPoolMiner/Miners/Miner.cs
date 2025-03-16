@@ -692,7 +692,22 @@ namespace ZergPoolMiner
             {
                 benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("miner.exe", "miner275.exe");
             }
-
+            if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("miniz") && 
+                (commandLine.ToLower().Contains("h125")))
+            {
+                benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("miniZ.exe", "miniZ.22c.exe");
+            }
+            /*
+            if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("srbminer") &&
+                (commandLine.ToLower().Contains("panthera") ||
+                commandLine.ToLower().Contains("randomarq") ||
+                commandLine.ToLower().Contains("randomxeq") ||
+                commandLine.ToLower().Contains("randomx")))
+            {
+                benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("SRBMiner-MULTI.exe",
+                    "SRBMiner-MULTI256.exe");
+            }
+            */
             BenchmarkProcessPath = benchmarkHandle.StartInfo.FileName;
             Helpers.ConsolePrint(MinerTag(), "Using miner: " + benchmarkHandle.StartInfo.FileName);
             benchmarkHandle.StartInfo.WorkingDirectory = WorkingDirectory;
@@ -1104,94 +1119,101 @@ namespace ZergPoolMiner
             BenchmarkThreadRoutineStartSettup(); //need for benchmark log
             while (IsActiveProcess(BenchmarkHandle.Id))
             {
-                if (benchmarkTimer.Elapsed.TotalSeconds >= (_benchmarkTimeWait + delay_before_calc_hashrate + 300)
-                    || BenchmarkSignalQuit
-                    || BenchmarkSignalFinnished
-                    || BenchmarkSignalHanged
-                    || BenchmarkSignalTimedout
-                    || BenchmarkException != null)
+                try
                 {
-                    var imageName = MinerExeName.Replace(".exe", "");
-                    // maybe will have to KILL process
-                    EndBenchmarkProcces();
-                    //  KillMinerBase(imageName);
-                    if (BenchmarkSignalTimedout)
+                    if (benchmarkTimer.Elapsed.TotalSeconds >= (_benchmarkTimeWait + delay_before_calc_hashrate + 300)
+                        || BenchmarkSignalQuit
+                        || BenchmarkSignalFinnished
+                        || BenchmarkSignalHanged
+                        || BenchmarkSignalTimedout
+                        || BenchmarkException != null)
                     {
-                        Helpers.ConsolePrint(MinerTag(), "Benchmark timedout");
-                        //throw new Exception("Benchmark timedout");
-                    }
+                        var imageName = MinerExeName.Replace(".exe", "");
+                        // maybe will have to KILL process
+                        EndBenchmarkProcces();
+                        //  KillMinerBase(imageName);
+                        if (BenchmarkSignalTimedout)
+                        {
+                            Helpers.ConsolePrint(MinerTag(), "Benchmark timedout");
+                            //throw new Exception("Benchmark timedout");
+                        }
 
-                    if (BenchmarkException != null)
-                    {
-                        throw BenchmarkException;
-                    }
+                        if (BenchmarkException != null)
+                        {
+                            throw BenchmarkException;
+                        }
 
-                    if (BenchmarkSignalQuit)
-                    {
-                        Helpers.ConsolePrint(MinerTag(), "Termined by user request");
+                        if (BenchmarkSignalQuit)
+                        {
+                            Helpers.ConsolePrint(MinerTag(), "Termined by user request");
+                            break;
+                            //throw new Exception("Termined by user request");
+                        }
+
+                        if (BenchmarkSignalFinnished)
+                        {
+                            break;
+                        }
                         break;
-                        //throw new Exception("Termined by user request");
                     }
+                    // wait a second due api request
+                    Thread.Sleep(1000);
+                    overallbenchmarktime++;
 
-                    if (BenchmarkSignalFinnished)
+                    var ad = GetSummaryAsync();
+                    if (ad.Result != null && ad.Result.Speed > 0)
                     {
-                        break;
-                    }
-                    break;
-                }
-                // wait a second due api request
-                Thread.Sleep(1000);
-                overallbenchmarktime++;
+                        _powerUsage += _power;
+                        repeats++;
+                        double benchProgress = repeats / _benchmarkTimeWait;
+                        BenchmarkAlgorithm.BenchmarkProgressPercent = (int)(benchProgress * 100);
+                        if (repeats > delay_before_calc_hashrate)
+                        {
+                            if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
+                            {
+                                Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString());
+                            }
+                            else
+                            {
+                                Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString() + " SecondarySpeed: " + ad.Result.SecondarySpeed.ToString());
+                            }
+                            summspeed += ad.Result.Speed;
+                            summspeedSecond += ad.Result.SecondarySpeed;
+                        }
+                        else
+                        {
+                            _benchmarkTimeWait = Math.Min(_benchmarkTimeWait, benchmarkTimeWait);
+                            Helpers.ConsolePrint(MinerTag(), "Delayed Speed: " + ad.Result.Speed.ToString());
+                        }
+                        if (repeats >= _benchmarkTimeWait)
+                        {
+                            BenchmarkSpeed = Math.Round(summspeed / (repeats - delay_before_calc_hashrate), 2);
+                            BenchmarkSpeedSecond = Math.Round(summspeedSecond / (repeats - delay_before_calc_hashrate), 2);
+                            if (double.IsNaN(BenchmarkSpeed)) BenchmarkSpeed = 0;
+                            if (double.IsNaN(BenchmarkSpeedSecond)) BenchmarkSpeedSecond = 0;
+                            Helpers.ConsolePrint(MinerTag(), $"Benchmark has been completed. Speed: " + BenchmarkSpeed.ToString() + " SecondarySpeed: " + BenchmarkSpeedSecond.ToString());
+                            ad.Dispose();
+                            benchmarkTimer.Stop();
 
-                var ad = GetSummaryAsync();
-                if (ad.Result != null && ad.Result.Speed > 0)
+                            try
+                            {
+                                KillProcessAndChildren(BenchmarkHandle.Id);
+                                BenchmarkHandle.Kill();
+                                BenchmarkHandle.Dispose();
+                                EndBenchmarkProcces();
+                            }
+                            catch (Exception ex)
+                            {
+                                Helpers.ConsolePrint("GetBenchmarkSpeed*", ex.ToString());
+                            }
+
+                            break;
+                        }
+
+                    }
+                } catch (Exception ex)
                 {
-                    _powerUsage += _power;
-                    repeats++;
-                    double benchProgress = repeats / _benchmarkTimeWait;
-                    BenchmarkAlgorithm.BenchmarkProgressPercent = (int)(benchProgress * 100);
-                    if (repeats > delay_before_calc_hashrate)
-                    {
-                        if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
-                        {
-                            Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString());
-                        } else
-                        {
-                            Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString() + " SecondarySpeed: " + ad.Result.SecondarySpeed.ToString());
-                        }
-                        summspeed += ad.Result.Speed;
-                        summspeedSecond += ad.Result.SecondarySpeed;
-                    }
-                    else
-                    {
-                        _benchmarkTimeWait = Math.Min(_benchmarkTimeWait, benchmarkTimeWait);
-                        Helpers.ConsolePrint(MinerTag(), "Delayed Speed: " + ad.Result.Speed.ToString());
-                    }
-                    if (repeats >= _benchmarkTimeWait)
-                    {
-                        BenchmarkSpeed = Math.Round(summspeed / (repeats - delay_before_calc_hashrate), 2);
-                        BenchmarkSpeedSecond = Math.Round(summspeedSecond / (repeats - delay_before_calc_hashrate), 2);
-                        if (double.IsNaN(BenchmarkSpeed)) BenchmarkSpeed = 0;
-                        if (double.IsNaN(BenchmarkSpeedSecond)) BenchmarkSpeedSecond = 0;
-                        Helpers.ConsolePrint(MinerTag(), $"Benchmark has been completed. Speed: " + BenchmarkSpeed.ToString() + " SecondarySpeed: " + BenchmarkSpeedSecond.ToString());
-                        ad.Dispose();
-                        benchmarkTimer.Stop();
-                        
-                        try
-                        {
-                            KillProcessAndChildren(BenchmarkHandle.Id);
-                            BenchmarkHandle.Kill();
-                            BenchmarkHandle.Dispose();
-                            EndBenchmarkProcces();
-                        }
-                        catch (Exception ex)
-                        {
-                            Helpers.ConsolePrint("GetBenchmarkSpeed*", ex.ToString());
-                        }
-
-                        break;
-                    }
-
+                    Helpers.ConsolePrint("GetBenchmarkSpeed", ex.ToString());
                 }
             }
 
@@ -1388,6 +1410,22 @@ namespace ZergPoolMiner
                 Path = MiningSetup.MinerPath.Replace("miner.exe", "miner275.exe");
             }
 
+            if (MiningSetup.MinerPath.ToLower().Contains("miniz") && 
+                (LastCommandLine.ToLower().Contains("h125")))
+            {
+                Path = MiningSetup.MinerPath.Replace("miniZ.exe", "miniZ.22c.exe");
+            }
+            /*
+            if (MiningSetup.MinerPath.ToLower().Contains("srbminer") &&
+                (LastCommandLine.ToLower().Contains("panthera") ||
+                LastCommandLine.ToLower().Contains("randomarq") ||
+                LastCommandLine.ToLower().Contains("randomxeq") ||
+                LastCommandLine.ToLower().Contains("randomx")))
+            {
+                Path = MiningSetup.MinerPath.Replace("SRBMiner-MULTI.exe",
+                    "SRBMiner-MULTI256.exe");
+            }
+            */
             P.StartInfo.FileName = Path;
 
             P.ExitEvent = Miner_Exited;

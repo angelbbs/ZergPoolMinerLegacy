@@ -694,7 +694,9 @@ namespace ZergPoolMiner.Miners
                                     _ticks[0] = _ticks[0] - 1;
                                     needSwitch = false;
                                     Helpers.ConsolePrint(Tag,
-                                        $"Switching delayed due profit down. Profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
+                                        $"Switching delayed due profit down. Profit diff is " +
+                                        $"{Math.Round(percDiff * 100, 2):f2}%, current threshold " +
+                                        $"{ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
                                     foreach (var device in _miningDevices)
                                     {
                                         device.RestoreOldProfitsState();
@@ -703,8 +705,41 @@ namespace ZergPoolMiner.Miners
                             }
                             else
                             {
+                                double actualProfit = 0d;
+                                double localProfit = 0d;
+                                foreach (var __algoProperty in Stats.Stats.algosProperty)
+                                {
+                                    var _algoProperty = __algoProperty.Value;
+                                    actualProfit = actualProfit + _algoProperty.actualProfit;
+                                    localProfit = localProfit + _algoProperty.localProfit;
+                                }
+                                Helpers.ConsolePrint(Tag, $"current profit { Math.Round(actualProfit / localProfit * 100, 2):f2}% " +
+                                            $"profit after switching {Math.Round(percDiff * 100, 2):f2}%");
+
                                 if (percDiff <= 5 || double.IsInfinity(percDiff) || forceSwitch)
                                 {
+                                    actualProfit = 0d;
+                                    localProfit = 0d;
+                                    foreach (var __algoProperty in Stats.Stats.algosProperty)
+                                    {
+                                        var _algoProperty = __algoProperty.Value;
+                                        actualProfit = actualProfit + _algoProperty.actualProfit;
+                                        localProfit = localProfit + _algoProperty.localProfit;
+                                    }
+                                    if (actualProfit / localProfit > percDiff && currentProfit != 0)
+                                    {
+                                        Helpers.ConsolePrint(Tag, $"Switching temporary disabled because current actual " +
+                                            $"profit { Math.Round(actualProfit / localProfit * 100, 2):f2}% " +
+                                            $"above than profit after switching {Math.Round(percDiff * 100, 2):f2}%");
+                                        needSwitch = false;
+                                        // RESTORE OLD PROFITS STATE
+                                        foreach (var device in _miningDevices)
+                                        {
+                                            device.RestoreOldProfitsState();
+                                        }
+                                        return;
+                                    }
+
                                     _ticks[0] = 0;
                                     needSwitch = true;
                                     Helpers.ConsolePrint(Tag,
@@ -1124,6 +1159,7 @@ namespace ZergPoolMiner.Miners
                             Helpers.ConsolePrint(Tag, $"No change  : {stringBuilderNoChangeAlgo}");
 
                         _password = _password.Replace("mc=" + coin, "mc=" + toStart.Coin);
+                        //_password = _password.Replace("mc=" + coin, "mc=KIIRO");//test
                         coin = toStart.Coin;
                         if (ConfigManager.GeneralConfig.ServiceLocation == 0)
                         {

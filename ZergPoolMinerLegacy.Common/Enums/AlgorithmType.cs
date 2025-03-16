@@ -76,6 +76,7 @@
         Panthera = 1290,
         PhiHash = 1293,
         Power2b = 1295,
+        ProgPowZ = 1297,
         //PyrinHashV2 = 1300,
         RandomX = 1310,
         RandomARQ = 1320,

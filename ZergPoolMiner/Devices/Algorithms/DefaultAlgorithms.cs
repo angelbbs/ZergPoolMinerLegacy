@@ -253,6 +253,10 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.ProgPowZ, "ProgPowZ")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.HooHash, "KarlsenHashV2+HooHash")
                             {
@@ -414,6 +418,10 @@ namespace ZergPoolMiner.Devices.Algorithms
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.HooHash, "HooHash")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.ProgPowZ, "ProgPowZ")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
@@ -668,6 +676,10 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.ProgPowZ, "ProgPowZ")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.HooHash, "KarlsenHashV2+HooHash")
                             {
@@ -724,6 +736,9 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                             },
                             new Algorithm(MinerBaseType.miniZ, AlgorithmType.EvrProgPow, "EvrProgPow")
+                            {
+                            },
+                            new Algorithm(MinerBaseType.miniZ, AlgorithmType.ProgPowZ, "ProgPowZ")
                             {
                             },
                             new Algorithm(MinerBaseType.miniZ, AlgorithmType.Ethashb3, "Ethashb3")
@@ -863,18 +878,13 @@ namespace ZergPoolMiner.Devices.Algorithms
                     {
                         ExtraLaunchParameters = "--no-tui"
                     },
-                    /*
-                    new Algorithm(MinerBaseType.Rigel, AlgorithmType.KarlsenHash, "KarlsenHash")
-                    {
-                        ExtraLaunchParameters = "--no-tui"
-                    },
-                    */
                     new Algorithm(MinerBaseType.Rigel, AlgorithmType.KarlsenHashV2, "KarlsenHashV2")
                     {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                     },
+                    //RPC request id 2 failed: Unauthenticated
                     /*
-                    new Algorithm(MinerBaseType.Rigel, AlgorithmType.PyrinHashV2, "PyrinHashV2")
+                    new Algorithm(MinerBaseType.Rigel, AlgorithmType.ProgPowZ, "ProgPowZ")
                     {
                         ExtraLaunchParameters = "--no-tui --dag-reset-mclock off"
                     },

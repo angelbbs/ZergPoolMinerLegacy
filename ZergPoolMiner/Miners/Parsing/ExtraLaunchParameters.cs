@@ -225,6 +225,7 @@ namespace ZergPoolMiner.Miners.Parsing
                     new MinerOption("SRBMiner-log-file", "--log-file", "--log-file", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-log-file-mode", "--log-file-mode", "--log-file-mode", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-extended-log", "--extended-log", "--extended-log", null, MinerOptionFlagType.Uni),
+                    new MinerOption("SRBMiner-disable-huge-pages", "--disable-huge-pages", "--disable-huge-pages", null, MinerOptionFlagType.Uni),
                     new MinerOption("SRBMiner-enable-restart-on-rejected", "--enable-restart-on-rejected", "--enable-restart-on-rejected", null, MinerOptionFlagType.Uni),
                     new MinerOption("SRBMiner-max-rejected-shares", "--max-rejected-shares", "--max-rejected-shares", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-cpu-threads", "--cpu-threads", "--cpu-threads", null, MinerOptionFlagType.SingleParam, " "),

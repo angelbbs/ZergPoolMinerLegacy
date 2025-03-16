@@ -409,6 +409,8 @@ namespace ZergPoolMiner.Miners
                 StreamReader Reader = new StreamReader(SS);
                 Reader.BaseStream.ReadTimeout = 3 * 1000;
                 ResponseFromRigel = await Reader.ReadToEndAsync();
+                ResponseFromRigel = ResponseFromRigel.Replace("-nan", "0.00");
+                ResponseFromRigel = ResponseFromRigel.Replace("(ind)", "");
                 //Helpers.ConsolePrint("->", ResponseFromRigel);
                 if (ResponseFromRigel.Length == 0 || (ResponseFromRigel[0] != '{' && ResponseFromRigel[0] != '['))
                     throw new Exception("Not JSON!");
@@ -432,11 +434,11 @@ namespace ZergPoolMiner.Miners
                 ad.Speed = 0;
                 ad.SecondarySpeed = 0;
                 ad.ThirdSpeed = 0;
+                ad.AlgorithmID = MiningSetup.CurrentAlgorithmType;
+                ad.SecondaryAlgorithmID = MiningSetup.CurrentSecondaryAlgorithmType;
                 return ad;
             }
             //return null;
-            ResponseFromRigel = ResponseFromRigel.Replace("-nan", "0.00");
-            ResponseFromRigel = ResponseFromRigel.Replace("(ind)", "");
             //Helpers.ConsolePrint("->", ResponseFromRigel);
             string _miner = "";
             try

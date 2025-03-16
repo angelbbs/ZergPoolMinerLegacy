@@ -132,7 +132,7 @@ namespace ZergPoolMiner.Stats
         {
             Helpers.ConsolePrint("Stats", "Trying GetCoins");
             //double correction = ConfigManager.GeneralConfig.ProfitabilityCorrection;
-            double correction = 0.9;
+            double correction = 0.95;
             /*
             if (ConfigManager.GeneralConfig.ForkFixVersion == 0.3)
             {
@@ -694,7 +694,8 @@ namespace ZergPoolMiner.Stats
                                     */
 
                                     //по монете
-                                    if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current &&
+                                    //if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current &&
+                                    if (coin.estimate_current >= defcoin.estimate_current &&
                                     //!coin.tempTTF_Disabled &&
                                     !coin.tempDeleted)
                                     {
@@ -991,6 +992,8 @@ namespace ZergPoolMiner.Stats
                         foreach (var cur in data.SelectToken("miners"))
                         {
                             string _algo = cur.SelectToken("algo");
+                            _algo = _algo.Replace("xelisv2-pepew", "xelisv2_pepew");
+                            _algo = _algo.Replace("neoscrypt-xaya", "neoscrypt_xaya");
                             string _hashrate = cur.SelectToken("hashrate");
                             string _ID = cur.SelectToken("ID");
                             int _subscribe = cur.SelectToken("subscribe");
@@ -1000,9 +1003,10 @@ namespace ZergPoolMiner.Stats
                             {
                                 var _algoProperty = new AlgoProperty();
                                 double localHashrate = 0d;
-                                
                                 foreach (var miningDevice in MiningSession._miningDevices)
                                 {
+                                    Helpers.ConsolePrint("*** " + alg.name.ToLower() + " : " + _algo.ToLower(),
+                                _ID + " : " + Miner.GetFullWorkerName());
                                     if (alg.name.ToLower().Equals(((AlgorithmType)miningDevice.Device.AlgorithmID).ToString().ToLower()))
                                     {
                                         localHashrate = localHashrate + miningDevice.Device.MiningHashrate;
@@ -1331,14 +1335,15 @@ namespace ZergPoolMiner.Stats
                             double _profit = 0d;
                             int profitsCount = 0;
                             //отключение алгоритма
-                            if (algo.estimate_current == 0 || algo.tempDeleted || algo.tempDisabled || algo.hashrate == 0)
+                            if (algo.estimate_current == 0 || algo.tempDeleted || algo.tempDisabled ||
+                                algo.hashrate == 0)
                             {
                                 _profit = 0;
                                 if (algo.hashrate == 0)
                                 {
                                     //algo.tempDeleted = true;
                                     zeroAlgos.Add(algo.name);
-                                    continue;
+                                    //continue;
                                 }
                             }
                             else

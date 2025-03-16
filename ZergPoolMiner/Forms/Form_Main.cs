@@ -2561,7 +2561,7 @@ namespace ZergPoolMiner
                 if (_flowLayoutPanelRatesIndex >= groupCount) return;
                 // flowLayoutPanelRatesIndex may be OOB, so catch
                 ((GroupProfitControl)flowLayoutPanelRates.Controls[_flowLayoutPanelRatesIndex++])
-                    .UpdateProfitStats(groupName, deviceStringInfo, speedString, StartMinerTime, rateBtcString, rateCurrencyString, processTag);
+                    .UpdateProfitStats(algoName, groupName, deviceStringInfo, speedString, StartMinerTime, rateBtcString, rateCurrencyString, processTag);
 
             }
             catch (Exception ex)

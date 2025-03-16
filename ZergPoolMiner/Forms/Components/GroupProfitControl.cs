@@ -27,23 +27,26 @@ namespace ZergPoolMiner.Forms.Components
         }
 
 
-        public void UpdateProfitStats(string groupName, string deviceStringInfo,
+        public void UpdateProfitStats(string algoName, string groupName, string deviceStringInfo,
             string speedString, DateTime StartMinerTime, string btcRateString, string currencyRateString, string ProcessTag)
         {
             try
             {
+                var timenow = DateTime.Now;
+                TimeSpan Uptime = timenow.Subtract(StartMinerTime);
                 if (ConfigManager.GeneralConfig.ShowUptime)
                 {
-                    var timenow = DateTime.Now;
-                    TimeSpan Uptime = timenow.Subtract(StartMinerTime);
                     groupBoxMinerGroup.Text = string.Format(International.GetText("Form_Main_MiningDevices"), deviceStringInfo) +
                         "  " + International.GetText("Form_Main_Miner") + groupName.Split('-')[0] +
-                        MinerVersion.GetMinerVersion(groupName.Split('-')[0]) +
+                        MinerVersion.GetMinerFakeVersion(groupName.Split('-')[0], algoName) +
                         "  " + International.GetText("Form_Main_Uptime") + " " + Uptime.ToString(@"d\ \d\a\y\s\ hh\:mm\:ss");
                 }
                 else
                 {
-                    groupBoxMinerGroup.Text = string.Format(International.GetText("Form_Main_MiningDevices"), deviceStringInfo);
+                    groupBoxMinerGroup.Text = string.Format(International.GetText("Form_Main_MiningDevices"), deviceStringInfo) +
+                        "  " + International.GetText("Form_Main_Miner") + groupName.Split('-')[0] +
+                        MinerVersion.GetMinerFakeVersion(groupName.Split('-')[0], algoName) +
+                        "  " + International.GetText("Form_Main_Uptime");
                 }
                 if (ConfigManager.GeneralConfig.FiatCurrency)
                 {

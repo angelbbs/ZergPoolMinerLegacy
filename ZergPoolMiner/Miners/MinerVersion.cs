@@ -1303,6 +1303,19 @@ namespace ZergPoolMiner.Miners
             {
                 miner = miner + " 0.23.0";
             }
+            else if (miner.ToLower().Contains("miniz") && (algo.ToLower().Contains("h125")))
+            {
+                miner = miner + " 2.2c";
+                /*
+            } else if (miner.ToLower().Contains("srbminer") &&
+                (algo.ToLower().Contains("panthera") ||
+                algo.ToLower().Contains("randomarq") ||
+                algo.ToLower().Contains("randomxeq") ||
+                algo.ToLower().Contains("randomx")))
+            {
+                miner = miner + " 2.5.6";
+                */
+            }
             else
             {
                 miner = miner + MinerVersion.GetMinerVersion(miner);

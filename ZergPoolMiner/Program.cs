@@ -23,6 +23,7 @@ using System.Windows.Forms;
 using static ZergPoolMiner.Wallets.Wallets;
 using System.Collections.Generic;
 using static ZergPoolMiner.Stats.Stats;
+using ZergPoolMiner.Devices;
 
 namespace ZergPoolMiner
 {
@@ -323,10 +324,48 @@ namespace ZergPoolMiner
 
                 if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.7)
                 {
-                    ConfigManager.GeneralConfig.ServiceLocation = 0;
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.7;
                 }
+
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.8)
+                {
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 0.8;
+                    //--disable-huge-pages
+                    string dirName = "configs\\profiles\\default";
+                    var directory = new DirectoryInfo(dirName);
+                    if (directory.Exists)
+                    {
+                        FileInfo[] files = directory.GetFiles();
+                        foreach (FileInfo file in files)
+                        {
+                            if (file.FullName.Contains("benchmark_GEN"))
+                            {
+                                var data = File.ReadAllText(file.FullName);
+                                dynamic json = JsonConvert.DeserializeObject(data);
+                                dynamic _AlgorithmSettings = json.AlgorithmSettings;
+                                foreach (var algo in _AlgorithmSettings)
+                                {
+                                    string algoName = algo.Name;
+                                    string algoNameCustom = algo.AlgorithmNameCustom;
+                                    string algoExtraLaunchParameters = algo.ExtraLaunchParameters;
+                                    if ((algoName.Equals("SRBMiner_RandomX") ||
+                                        algoName.Equals("SRBMiner_Panthera") ||
+                                        algoName.Equals("SRBMiner_RandomARQ") ||
+                                        algoName.Equals("SRBMiner_RandomXEQ")) &&
+                                        !algoExtraLaunchParameters.Contains("--disable-huge-pages"))
+                                    {
+                                        algo.ExtraLaunchParameters = algoExtraLaunchParameters + " --disable-huge-pages";
+                                    }
+                                }
+                                var f = JsonConvert.SerializeObject(json, Formatting.Indented);
+                                File.WriteAllText(file.FullName, f);
+                            }
+                        }
+                    }
+                }
+                
 
                 if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
 

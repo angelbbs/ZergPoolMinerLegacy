@@ -117,6 +117,7 @@ namespace ZergPoolMiner.Switching
             lock (_currentAlgosProfit)
             {
                 if (!_currentAlgosProfit.ContainsKey(algo))
+                    //Helpers.ConsolePrint("UpdatePayingForAlgo", "Algo not setup in SMA: " + algo);
                     throw new ArgumentException("Algo not setup in SMA");
 
                 _currentAlgosProfit[algo].Coin = coin;

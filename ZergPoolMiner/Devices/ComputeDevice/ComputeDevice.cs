@@ -71,7 +71,7 @@ namespace ZergPoolMiner.Devices
         // amd has some algos not working with new drivers
         public bool DriverDisableAlgos { get; protected set; }
 
-        protected List<Algorithm> AlgorithmSettings;
+        public List<Algorithm> AlgorithmSettings;
 
         public string BenchmarkCopyUuid { get; set; }
         public string TuningCopyUuid { get; set; }

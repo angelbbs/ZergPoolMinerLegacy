@@ -1102,7 +1102,7 @@ namespace ZergPoolMiner.Forms
             // checkBox_Show_profit_with_power_consumption
             // 
             this.checkBox_Show_profit_with_power_consumption.AutoSize = true;
-            this.checkBox_Show_profit_with_power_consumption.Location = new System.Drawing.Point(316, 80);
+            this.checkBox_Show_profit_with_power_consumption.Location = new System.Drawing.Point(324, 80);
             this.checkBox_Show_profit_with_power_consumption.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_Show_profit_with_power_consumption.Name = "checkBox_Show_profit_with_power_consumption";
             this.checkBox_Show_profit_with_power_consumption.Size = new System.Drawing.Size(196, 17);
@@ -1216,7 +1216,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxProfile5
             // 
             this.checkBoxProfile5.AutoSize = true;
-            this.checkBoxProfile5.Location = new System.Drawing.Point(312, 153);
+            this.checkBoxProfile5.Location = new System.Drawing.Point(320, 153);
             this.checkBoxProfile5.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxProfile5.Name = "checkBoxProfile5";
             this.checkBoxProfile5.Size = new System.Drawing.Size(76, 17);
@@ -1228,7 +1228,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxProfile4
             // 
             this.checkBoxProfile4.AutoSize = true;
-            this.checkBoxProfile4.Location = new System.Drawing.Point(312, 127);
+            this.checkBoxProfile4.Location = new System.Drawing.Point(320, 127);
             this.checkBoxProfile4.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxProfile4.Name = "checkBoxProfile4";
             this.checkBoxProfile4.Size = new System.Drawing.Size(76, 17);
@@ -1240,7 +1240,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxProfile3
             // 
             this.checkBoxProfile3.AutoSize = true;
-            this.checkBoxProfile3.Location = new System.Drawing.Point(312, 101);
+            this.checkBoxProfile3.Location = new System.Drawing.Point(320, 101);
             this.checkBoxProfile3.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxProfile3.Name = "checkBoxProfile3";
             this.checkBoxProfile3.Size = new System.Drawing.Size(76, 17);
@@ -1252,7 +1252,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxProfile2
             // 
             this.checkBoxProfile2.AutoSize = true;
-            this.checkBoxProfile2.Location = new System.Drawing.Point(312, 74);
+            this.checkBoxProfile2.Location = new System.Drawing.Point(320, 74);
             this.checkBoxProfile2.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxProfile2.Name = "checkBoxProfile2";
             this.checkBoxProfile2.Size = new System.Drawing.Size(76, 17);
@@ -1264,7 +1264,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxProfile1
             // 
             this.checkBoxProfile1.AutoSize = true;
-            this.checkBoxProfile1.Location = new System.Drawing.Point(312, 48);
+            this.checkBoxProfile1.Location = new System.Drawing.Point(320, 48);
             this.checkBoxProfile1.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxProfile1.Name = "checkBoxProfile1";
             this.checkBoxProfile1.Size = new System.Drawing.Size(76, 17);
@@ -1281,7 +1281,7 @@ namespace ZergPoolMiner.Forms
             this.comboBoxProfile5.FormattingEnabled = true;
             this.comboBoxProfile5.Items.AddRange(new object[] {
             "Default"});
-            this.comboBoxProfile5.Location = new System.Drawing.Point(392, 150);
+            this.comboBoxProfile5.Location = new System.Drawing.Point(400, 150);
             this.comboBoxProfile5.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBoxProfile5.Name = "comboBoxProfile5";
             this.comboBoxProfile5.Size = new System.Drawing.Size(99, 21);
@@ -1297,7 +1297,7 @@ namespace ZergPoolMiner.Forms
             this.comboBoxProfile4.FormattingEnabled = true;
             this.comboBoxProfile4.Items.AddRange(new object[] {
             "Default"});
-            this.comboBoxProfile4.Location = new System.Drawing.Point(392, 123);
+            this.comboBoxProfile4.Location = new System.Drawing.Point(400, 123);
             this.comboBoxProfile4.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBoxProfile4.Name = "comboBoxProfile4";
             this.comboBoxProfile4.Size = new System.Drawing.Size(99, 21);
@@ -1313,7 +1313,7 @@ namespace ZergPoolMiner.Forms
             this.comboBoxProfile3.FormattingEnabled = true;
             this.comboBoxProfile3.Items.AddRange(new object[] {
             "Default"});
-            this.comboBoxProfile3.Location = new System.Drawing.Point(392, 97);
+            this.comboBoxProfile3.Location = new System.Drawing.Point(400, 97);
             this.comboBoxProfile3.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBoxProfile3.Name = "comboBoxProfile3";
             this.comboBoxProfile3.Size = new System.Drawing.Size(99, 21);
@@ -1329,7 +1329,7 @@ namespace ZergPoolMiner.Forms
             this.comboBoxProfile2.FormattingEnabled = true;
             this.comboBoxProfile2.Items.AddRange(new object[] {
             "Default"});
-            this.comboBoxProfile2.Location = new System.Drawing.Point(392, 71);
+            this.comboBoxProfile2.Location = new System.Drawing.Point(400, 71);
             this.comboBoxProfile2.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBoxProfile2.Name = "comboBoxProfile2";
             this.comboBoxProfile2.Size = new System.Drawing.Size(99, 21);
@@ -1345,7 +1345,7 @@ namespace ZergPoolMiner.Forms
             this.comboBoxProfile1.FormattingEnabled = true;
             this.comboBoxProfile1.Items.AddRange(new object[] {
             "Default"});
-            this.comboBoxProfile1.Location = new System.Drawing.Point(392, 46);
+            this.comboBoxProfile1.Location = new System.Drawing.Point(400, 46);
             this.comboBoxProfile1.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBoxProfile1.Name = "comboBoxProfile1";
             this.comboBoxProfile1.Size = new System.Drawing.Size(99, 21);
@@ -2776,6 +2776,7 @@ namespace ZergPoolMiner.Forms
             this.checkBoxAutoupdate.TabIndex = 406;
             this.checkBoxAutoupdate.Text = "Auto update";
             this.checkBoxAutoupdate.UseVisualStyleBackColor = true;
+            this.checkBoxAutoupdate.CheckedChanged += new System.EventHandler(this.checkBoxAutoupdate_CheckedChanged);
             // 
             // labelCheckforprogramupdatesevery
             // 

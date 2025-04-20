@@ -251,6 +251,7 @@ namespace ZergPoolMiner.Switching
                     {
                         var current_profit = c.estimate_current * c.adaptive_factor;
                         paying.currentProfit = current_profit;
+                        paying.profit = current_profit;
                     }
                 }
                 return true;

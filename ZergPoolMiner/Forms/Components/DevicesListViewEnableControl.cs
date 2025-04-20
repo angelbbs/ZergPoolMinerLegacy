@@ -193,7 +193,7 @@ namespace ZergPoolMiner.Forms.Components
                 {
                     Checked = computeDevice.Enabled,
                     //Text = devNum + " " + Manufacturer + " " + devInfo + " " + GpuRam + " " + addInfo,
-                    Text = devNum + " " + computeDevice.NameCustom.Replace("> ", "") + " " + addInfo,
+                    Text = devNum + " " + computeDevice.NameCustom.Replace("> ", "").TrimStart().TrimEnd() + " " + addInfo,
                     Tag = computeDevice
                 };
 

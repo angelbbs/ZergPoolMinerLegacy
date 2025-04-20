@@ -345,7 +345,7 @@ namespace ZergPoolMiner.Switching
                     ct++;
                     _cb.Value.checkTime = ct;
                     Stats.Stats.coinsBlocked.AddOrUpdate(_cb.Value.coin, _cb.Value, (k, v) => _cb.Value);
-                    if (ct >= 360)//6 hours
+                    if (ct >= 60)//1 hour
                     {
                         toRemove = _cb.Value.coin;
                     }

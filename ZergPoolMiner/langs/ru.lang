@@ -537,6 +537,7 @@
 "Form_Settings_comboBoxCheckforprogramupdatesevery24": "1 день",
 "Form_Settings_labelCheckforprogramupdatesevery": "Проверять обновления каждый(е)",
 "Form_Settings_checkBoxAutoupdate": "Автоматическое обновление",
+"Form_Settings_checkBoxAutoupdate2": "Автоматическое обновление может быть включено только при включенной опции \"Автозапуск майнинга\"",
 "Form_Settings_checkBoxHistory": "Просмотр истории версий после обновления",
 "Form_Settings_MessageBoxUpdate": "Закрыть программу и начать установку новой версии?",
 "Form_Settings_EnableAlgos": "Включить * для всех устройств",

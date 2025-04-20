@@ -37,14 +37,14 @@ namespace ZergPoolMiner.Forms.Components
                 if (ConfigManager.GeneralConfig.ShowUptime)
                 {
                     groupBoxMinerGroup.Text = string.Format(International.GetText("Form_Main_MiningDevices"), deviceStringInfo) +
-                        "  " + International.GetText("Form_Main_Miner") + groupName.Split('-')[0] +
+                        "  " + International.GetText("Form_Main_Miner") + 
                         MinerVersion.GetMinerFakeVersion(groupName.Split('-')[0], algoName) +
                         "  " + International.GetText("Form_Main_Uptime") + " " + Uptime.ToString(@"d\ \d\a\y\s\ hh\:mm\:ss");
                 }
                 else
                 {
                     groupBoxMinerGroup.Text = string.Format(International.GetText("Form_Main_MiningDevices"), deviceStringInfo) +
-                        "  " + International.GetText("Form_Main_Miner") + groupName.Split('-')[0] +
+                        "  " + International.GetText("Form_Main_Miner") + 
                         MinerVersion.GetMinerFakeVersion(groupName.Split('-')[0], algoName) +
                         "  " + International.GetText("Form_Main_Uptime");
                 }

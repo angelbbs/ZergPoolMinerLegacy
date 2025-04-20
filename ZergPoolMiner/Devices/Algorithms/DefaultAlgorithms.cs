@@ -145,12 +145,12 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (Environment.ProcessorCount).ToString()
                             },
-                            /*
+                            
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.Yescrypt, "Yescrypt")
                             {
                             ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (ComputeDeviceManager.CoresCount).ToString()
                             },
-                            */
+                            
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.YescryptR8, "YescryptR8")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (ComputeDeviceManager.CoresCount).ToString()
@@ -262,6 +262,19 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            //не работает
+                            /*
+                            new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.Ethash,
+                                AlgorithmType.SHA256dt, "Ethash+SHA256dt")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
+                            */
+                            new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.Ethashb3,
+                                AlgorithmType.SHA256dt, "Ethashb3+SHA256dt")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            }
                             /*
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.PyrinHashV2, "KarlsenHashV2+PyrinHashV2")
@@ -425,8 +438,22 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.MeowPow, "MeowPow")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.HooHash, "KarlsenHashV2+HooHash")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
+                            new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.Ethash,
+                                AlgorithmType.SHA256dt, "Ethash+SHA256dt")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
+                            new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.Ethashb3,
+                                AlgorithmType.SHA256dt, "Ethashb3+SHA256dt")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },
@@ -682,6 +709,16 @@ namespace ZergPoolMiner.Devices.Algorithms
                             },
                             new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.KarlsenHashV2,
                                 AlgorithmType.HooHash, "KarlsenHashV2+HooHash")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
+                            new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.Ethash,
+                                AlgorithmType.SHA256dt, "Ethash+SHA256dt")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100"
+                            },
+                            new DualAlgorithm(MinerBaseType.SRBMiner, AlgorithmType.Ethashb3,
+                                AlgorithmType.SHA256dt, "Ethashb3+SHA256dt")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100"
                             },

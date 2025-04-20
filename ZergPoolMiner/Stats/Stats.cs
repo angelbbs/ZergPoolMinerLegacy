@@ -46,7 +46,7 @@ namespace ZergPoolMiner.Stats
             public bool FPGA { get; set; }
             public bool ASIC { get; set; }
             public bool tempDisabled { get; set; }
-            public bool tempDeleted { get; set; }
+            public bool algoTempDeleted { get; set; }
         }
 
         public static List<Coin> CoinList = new();
@@ -75,7 +75,7 @@ namespace ZergPoolMiner.Stats
             public bool FPGA { get; set; }
             public bool ASIC { get; set; }
             public bool tempTTF_Disabled { get; set; }
-            public bool tempDeleted { get; set; }
+            public bool coinTempDeleted = true;
             public bool tempBlock { get; set; }
             public int noautotrade { get; set; }
         }
@@ -131,17 +131,7 @@ namespace ZergPoolMiner.Stats
         public static List<Coin> GetCoins()
         {
             Helpers.ConsolePrint("Stats", "Trying GetCoins");
-            //double correction = ConfigManager.GeneralConfig.ProfitabilityCorrection;
             double correction = 0.95;
-            /*
-            if (ConfigManager.GeneralConfig.ForkFixVersion == 0.3)
-            {
-                var days = (DateTime.Now - ConfigManager.GeneralConfig.updated_at).TotalDays;
-                //Непонятно откуда zergpool берет данные о прибыльности алгоритмов и монет, но они явно завышены
-                //процентов на 20-30. Поэтому понижаем фиктивную прибыльность до реальной на 0.85 плавно за 10 дней
-                correction = Math.Max(ConfigManager.GeneralConfig.ProfitabilityCorrection, 1 - (days / 50));
-            }
-            */
             List<AlgoCoin> noautotradeCoin = new();
             List<AlgoCoin> zeroHashrateCoin = new();
             try
@@ -187,6 +177,7 @@ namespace ZergPoolMiner.Stats
                         _coin.tls_port = tls_port;
                         _coin.hashrate = hashrate;
                         _coin.adaptive_factor = 0.9;
+                        _coin.coinTempDeleted = false;
                         if (!_coin.tempBlock)
                         {
                             _coin.estimate = (estimate_current / mbtc_mh_factor * 1000) * correction;//mBTC/GH
@@ -335,8 +326,13 @@ namespace ZergPoolMiner.Stats
                                 if (ma.adaptive_factor != 0) _coin.adaptive_factor = ma.adaptive_factor;
                             }
                         }
-
-                        CoinList.Add(_coin);
+                        if (!_coin.coinTempDeleted)
+                        {
+                            CoinList.Add(_coin);
+                        } else
+                        {
+                            Helpers.ConsolePrint("Stats", _coin.algo + " (" + _coin.name + ") deleted");
+                        }
                     }
                 }
 
@@ -489,7 +485,6 @@ namespace ZergPoolMiner.Stats
                         }
                         if (coinEstimateUnit.Equals("kh"))
                         {//flex, xelisv2-pepew, minotaurx, spectrex, verthash, xehash, xelishashv2, cryptonightturtle
-                            Helpers.ConsolePrint("*********** " + algo, symbol);
                             mult = 10000000;
                         }
                         if (coinEstimateUnit.Equals("mh"))
@@ -660,6 +655,7 @@ namespace ZergPoolMiner.Stats
                         progAlgosList.Add(_alg);
                         foreach (var coin in coins)
                         {
+                            coin.coinTempDeleted = false;
                             if (coin.CPU || coin.GPU)
                             {
                                 poolAlgosList.Add(coin.algo.ToLower());
@@ -695,9 +691,7 @@ namespace ZergPoolMiner.Stats
 
                                     //по монете
                                     //if (coin.hashrate > 0 && coin.estimate_current >= defcoin.estimate_current &&
-                                    if (coin.estimate_current >= defcoin.estimate_current &&
-                                    //!coin.tempTTF_Disabled &&
-                                    !coin.tempDeleted)
+                                    if (coin.estimate_current >= defcoin.estimate_current)
                                     {
                                         defcoin = coin;
                                         defcoin.algo = _alg;
@@ -757,12 +751,12 @@ namespace ZergPoolMiner.Stats
                         Helpers.ConsolePrint("Stats", "Deleted? - " + _alg);
                         //a.tempDeleted = true;
                         var itemToDelete = MiningAlgorithmsList.Find(r => r.name.ToLower() == _alg);
-                        if (itemToDelete != null) itemToDelete.tempDeleted = true;
+                        if (itemToDelete != null) itemToDelete.algoTempDeleted = true;
                         //MiningAlgorithmsList.RemoveAll(x => x.name.ToLower() == _alg);
                     } else
                     {
                         var itemToDelete = MiningAlgorithmsList.Find(r => r.name.ToLower() == _alg);
-                        if (itemToDelete != null) itemToDelete.tempDeleted = false;
+                        if (itemToDelete != null) itemToDelete.algoTempDeleted = false;
                     }
                 }
 
@@ -986,7 +980,11 @@ namespace ZergPoolMiner.Stats
                     List<string> currentminingAlgosZergPool = new();
                     foreach (var alg in MiningAlgorithmsList)
                     {
-                        if (alg.tempDeleted) continue;
+                        if (alg.adaptive_factor != 0 && alg.adaptive_factor < 0.9)
+                        {
+                            alg.adaptive_factor = alg.adaptive_factor + 0.00001;
+                        }
+                        if (alg.algoTempDeleted) continue;
                         if (alg.tempDisabled) continue;
                         double actualHashrate = 0d;
                         foreach (var cur in data.SelectToken("miners"))
@@ -1005,8 +1003,6 @@ namespace ZergPoolMiner.Stats
                                 double localHashrate = 0d;
                                 foreach (var miningDevice in MiningSession._miningDevices)
                                 {
-                                    Helpers.ConsolePrint("*** " + alg.name.ToLower() + " : " + _algo.ToLower(),
-                                _ID + " : " + Miner.GetFullWorkerName());
                                     if (alg.name.ToLower().Equals(((AlgorithmType)miningDevice.Device.AlgorithmID).ToString().ToLower()))
                                     {
                                         localHashrate = localHashrate + miningDevice.Device.MiningHashrate;
@@ -1031,7 +1027,7 @@ namespace ZergPoolMiner.Stats
                                 }
 
                                 localProfit = (localHashrate * alg.profit);
-                                actualHashrate = actualHashrate + _accepted;
+                                actualHashrate = actualHashrate + _accepted * (1.06);
 
                                 if (algosProperty.ContainsKey(alg.name.ToLower()))
                                 {
@@ -1108,7 +1104,7 @@ namespace ZergPoolMiner.Stats
 
                     foreach (var __algoProperty in algosProperty)
                     {
-                        double average = 0.9;
+                        double average = 1.0;
                         var _algoProperty = __algoProperty.Value;
 
                         /*
@@ -1167,7 +1163,7 @@ namespace ZergPoolMiner.Stats
                                     }
                                     else
                                     {
-                                        _algoProperty.factorsList.Add(0.9);
+                                        _algoProperty.factorsList.Add(0.95);
                                     }
                                 }
                             }
@@ -1191,9 +1187,9 @@ namespace ZergPoolMiner.Stats
                                         //Form_Main.adaptiveRunning = false;
                                         if (!double.IsInfinity(average) && !double.IsNaN(average))
                                         {
-                                            if (average < 0.6)
+                                            if (average < 0.2)
                                             {
-                                                average = 0.6;
+                                                average = 0.2;
                                             }
                                             if (average > 1.1)
                                             {
@@ -1335,7 +1331,7 @@ namespace ZergPoolMiner.Stats
                             double _profit = 0d;
                             int profitsCount = 0;
                             //отключение алгоритма
-                            if (algo.estimate_current == 0 || algo.tempDeleted || algo.tempDisabled ||
+                            if (algo.estimate_current == 0 || algo.algoTempDeleted || algo.tempDisabled ||
                                 algo.hashrate == 0)
                             {
                                 _profit = 0;

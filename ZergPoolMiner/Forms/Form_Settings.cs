@@ -387,7 +387,7 @@ namespace ZergPoolMiner.Forms
             if (Form_Main.currentBuild < Form_Main.githubBuild)
             {
                 linkLabelNewVersion2.Text = International.GetText("Form_Settings_Newbuild") +
-                    Form_Main.githubBuild.ToString("{0:00000000.00}");
+                    Form_Main.githubBuild.ToString("00000000.00");
                 buttonUpdate.Visible = true;
                 linkLabelNewVersion2.LinkBehavior = LinkBehavior.SystemDefault;
             }
@@ -3904,6 +3904,18 @@ namespace ZergPoolMiner.Forms
             ConfigManager.GeneralConfig.AdaptiveAlgo = checkBoxAdaptive.Checked;
             Stats.Stats.LoadAlgoritmsList(true);
             AlgosProfitData.FinalizeAlgosProfitList();
+        }
+
+        private void checkBoxAutoupdate_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!ConfigManager.GeneralConfig.AutoStartMining && checkBoxAutoupdate.Checked)
+            {
+                MessageBox.Show(International.GetText("Form_Settings_checkBoxAutoupdate2"),
+                    International.GetText("Warning_with_Exclamation"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                checkBoxAutoupdate.Checked = false;
+                ConfigManager.GeneralConfig.ProgramAutoUpdate = false;
+            }
         }
     }
 }

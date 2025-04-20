@@ -2113,7 +2113,8 @@ namespace ZergPoolMiner
                     return;
                 }
 
-                if (ConfigManager.GeneralConfig.ProgramAutoUpdate && newver)
+                if (ConfigManager.GeneralConfig.ProgramAutoUpdate &&
+                    ConfigManager.GeneralConfig.AutoStartMining && newver)
                 {
                     Updater.Updater.Downloader(true);
                 }

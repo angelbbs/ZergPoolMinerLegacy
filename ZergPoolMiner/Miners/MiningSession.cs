@@ -512,7 +512,7 @@ namespace ZergPoolMiner.Miners
                         ConfigManager.GeneralConfig.DisplayCurrency;
                     var _diff = Math.Abs((device.GetMostProfitValueWithoutPower - device.GetCurrentProfitValueWithoutPower) / 100);
                     Helpers.ConsolePrint($"BusID {device.Device.BusID}", $"({ device.Device.GetFullName()}):\n" +
-                        $"CURRENT ALGO:\t\t{device.GetCurrentProfitableString()} ({device.DeviceCurrentMiningCoin}) " +
+                        $"CURRENT ALGO:\t\t{device.GetCurrentProfitableString()} ({device.DeviceCurrentMiningCoin}) " +//!неправильно
                         $"PROFIT: {currentStr} with pwr: {currentStrWithPower}\n" +
                         $"MOST PROFIT ALGO:\t{device.GetMostProfitableString()} ({device.DeviceMostProfitableCoin}) " +
                         $"PROFIT: {profitStr} with pwr: {profitStrWithPower}. {device.diff.ToString("F2")} %");
@@ -726,10 +726,10 @@ namespace ZergPoolMiner.Miners
                                         actualProfit = actualProfit + _algoProperty.actualProfit;
                                         localProfit = localProfit + _algoProperty.localProfit;
                                     }
-                                    if (actualProfit / localProfit > percDiff && currentProfit != 0)
+                                    if (actualProfit / localProfit - 1 > percDiff && currentProfit != 0)
                                     {
                                         Helpers.ConsolePrint(Tag, $"Switching temporary disabled because current actual " +
-                                            $"profit { Math.Round(actualProfit / localProfit * 100, 2):f2}% " +
+                                            $"profit { Math.Round((actualProfit / localProfit) - 1 * 100, 2):f2}% " +
                                             $"above than profit after switching {Math.Round(percDiff * 100, 2):f2}%");
                                         needSwitch = false;
                                         // RESTORE OLD PROFITS STATE

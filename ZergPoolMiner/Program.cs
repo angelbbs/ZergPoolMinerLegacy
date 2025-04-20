@@ -365,7 +365,19 @@ namespace ZergPoolMiner
                         }
                     }
                 }
-                
+
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.9)
+                {
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 0.9;
+                }
+
+
+                if (!ConfigManager.GeneralConfig.AutoStartMining && ConfigManager.GeneralConfig.ProgramAutoUpdate)
+                {
+
+                    ConfigManager.GeneralConfig.ProgramAutoUpdate = false;
+                }
 
                 if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
 

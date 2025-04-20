@@ -348,9 +348,9 @@ namespace ZergPoolMiner.Forms.Components
                         }
                     }
                     //double.TryParse(alg.CurPayingRate, out var valueRate);
-                    var valueRate = alg.CurPayingRate * 1;//BTC to mBTC
+                    var valueRate = alg.CurPayingRate;//BTC to mBTC
                     //double.TryParse(alg.CurSecondPayingRate, out var valueRateSecond);
-                    var valueRateSecond = alg.CurSecondPayingRate * 1;//BTC to mBTC
+                    var valueRateSecond = alg.CurSecondPayingRate;//BTC to mBTC
 
                     if (Form_additional_mining.isAlgoZIL(alg.AlgorithmName, alg.MinerBaseType, computeDevice.DeviceType))
                     {
@@ -380,7 +380,6 @@ namespace ZergPoolMiner.Forms.Components
                              .ToString("F6", CultureInfo.InvariantCulture);
                     string fiatCurrencyName = $"{ExchangeRateApi.ActiveDisplayCurrency}/" +
                          International.GetText(ConfigManager.GeneralConfig.TimeUnit.ToString());
-
                     string _m = "";
                     if (WithPowerRate < 0.001)
                     {

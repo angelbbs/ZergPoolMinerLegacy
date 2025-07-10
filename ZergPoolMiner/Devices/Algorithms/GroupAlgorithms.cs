@@ -75,7 +75,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                     });
             }
 
-            if (device.GpuRam < (ulong)(1024 * 1024 * 1024 * 3.5))
+            if (device.GpuRam < (ulong)(1024 * 1024 * 1024 * 4.5))
             {
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
                     {
@@ -132,7 +132,7 @@ namespace ZergPoolMiner.Devices.Algorithms
             }
 
             
-
+            /*
             if (device.Name.ToLower().Contains("gtx 10") && device.DeviceType == DeviceType.NVIDIA)
             {
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
@@ -140,6 +140,7 @@ namespace ZergPoolMiner.Devices.Algorithms
                         AlgorithmType.NexaPow
                     });
             }
+            */
             if (device.Name.ToLower().Contains("gtx 10") && device.DeviceType == DeviceType.NVIDIA)
             {
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
@@ -548,7 +549,7 @@ namespace ZergPoolMiner.Devices.Algorithms
             return finalRet;
         }
 
-        private static Dictionary<MinerBaseType, List<Algorithm>> FilterMinerAlgos(
+        public static Dictionary<MinerBaseType, List<Algorithm>> FilterMinerAlgos(
             Dictionary<MinerBaseType, List<Algorithm>> minerAlgos, IList<AlgorithmType> toRemove,
             IList<MinerBaseType> toRemoveBase = null)
         {

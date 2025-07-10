@@ -30,6 +30,7 @@ namespace ZergPoolMiner.Miners.Grouping
 
         private static bool IsSameDeviceType(MiningPair a, MiningPair b)
         {
+            //
             return a.Device.DeviceType == b.Device.DeviceType;
         }
         private static bool IsGroupableMinerBaseType(MiningPair a)

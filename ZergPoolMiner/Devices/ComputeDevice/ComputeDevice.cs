@@ -31,6 +31,8 @@ namespace ZergPoolMiner.Devices
         public string NameCount;
         public bool Enabled;
 
+        public double coinMiningTime = 0;
+
         public DeviceGroupType DeviceGroupType;
 
         // CPU, NVIDIA, AMD, Intel
@@ -79,6 +81,15 @@ namespace ZergPoolMiner.Devices
         public int SecondAlgorithmID = -1;
         public int ThirdAlgorithmID = -1;
         public string Coin = "";
+        public string _DeviceCurrentMiningCoin;
+        public string _DeviceMostProfitableCoin;
+        public AlgorithmType _MostProfitableAlgorithmType;
+        public AlgorithmType _CurrentProfitableAlgorithmType;
+        public MinerBaseType _MostProfitableMinerBaseType;
+        public MinerBaseType _CurrentProfitableMinerBaseType;
+
+
+        public double _diffPercent;
         public string MinerName = "";
         public string MinerVersion = "";
 

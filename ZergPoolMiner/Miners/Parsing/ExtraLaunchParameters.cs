@@ -229,6 +229,7 @@ namespace ZergPoolMiner.Miners.Parsing
                     new MinerOption("SRBMiner-enable-restart-on-rejected", "--enable-restart-on-rejected", "--enable-restart-on-rejected", null, MinerOptionFlagType.Uni),
                     new MinerOption("SRBMiner-max-rejected-shares", "--max-rejected-shares", "--max-rejected-shares", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-cpu-threads", "--cpu-threads", "--cpu-threads", null, MinerOptionFlagType.SingleParam, " "),
+                    new MinerOption("SRBMiner-retry-time", "--retry-time", "--retry-time", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-dns-over-https", "--dns-over-https", "--dns-over-https", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-ramp-up", "--enable-workers-ramp-up", "--enable-workers-ramp-up", null, MinerOptionFlagType.SingleParam, " "),
                     new MinerOption("SRBMiner-randomx-use-tweaks", "--randomx-use-tweaks", "--randomx-use-tweaks", null, MinerOptionFlagType.SingleParam, " "),

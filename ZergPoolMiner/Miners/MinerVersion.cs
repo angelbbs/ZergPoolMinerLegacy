@@ -1306,15 +1306,17 @@ namespace ZergPoolMiner.Miners
             else if (miner.ToLower().Contains("miniz") && (algo.ToLower().Contains("h125")))
             {
                 miner = miner + " 2.2c";
-                /*
-            } else if (miner.ToLower().Contains("srbminer") &&
-                (algo.ToLower().Contains("panthera") ||
-                algo.ToLower().Contains("randomarq") ||
-                algo.ToLower().Contains("randomxeq") ||
-                algo.ToLower().Contains("randomx")))
+
+            }
+            else if (miner.ToLower().Contains("srbminer") &&
+              (algo.ToLower().Contains("meowpow")))
             {
-                miner = miner + " 2.5.6";
-                */
+                miner = miner + " 2.6.9";
+            }
+            else if (miner.ToLower().Contains("srbminer") &&
+              (algo.ToLower().Contains("hoohash")))
+            {
+                miner = miner + " 2.6.9";
             }
             else
             {

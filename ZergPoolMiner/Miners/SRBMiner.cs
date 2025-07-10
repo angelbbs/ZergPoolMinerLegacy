@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -49,13 +50,41 @@ namespace ZergPoolMiner.Miners
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
 
-                ret = "--pool " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum+ssl://") +
-                    ":" + _a.tls_port.ToString();
+                /*
+                if (algo.ToLower().Contains("karlsenhashv2") && ConfigManager.GeneralConfig.EnableProxy)
+                {
+                    ret = "--pool " +
+                        Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " +
+                        proxy + " " +
+                        "--give-up-limit 1 --retry-time 1";
+                }
+                else
+                */
+                {
+                    ret = "--pool " +
+                        //Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " --retry-time 1 ";
+                        Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum+ssl://") +
+                        ":" + _a.tls_port.ToString() + " " +
+                        "--give-up-limit 1 --retry-time 1";
+                }
             } catch (Exception ex)
             {
                 Helpers.ConsolePrint("GetServer", "Error in " + algo + " " + ex.ToString());
                 ret = "error_in_list_of_algos.err:1111";
             }
+            /*
+            if (algo.ToLower().Contains("verus"))
+            {
+                ret = ret.Replace("verushash.mine.zergpool.com", "verushash.na.mine.zergpool.com").
+                    Replace("verushash.eu.mine.zergpool.com", "verushash.na.mine.zergpool.com").
+                    Replace("verushash.asia.zergpool.com", "verushash.na.mine.zergpool.com");
+            }
+            */
+            /*
+            ret = ret.Replace("ethash.mine.zergpool.com", "ethash.na.mine.zergpool.com").
+                    Replace("ethash.eu.mine.zergpool.com", "ethash.na.mine.zergpool.com").
+                    Replace("ethash.asia.zergpool.com", "ethash.na.mine.zergpool.com");
+            */
 
             return ret + " ";
         }
@@ -110,6 +139,13 @@ namespace ZergPoolMiner.Miners
                 disablePlatform = "--disable-cpu --disable-gpu-intel --disable-gpu-amd ";
             }
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             var extras = ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, devtype);
             try
             {
@@ -123,6 +159,7 @@ namespace ZergPoolMiner.Miners
                     return " --algorithm " + _algo + " " +
                 disablePlatform + $"--api-enable --api-port {ApiPort} {extras} " +
                         GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                        proxy + " " +
                         _wallet + " " + _password +
                         " --gpu-id " +
                         GetDevicesCommandString().Trim();
@@ -194,6 +231,13 @@ namespace ZergPoolMiner.Miners
                 disablePlatform = "--disable-cpu --disable-gpu-intel --disable-gpu-amd ";
             }
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             var extras = ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, devtype);
 
             string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
@@ -208,9 +252,10 @@ namespace ZergPoolMiner.Miners
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
                 return " " + disablePlatform + "--algorithm " + _algo + " " +
-                    GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-                    $" --wallet {Globals.DemoUser} --password c=LTC" +
-                    $" --api-enable --api-port {ApiPort} {extras}" + " --gpu-id " +
+                    GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    proxy + " " +
+                    $"--wallet {Globals.DemoUser} --password c=LTC" + " " +
+                    $"--api-enable --api-port {ApiPort} {extras}" + " --gpu-id " +
                     GetDevicesCommandString().Trim();
             }
             else
@@ -243,7 +288,6 @@ namespace ZergPoolMiner.Miners
             Stop_cpu_ccminer_sgminer_nheqminer(willswitch);
             StopDriver();
         }
-
         private void StopDriver()
         {
             //srbminer driver
@@ -261,7 +305,6 @@ namespace ZergPoolMiner.Miners
             CMDconfigHandleWD.StartInfo.CreateNoWindow = true;
             CMDconfigHandleWD.Start();
         }
-
         protected override int GetMaxCooldownTimeInMilliseconds()
         {
             return 60 * 1000 * 5;  // 5 min

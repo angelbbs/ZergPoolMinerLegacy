@@ -26,6 +26,7 @@ namespace ZergPoolMiner
         public static string WalletBalance = ("https://zergpool.com/api/wallet?address=");
         public static string WalletBalanceEx = ("https://zergpool.com/api/walletEx?address=");
         public static string Currencies = ("https://zergpool.com/api/currencies");
+        public static string CurrenciesOld = ("https://old.zergpool.com/api/currencies");
         public static string CurrenciesZPool = ("https://zpool.ca/api/currencies");
         public static string minerstat = ("https://api.minerstat.com/v2/coins");
         public static string hashrateno = ("https://api.hashrate.no/v1/coins?apiKey=");
@@ -37,7 +38,8 @@ namespace ZergPoolMiner
         public static string gateioMarket = ("https://data.gateapi.io/api2/1/marketlist");
         public static string coinexMarket = ("https://api.coinex.com/v2/spot/ticker");
         public static string mexcMarket = ("https://api.mexc.com/api/v3/ticker/price");
-        public static string safetradeMarket = ("https://safe.trade/api/trade/public/markets");
+        //public static string safetradeMarket = ("https://safe.trade/api/trade/public/markets");
+        public static string safetradeMarket = ("https://safetrade.com/api/v2/trade/public/markets");
         public static string TradeogreMarket = ("https://tradeogre.com/api/v1/markets");
         public static string floatratesURL = ("https://www.floatrates.com/daily/usd.json");
         public static string fawazahmedURL = ("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json");
@@ -49,8 +51,8 @@ namespace ZergPoolMiner
         public static string githubAllReleases => CheckDNS("https://api.github.com/repos/angelbbs/ZergPoolMinerLegacy/releases");
         public static string githubDownload => CheckDNS("https://github.com0/angelbbs/ZergPoolMinerLegacy/releases/download/Fork_Fix_");
         public static string gitlabReleases = ("https://gitlab.com/angelbbs/ZergPoolMinerLegacy/-/releases");
-        public static string gitlabRepositoryTags => CheckDNS("https://gitlab.com/api/v4/projects/26404146/repository/tags");
-        public static string gitlabLastRelease => CheckDNS("https://gitlab.com/api/v4/projects/26404146/releases/");//?
+        public static string gitlabRepositoryTags => CheckDNS("https://gitlab.com/api/v4/projects/69397132/repository/tags");
+        public static string gitlabLastRelease => CheckDNS("https://gitlab.com/api/v4/projects/69397132/releases/");//?
 
         internal static bool inuse = false;
 

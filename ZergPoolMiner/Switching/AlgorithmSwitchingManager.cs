@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Timers;
 using ZergPoolMiner.Algorithms;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace ZergPoolMiner.Switching
 {
@@ -46,6 +48,8 @@ namespace ZergPoolMiner.Switching
         public static List<AlgorithmType> unstableAlgosList = new List<AlgorithmType>()
         {
             AlgorithmType.Allium,
+            AlgorithmType.HooHash,
+            AlgorithmType.KarlsenHashV2,
             AlgorithmType.NeoScrypt,
             AlgorithmType.Megabtx,
             AlgorithmType.Ethashb3,
@@ -55,7 +59,8 @@ namespace ZergPoolMiner.Switching
             AlgorithmType.X25X,
             AlgorithmType.SHA256csm,
             AlgorithmType.SHA512256d,
-            AlgorithmType.Equihash144//пока не уберут btg
+            AlgorithmType.Equihash125,
+            AlgorithmType.Equihash144
         };
 
         /// <summary>
@@ -66,7 +71,17 @@ namespace ZergPoolMiner.Switching
         {
             public string coin { get; set; }
             public double profit { get; set; }
+            public double currentProfit { get; set; }//?
+        }
+
+        public static ConcurrentDictionary<string, CoinsData> coinsDataList = new();
+        public class CoinsData
+        {
+            public string Algorithm { get; set; }
+            public string Coin { get; set; }
+            public double prevprofit { get; set; }
             public double currentProfit { get; set; }
+            public int ticks { get; set; }
         }
         public AlgorithmSwitchingManager()
         {
@@ -126,7 +141,7 @@ namespace ZergPoolMiner.Switching
                 Helpers.ConsolePrint("AlgorithmSwitchingManager", "Start");
                 //_smaCheckTimer = new System.Timers.Timer(1000);
                 _smaCheckTimer = new System.Timers.Timer();
-                _smaCheckTimer.Interval = 60 * 1000;
+                _smaCheckTimer.Interval = 120 * 1000;//не менять. используется для подсчета продолжительности майнинга монеты
                 _smaCheckTimer.Elapsed += SmaCheckTimerOnElapsed;
                 _smaCheckTimer.Start();
             }
@@ -207,11 +222,48 @@ namespace ZergPoolMiner.Switching
             var cTicks = "min";
             try
             {
+                /*
+                foreach (var coin in Stats.Stats.CoinList)
+                {
+                    CoinsData cd = new();
+                    cd.Algorithm = coin.algo;
+                    cd.Coin = coin.symbol;
+                    if (!coinsDataList.ContainsKey(coin.algo))
+                    {
+                        cd.prevprofit = 0;
+                    }
+                    else
+                    {
+                        cd.prevprofit = coinsDataList.FirstOrDefault(x => x.Key.ToLower() == coin.algo.ToLower()).Value.currentProfit;
+                        cd.currentProfit = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(x => x.name.ToLower() == coin.algo.ToLower()).adaptive_profit;
+                    }
+                    if (coin.apibug || coin.coinTempDeleted || coin.hashrate == 0 || coin.noautotrade == 1 ||
+                        coin.tempBlock || coin.tempTTF_Disabled)
+                    {
+                        continue;
+                    }
+                    if (cd.prevprofit < cd.currentProfit && cd.prevprofit != 0)
+                    {
+                        cd.ticks++;
+                    } else
+                    {
+                        cd.ticks--;
+                    }
+                    coinsDataList.AddOrUpdate(coin.algo.ToLower(), cd, (k, v) => cd);
+                }
+
+                var coinsDataListSortered = coinsDataList.OrderBy(vp => vp.Key);
+                foreach (var c in coinsDataListSortered)
+                {
+                    Helpers.ConsolePrint(c.Key, c.Value.Coin + " " + c.Value.prevprofit.ToString("F5") + " " +
+                        c.Value.currentProfit.ToString("F5"));
+                }
+                */
                 foreach (var algo in history.Keys)
                 {
                     AlgosProfitData.TryGetPaying(algo, out var paying);
                     ticks = GetTicks(algo);
-
+                    
                     if (algo == AlgorithmType.KawPowLite && !KawpowLiteGoodEpoch)
                     {
                         paying.profit = 0;
@@ -233,59 +285,36 @@ namespace ZergPoolMiner.Switching
                             {
                                 //_lastLegitPaying[algo].coin = paying.coin;
                                 //_lastLegitPaying[algo].profit = paying.profit;
-                                sb.AppendLine($" TAKEN: new profit {paying.profit:e5} {p1:f2}% " +
+                                sb.AppendLine($" TAKEN: new profit {paying.profit:f5} {p1:f2}% " +
                                     $"after {overCount}/{ticks} {cTicks} for {algo} ({paying.coin})");
 
                                 _lastLegitPaying[algo].profit = paying.profit;
-                                foreach (var miningDevice in MiningSession._miningDevices)
-                                {
-                                    if (miningDevice.CurrentProfitableAlgorithmType.Equals(algo))
-                                    {
-                                        _lastLegitPaying[algo].coin = paying.coin;
-                                        //_lastLegitPaying[algo].profit = paying.profit;
-                                        miningDevice.diff = p1;
-                                    }
-                                    else
-                                    {
-                                        //miningDevice.diff = 0;
-                                    }
-                                }
+                                _lastLegitPaying[algo].coin = paying.coin;
                             }
                             else
                             {
                                 sb.AppendLine(
-                                    $" POSTPONED: new profit {paying.profit:e5} ({paying.coin}) " +
-                                    $"(previously {_lastLegitPaying[algo].profit:e5} ({_lastLegitPaying[algo].coin}) {p1:f2}%," +
+                                    $" POSTPONED: new profit {paying.profit:f5} ({paying.coin}) " +
+                                    $"(previously {_lastLegitPaying[algo].profit:f5} ({_lastLegitPaying[algo].coin}) {p1:f2}%," +
                                     $" higher for {overCount}/{ticks} {cTicks} for {algo}"
                                 );
+                                _lastLegitPaying[algo].profit = paying.profit;
+                                _lastLegitPaying[algo].coin = paying.coin;
                             }
                         }
                         else
                         {
-                            // Profit has gone down
-                            updated = true;
-
-                            sb.AppendLine($" Profit has gone down: old profit {paying.profit:e5} ({_lastLegitPaying[algo].coin}) " +
-                                $"(new profit  {_lastLegitPaying[algo].profit:e5} ({paying.coin})) {p1:f2}%," +
+                            // Profit has gone down updated = true;
+                            sb.AppendLine($" Profit has gone down: old profit {_lastLegitPaying[algo].profit:f5} ({_lastLegitPaying[algo].coin}) " +
+                                $"(new profit  {paying.profit:f5} ({paying.coin})) {p1:f2}%," +
                                 $" less for {overCount}/{ticks} {cTicks} for {algo}");
 
                             _lastLegitPaying[algo].profit = paying.profit;
-                            foreach (var miningDevice in MiningSession._miningDevices)
-                            {
-                                if (miningDevice.CurrentProfitableAlgorithmType.Equals(algo))
-                                {
-                                    _lastLegitPaying[algo].coin = paying.coin;
-                                    //_lastLegitPaying[algo].profit = paying.profit;
-                                    miningDevice.diff = p1;
-                                }
-                                else
-                                {
-                                    //miningDevice.diff = 0;
-                                }
-                            }
+                            _lastLegitPaying[algo].coin = paying.coin;
                         }
                     }
                 }
+                
                 //проверка неактивных монет
                 foreach (var miningDevice in MiningSession._miningDevices)
                 {
@@ -358,28 +387,6 @@ namespace ZergPoolMiner.Switching
                         bool result = Stats.Stats.coinsBlocked.TryRemove(toRemove, out var removedItem);
                     }
                 }
-                //поиск одинакового хешрейта
-                /*
-                foreach (var miningDevice in MiningSession._miningDevices)
-                {
-                    var coin = miningDevice.DeviceCurrentMiningCoin;
-                    foreach (var ap in Stats.Stats.algosProperty)
-                    {
-                        var algo = ap.Value.name;
-                        var hashrate = ap.Value.hashrate;
-                        if (Stats.Stats.coinsMining.Exists(a => a.hashrate_shared == hashrate))
-                        {
-                            var _coin = Stats.Stats.coinsMining.Find(a => a.hashrate_shared == hashrate);
-                            if (hashrate.Equals(_coin.hashrate_shared))
-                            {
-                                Helpers.ConsolePrint(hashrate, 
-                                    _coin.symbol + " " + coin);
-                            }
-                        }
-                    }
-                }
-                */
-
             } catch (Exception ex)
             {
                 Helpers.ConsolePrintError("UpdateProfits", ex.ToString());

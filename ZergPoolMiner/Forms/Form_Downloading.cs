@@ -24,8 +24,10 @@ namespace ZergPoolMiner.Forms
     public partial class Form_Downloading : Form
     {
         private DateTime time2 = new DateTime();
+        private int BytesReceived0 = -1;
         private int BytesReceived1 = 0;
         private int BytesReceived2 = 0;
+        private System.Windows.Forms.Timer _downloadTimer;
         private List<double> speedArray = new List<double>();
         public Form_Downloading()
         {
@@ -52,12 +54,34 @@ namespace ZergPoolMiner.Forms
 
             progressBarDownloading.Maximum = 100;
             progressBarDownloading.Value = 0;
+
+            _downloadTimer = new System.Windows.Forms.Timer();
+            _downloadTimer.Tick += DownloadTimer_Tick;
+            _downloadTimer.Interval = 1000 * 60;
+            _downloadTimer.Start();
+
             this.Update();
+        }
+
+        private void DownloadTimer_Tick(object sender, EventArgs e)
+        {
+            if (BytesReceived0 != BytesReceived2)
+            {
+                BytesReceived0 = BytesReceived2;
+            } else
+            {
+                _downloadTimer.Stop();
+                Helpers.ConsolePrint("Download miners", "Miners downloading stuck.");
+                new Task(() => MessageBox.Show(International.GetText("Form_Main_miners_download_error"),
+                    International.GetText("Warning_with_Exclamation"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning)).Start();
+                this.Close();
+                Form_Main.MakeRestart(600);
+            }
         }
         public void client_EmergencyDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             progressBarDownloading.Maximum = (int)e.TotalBytesToReceive / 100;
-
             var time1 = DateTime.Now;
             var time3 = time1 - time2;
             if (time3.TotalMilliseconds < 200) return;

@@ -177,6 +177,7 @@ namespace ZergPoolMiner
             this.toolStripStatusLabelBalanceBTCValue.Name = "toolStripStatusLabelBalanceBTCValue";
             this.toolStripStatusLabelBalanceBTCValue.Size = new System.Drawing.Size(73, 17);
             this.toolStripStatusLabelBalanceBTCValue.Text = "0.00000000";
+            this.toolStripStatusLabelBalanceBTCValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // toolStripStatusLabelBalanceBTCCode
             // 

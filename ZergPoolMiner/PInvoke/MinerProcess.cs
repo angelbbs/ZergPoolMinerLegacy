@@ -171,7 +171,9 @@ namespace ZergPoolMiner
                 workDir = StartInfo.WorkingDirectory;
 
             var res = CreateProcess(StartInfo.FileName,
+            //var res = CreateProcess(null,
                 " " + StartInfo.Arguments,
+            //    StartInfo.FileName + " " + StartInfo.Arguments,
                 ref pSec,
                 ref tSec,
                 false,
@@ -184,7 +186,8 @@ namespace ZergPoolMiner
             if (!res)
             {
                 var err = Marshal.GetLastWin32Error();
-                Helpers.ConsolePrint("Start", "Failed to start process, err=" + err + ". Restart program");
+                Helpers.ConsolePrint("Start", "Failed to start process (" + StartInfo.FileName + " " + StartInfo.Arguments + ")" +
+                    ", err=" + err + ". Restart program");
                 Form_Main.MakeRestart(0);
             }
 

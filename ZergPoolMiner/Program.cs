@@ -66,7 +66,8 @@ namespace ZergPoolMiner
         {
             WindowsPrincipal pricipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             bool hasAdministrativeRight = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
-            var proc = Process.GetCurrentProcess();
+            //var proc = Process.GetCurrentProcess();
+
             if (hasAdministrativeRight == false)
             {
                 ProcessStartInfo processInfo = new ProcessStartInfo();
@@ -80,7 +81,11 @@ namespace ZergPoolMiner
                 {
                     Helpers.ConsolePrint("Error start as Administrator: ", e.ToString());
                 }
-                proc.Kill();
+                return;
+                //proc.Kill();
+            } else
+            {
+                //Helpers.ConsolePrint("Main", "Administrator");
             }
 
             string conf = "";
@@ -243,6 +248,11 @@ namespace ZergPoolMiner
 
             if (startProgram)
             {
+                if (!File.Exists("configs\\AlgoritmsList.json"))
+                {
+                    Helpers.WriteAllBytesThrough("configs\\AlgoritmsList.json", Properties.Resources.AlgoritmsList);
+                }
+
                 if (ConfigManager.GeneralConfig.LogToFile)
                 {
                     if (!Directory.Exists("logs")) Directory.CreateDirectory("logs");
@@ -372,6 +382,29 @@ namespace ZergPoolMiner
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.9;
                 }
 
+                
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 1.0)
+                {
+                    if (ConfigManager.GeneralConfig.Language == ZergPoolMinerLegacy.Common.Enums.LanguageType.Ru)
+                    {
+                        ConfigManager.GeneralConfig.EnableProxy = true;
+                    }
+                
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 1.0;
+                    try
+                    {
+                        if (File.Exists("configs\\AlgoritmsList.json"))
+                        {
+                            File.Delete("configs\\AlgoritmsList.json");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Helpers.ConsolePrint("MinerLegacy", ex.ToString());
+                    }
+                }
+                
 
                 if (!ConfigManager.GeneralConfig.AutoStartMining && ConfigManager.GeneralConfig.ProgramAutoUpdate)
                 {
@@ -501,7 +534,7 @@ namespace ZergPoolMiner
                     }
                     catch (Exception e)
                     {
-                        Helpers.ConsolePrint("Start", e.Message);
+                        Helpers.ConsolePrint("check WMI", e.Message);
                     }
 
                 } else

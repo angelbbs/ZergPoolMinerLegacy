@@ -16,6 +16,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -110,9 +111,16 @@ namespace ZergPoolMiner.Miners
             _algo = _algo.Replace("equihash125", "equihash125_4");
             _algo = _algo.Replace("equihash144", "equihash144_5 --pers auto");
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port + " ";
+            }
+
             return " --algo " + _algo +
             " " + $"--api {ApiPort} " + " " +
-                    " --ssl -s " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    " --ssl -s " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " + proxy +
                     "-u " + wallet + " -p " + password + " " +
                     GetDevicesCommandString().Trim();
         }
@@ -298,16 +306,25 @@ namespace ZergPoolMiner.Miners
             var pool = "";
             _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port + " ";
+            }
+
             if (_a is object && _a != null)
             {
-                pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + " --port " + _a.port.ToString();
+                pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + 
+                    " --port " + _a.port.ToString() + " " + proxy;
             }
             else
             {
                 Helpers.ConsolePrint("GMiner", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
                 algo = algo.Replace("_", "-");
                 _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
-                pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + " --port " + _a.port.ToString();
+                pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + 
+                    " --port " + _a.port.ToString() + " " + proxy;
             }
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("equihash125", "equihash125_4");
@@ -415,6 +432,7 @@ namespace ZergPoolMiner.Miners
                 Helpers.ConsolePrint("GetSummaryAsync", "GMINER-API ERRORs count: " + _apiErrors.ToString());
                 if (_apiErrors > 60)
                 {
+                    _apiErrors = 0;
                     Helpers.ConsolePrint("GetSummaryAsync", "Need RESTART GMINER");
                     CurrentMinerReadStatus = MinerApiReadStatus.RESTART;
                     ad.Speed = 0;

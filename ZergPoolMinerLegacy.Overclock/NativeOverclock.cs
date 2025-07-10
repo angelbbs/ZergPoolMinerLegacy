@@ -23,11 +23,11 @@ namespace ZergPoolMinerLegacy.Overclock
         public static bool logging = false;
         public static IntPtr OverclockStart(int _processId, int _CurrentAlgorithmType, int _SecondaryAlgorithmType,
             string _MinerName, string _strPlatform,
-            string _w, bool _log)
+            string _w, bool _log, string Arguments)
         {
             return new IntPtr(0);
         }
- 
+
     }
 }
 

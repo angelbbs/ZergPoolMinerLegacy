@@ -93,6 +93,7 @@ namespace ZergPoolMiner
     public class MinerPidData
     {
         public string MinerBinPath;
+        public string Arguments;
         public int Pid = -1;
     }
 
@@ -697,6 +698,16 @@ namespace ZergPoolMiner
             {
                 benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("miniZ.exe", "miniZ.22c.exe");
             }
+            if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("srbminer") &&
+                (commandLine.ToLower().Contains("meowpow")))
+            {
+                benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("SRBMiner-MULTI.exe", "SRBMiner-MULTI269.exe");
+            }
+            if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("srbminer") &&
+                (commandLine.ToLower().Contains("hoohash")))
+            {
+                benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("SRBMiner-MULTI.exe", "SRBMiner-MULTI269.exe");
+            }
             /*
             if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("srbminer") &&
                 (commandLine.ToLower().Contains("panthera") ||
@@ -1117,6 +1128,13 @@ namespace ZergPoolMiner
 
             BenchmarkProcessStatus = BenchmarkProcessStatus.Running;
             BenchmarkThreadRoutineStartSettup(); //need for benchmark log
+
+            if (MiningSetup.CurrentAlgorithmType == AlgorithmType.Ethash ||
+                MiningSetup.CurrentAlgorithmType == AlgorithmType.Ethashb3)
+            {
+
+            }
+
             while (IsActiveProcess(BenchmarkHandle.Id))
             {
                 try
@@ -1415,6 +1433,17 @@ namespace ZergPoolMiner
             {
                 Path = MiningSetup.MinerPath.Replace("miniZ.exe", "miniZ.22c.exe");
             }
+
+            if (MiningSetup.MinerPath.ToLower().Contains("srbminer") &&
+                (LastCommandLine.ToLower().Contains("meowpow")))
+            {
+                Path = MiningSetup.MinerPath.Replace("SRBMiner-MULTI.exe", "SRBMiner-MULTI269.exe");
+            }
+            if (MiningSetup.MinerPath.ToLower().Contains("srbminer") &&
+                (LastCommandLine.ToLower().Contains("hoohash")))
+            {
+                Path = MiningSetup.MinerPath.Replace("SRBMiner-MULTI.exe", "SRBMiner-MULTI269.exe");
+            }
             /*
             if (MiningSetup.MinerPath.ToLower().Contains("srbminer") &&
                 (LastCommandLine.ToLower().Contains("panthera") ||
@@ -1446,10 +1475,23 @@ namespace ZergPoolMiner
             }
 
             P.StartInfo.UseShellExecute = false;
-
-            var coin = LastCommandLine.Substring(LastCommandLine.IndexOf(",mc=") + 4)
-                .Substring(0, LastCommandLine.Substring(LastCommandLine.IndexOf(",mc=") + 4).IndexOf(",ID="));
-
+            string coin = "";
+            if (LastCommandLine.Contains("config_zp"))
+            {
+                try
+                {
+                    var f = File.ReadAllText("miners\\Nanominer\\" + LastCommandLine.Trim());
+                    coin = f.Substring(f.IndexOf(",mc=") + 4)
+                                .Substring(0, f.Substring(f.IndexOf(",mc=") + 4).IndexOf(",ID="));
+                } catch (Exception ex)
+                {
+                }
+            }
+            else
+            {
+                coin = LastCommandLine.Substring(LastCommandLine.IndexOf(",mc=") + 4)
+                    .Substring(0, LastCommandLine.Substring(LastCommandLine.IndexOf(",mc=") + 4).IndexOf(",ID="));
+            }
             try
             {
                 string strPlatform = "";
@@ -1480,7 +1522,7 @@ namespace ZergPoolMiner
                 GC.Collect();
 
                 NativeOverclock.OverclockStart(P.Id, -1, -1, Path,
-                            strPlatform, "", false);
+                            strPlatform, "", false, "");
 
                 MinerDelayStart(Path);
 
@@ -1489,7 +1531,8 @@ namespace ZergPoolMiner
                     _currentPidData = new MinerPidData
                     {
                         MinerBinPath = P.StartInfo.FileName,
-                        Pid = P.Id
+                        Pid = P.Id,
+                        Arguments = P.StartInfo.Arguments
                     };
                     _allPidData.Add(_currentPidData);
 
@@ -1502,7 +1545,7 @@ namespace ZergPoolMiner
                     string w = GetFullWorkerName();
 
                     NativeOverclock.OverclockStart(P.Id, algo, algo2, Path,
-                        strPlatform, coin, false);
+                        strPlatform, coin, false, P.StartInfo.Arguments);
 
                     new Task(() => StartCoolDownTimerChecker()).Start();
                     //StartCoolDownTimerChecker();

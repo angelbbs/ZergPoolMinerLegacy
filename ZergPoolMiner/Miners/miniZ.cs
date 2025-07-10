@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -125,10 +126,18 @@ namespace ZergPoolMiner.Miners
             _algo = _algo.Replace("equihash192", "192,7 --pers auto");
             _algo = _algo.Replace("evrprogpow", "progpow");
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--socks=" + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " --socksdns ";
+                proxy = "--socks=127.0.0.1:" + Socks5Relay.Port + " --socksdns ";
+            }
+
             return " --par=" + _algo +
             " " + ZilMining + " --telemetry=" + ApiPort +
             " --url=ssl://" + wallet + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                    _password +
+                    proxy + " " +
+                    _password + " --retrydelay=1 " +
                     GetDevicesCommandString().Trim();
         }
 
@@ -190,10 +199,19 @@ namespace ZergPoolMiner.Miners
                 _algo = _algo.Replace("equihash144", "144,5 --pers auto");
                 _algo = _algo.Replace("equihash192", "192,7 --pers auto");
                 _algo = _algo.Replace("evrprogpow", "progpow --pers auto");
-                ret = GetDevicesCommandString()
-                      + "--nocolour --par=" + _algo +
-                      " --url=ssl://" + Globals.DemoUser + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower())
-                      + " --pass=c=LTC" + " --telemetry=" + ApiPort;
+
+                string proxy = "";
+                if (ConfigManager.GeneralConfig.EnableProxy)
+                {
+                    //proxy = "--socks=" + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " --socksdns ";
+                    proxy = "--socks=127.0.0.1:" + Socks5Relay.Port + " --socksdns ";
+                }
+
+                ret = GetDevicesCommandString() +
+                      "--nocolour --par=" + _algo +
+                      " --url=ssl://" + Globals.DemoUser + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                      proxy + " " + 
+                      "--pass=c=LTC" + " --telemetry=" + ApiPort;
                 _benchmarkTimeWait = time;
 
             }

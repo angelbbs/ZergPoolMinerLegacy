@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -61,9 +62,17 @@ namespace ZergPoolMiner.Miners
             string _password = " -p " + password + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             LastCommandLine = " --algo " + _algo +
             " " + apiBind +
                     GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    proxy + " " +
                     _wallet + " " + _password +
                     " -d " + GetDevicesCommandString() + " --no-watchdog " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";
@@ -135,9 +144,17 @@ namespace ZergPoolMiner.Miners
             string password = " -p c=LTC" + " ";
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             commandLine = " --algo " + _algo +
             " " + apiBind +
                     GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    proxy + " " +
                     wallet + " " + password +
                     " -d " + GetDevicesCommandString() + " --no-watchdog " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";

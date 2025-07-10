@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -45,10 +46,18 @@ namespace ZergPoolMiner.Miners
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("cryptonight_gpu", "cngpu");
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "-x socks5://" + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "-x socks5://127.0.0.1:" + Socks5Relay.Port;
+            }
+
             LastCommandLine =  " --algo " + _algo +
             " " + apiBind +
                     " -o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                     _wallet + " " + _password +
+                    proxy +
                     " -d " + GetDevicesCommandString() + " " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";
 
@@ -107,16 +116,24 @@ namespace ZergPoolMiner.Miners
             var pool = "";
             _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "-x socks5://" + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "-x socks5://127.0.0.1:" + Socks5Relay.Port;
+            }
+
             if (_a is object && _a != null)
             {
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " +
+                    proxy;
             }
             else
             {
                 Helpers.ConsolePrint("CryptoDredge", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
 
                 _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " + proxy;
             }
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("cryptonight_gpu", "cngpu");

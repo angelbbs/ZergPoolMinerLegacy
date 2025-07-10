@@ -373,6 +373,7 @@
         "BenchmarkOptions_Benchmark_Type": "Benchmark Type:",
         "Form_Main_MiningDevices": "Mining Devices {0}",
         "Form_Main_bins_folder_files_missing": "There are missing miners files from last Miners Initialization. Please make sure that your anti-virus is not blocking the application. Miner Legacy Fork Fix might not work properly without missing files. Click Yes to download miners to try to fix this issue.",
+	"Form_Main_miners_download_error": "Error downloading miner files! Make sure that your antivirus does not block the application. Check your internet connection. Restart the system. The program will be restarted within 10 minutes!",
         "Form_Main_MINING_NOT_PROFITABLE": "CURRENTLY MINING NOT PROFITABLE.",
         "Form_Main_MINING_NO_INTERNET_CONNECTION": "CURRENTLY NOT MINING. NO INTERNET CONNECTION.",
         "Form_Main_Group_Device_Rates": "Group/Device Rates:",

@@ -228,7 +228,8 @@ namespace ZergPoolMiner.Updater
         static void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             Form_Main.ProgressBarUpd(e);
-
+            Helpers.ConsolePrint("Updater: ", "BytesReceived: " + e.BytesReceived.ToString());
+            
         }
 
         private static void CreateBackup()
@@ -358,6 +359,10 @@ namespace ZergPoolMiner.Updater
                 try
                 {
                     AllReleases = GetGITHUBReleases();
+                    if (AllReleases.Length < 10)
+                    {
+                        AllReleases = GetGITLABReleases();
+                    }
 
                     Helpers.WriteAllTextWithBackup(fileHistory, AllReleases);
                 }
@@ -397,7 +402,7 @@ namespace ZergPoolMiner.Updater
         public static string GetGITHUBReleases()
         {
             string url = Links.githubAllReleases;
-            string r1 = GetGitHubAPIData(url, "api.github.com");
+            string r1 = GetGitAPIData(url, "api.github.com");
             string ret = "";
             if (r1 != null & !r1.Contains("(404)"))
             {
@@ -442,12 +447,49 @@ namespace ZergPoolMiner.Updater
             return ret;
         }
 
+        public static string GetGITLABReleases()
+        {
+            string url = Links.gitlabRepositoryTags;
+            string r1 = GetGitAPIData(url, "gitlab.com");
+            string ret = "";
+            if (r1 != null & !r1.Contains("(404)"))
+            {
+                try
+                {
+                    JArray nhjson = (JArray)JsonConvert.DeserializeObject(r1, Globals.JsonSettings);
+                    foreach (dynamic vers in nhjson)
+                    {
+                        string tag_name = vers.release.tag_name;
+                        string description = vers.release.description;
+                        string created_at = vers.commit.created_at;
+                        //Helpers.ConsolePrint(published_at, "*** " + tag_name.Replace("_", " "));
+                        ret = ret + created_at + " *** " + tag_name.Replace("_", " ") + " ***";
+                        ret = ret + "\r\n" + description;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.ConsolePrint("GITLAB", ex.ToString());
+                    Helpers.ConsolePrint("GITLAB", "Dev gitlab account banned or not found!");
+                    return "";
+                }
+            }
+            else
+            {
+                Helpers.ConsolePrint("GITLAB", "ERROR! Dev gitlab account banned or not found!");
+                Form_Main.githubBuild = 0;
+                Form_Main.githubVersion = 0;
+                return "";
+            }
+            return ret;
+        }
+
         public static double GetGITHUBVersion()
         {
             //github
             string url = Links.githubLatestRelease;
             string tagname = "";
-            string r1 = GetGitHubAPIData(url, "api.github.com");
+            string r1 = GetGitAPIData(url, "api.github.com");
             if (r1 != null & !r1.Contains("(404)"))
             {
                 try
@@ -503,7 +545,7 @@ namespace ZergPoolMiner.Updater
             //gitlab
             Helpers.ConsolePrint("GITLAB", "Start check gitlab");
             string url = Links.gitlabRepositoryTags;
-            string r2 = GetGitHubAPIData(url, "gitlab.com");
+            string r2 = GetGitAPIData(url, "gitlab.com");
             if (r2 != null & !r2.Contains("(404)"))
             {
                 try
@@ -514,7 +556,7 @@ namespace ZergPoolMiner.Updater
                     Helpers.ConsolePrint("GITLAB", tag);
 
                     url = Links.gitlabLastRelease + tag;
-                    string r3 = GetGitHubAPIData(url, "gitlab.com");
+                    string r3 = GetGitAPIData(url, "gitlab.com");
                     dynamic gitlabjson2 = JsonConvert.DeserializeObject(r3, Globals.JsonSettings);
                     int count = gitlabjson2.assets.count;
                     foreach (var l in gitlabjson2.assets.links)
@@ -555,7 +597,7 @@ namespace ZergPoolMiner.Updater
                 return 0.0d;
             }
         }
-        public static string GetGitHubAPIData(string URL, string host)
+        public static string GetGitAPIData(string URL, string host)
         {
             string ResponseFromServer;
             try
@@ -578,10 +620,18 @@ namespace ZergPoolMiner.Updater
                     throw new Exception("Not JSON!");
                 Reader.Close();
                 Response.Close();
+                if (SS is object && WR != null)
+                {
+                    SS.Dispose();
+                }
+                if (WR is object && WR != null)
+                {
+                    WR.Abort();
+                }
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("GITHUB", ex.Message);
+                Helpers.ConsolePrint("GIT", ex.Message);
                 //MessageBox.Show(ex.Message + " Response: " + ex.Data);
                 return ex.Message;
             }

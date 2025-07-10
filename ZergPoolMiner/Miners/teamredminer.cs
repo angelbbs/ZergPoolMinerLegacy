@@ -85,6 +85,24 @@ namespace ZergPoolMiner.Miners
             return ret;
         }
         */
+        public string GetServer(string algo)
+        {
+            string ret = "";
+            try
+            {
+                algo = algo.Replace("-", "_");
+                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
+                    "mine.zergpool.com";
+                ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.port.ToString();
+            }
+            catch (Exception ex)
+            {
+                Helpers.ConsolePrint("GetServer", "Error in " + algo + " " + ex.ToString());
+                ret = "error_in_list_of_algos.err:1111";
+            }
+            return ret;
+        }
         public override void Start(string wallet, string password)
         {
             if (!IsInit)
@@ -117,7 +135,7 @@ namespace ZergPoolMiner.Miners
             _algo = _algo.Replace("karlsenhash", "karlsen");
 
             LastCommandLine = sc + "" + "-a " + _algo + " " +
-            "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
+            "-o stratum+tcp://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
             _wallet + " " + _password +
             apiBind + apiBind2 + " " +
             ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.AMD) +

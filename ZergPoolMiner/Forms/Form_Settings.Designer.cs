@@ -33,6 +33,8 @@ namespace ZergPoolMiner.Forms
             this.buttonCloseNoSave = new System.Windows.Forms.Button();
             this.tabControlGeneral = new System.Windows.Forms.CustomTabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.groupBoxConnection = new System.Windows.Forms.GroupBox();
+            this.checkBoxEnableProxy = new System.Windows.Forms.CheckBox();
             this.groupBox_Idle = new System.Windows.Forms.GroupBox();
             this.checkBox_StartMiningWhenIdle = new System.Windows.Forms.CheckBox();
             this.textBox_MinIdleSeconds = new System.Windows.Forms.TextBox();
@@ -147,9 +149,6 @@ namespace ZergPoolMiner.Forms
             this.label_Schedules = new System.Windows.Forms.Label();
             this.comboBoxZones = new System.Windows.Forms.ComboBox();
             this.tabPageAdvanced1 = new System.Windows.Forms.TabPage();
-            this.groupBoxConnection = new System.Windows.Forms.GroupBox();
-            this.checkBoxEnableProxy = new System.Windows.Forms.CheckBox();
-            this.checkBoxProxySSL = new System.Windows.Forms.CheckBox();
             this.groupBox_Miners = new System.Windows.Forms.GroupBox();
             this.checkBoxAdaptive = new System.Windows.Forms.CheckBox();
             this.checkBox24hActual = new System.Windows.Forms.CheckBox();
@@ -240,6 +239,7 @@ namespace ZergPoolMiner.Forms
             this.comboBox_profile = new System.Windows.Forms.ComboBox();
             this.tabControlGeneral.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            this.groupBoxConnection.SuspendLayout();
             this.groupBox_Idle.SuspendLayout();
             this.groupBoxStart.SuspendLayout();
             this.groupBoxServer.SuspendLayout();
@@ -254,7 +254,6 @@ namespace ZergPoolMiner.Forms
             this.groupBox_additionally.SuspendLayout();
             this.groupBoxTariffs.SuspendLayout();
             this.tabPageAdvanced1.SuspendLayout();
-            this.groupBoxConnection.SuspendLayout();
             this.groupBox_Miners.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPageDevicesAlgos.SuspendLayout();
@@ -379,6 +378,7 @@ namespace ZergPoolMiner.Forms
             // tabPageGeneral
             // 
             this.tabPageGeneral.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPageGeneral.Controls.Add(this.groupBoxConnection);
             this.tabPageGeneral.Controls.Add(this.groupBox_Idle);
             this.tabPageGeneral.Controls.Add(this.groupBoxStart);
             this.tabPageGeneral.Controls.Add(this.groupBoxServer);
@@ -393,6 +393,32 @@ namespace ZergPoolMiner.Forms
             this.tabPageGeneral.Size = new System.Drawing.Size(669, 491);
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
+            // 
+            // groupBoxConnection
+            // 
+            this.groupBoxConnection.Controls.Add(this.checkBoxEnableProxy);
+            this.groupBoxConnection.Location = new System.Drawing.Point(6, 364);
+            this.groupBoxConnection.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.groupBoxConnection.Name = "groupBoxConnection";
+            this.groupBoxConnection.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.groupBoxConnection.Size = new System.Drawing.Size(365, 51);
+            this.groupBoxConnection.TabIndex = 398;
+            this.groupBoxConnection.TabStop = false;
+            this.groupBoxConnection.Text = "Connection";
+            this.groupBoxConnection.Paint += new System.Windows.Forms.PaintEventHandler(this.groupBoxConnection_Paint);
+            // 
+            // checkBoxEnableProxy
+            // 
+            this.checkBoxEnableProxy.AutoSize = true;
+            this.checkBoxEnableProxy.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.checkBoxEnableProxy.Location = new System.Drawing.Point(11, 19);
+            this.checkBoxEnableProxy.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.checkBoxEnableProxy.Name = "checkBoxEnableProxy";
+            this.checkBoxEnableProxy.Size = new System.Drawing.Size(137, 17);
+            this.checkBoxEnableProxy.TabIndex = 405;
+            this.checkBoxEnableProxy.Text = "Using proxy connection";
+            this.checkBoxEnableProxy.UseVisualStyleBackColor = true;
+            this.checkBoxEnableProxy.CheckedChanged += new System.EventHandler(this.checkBoxEnableProxy_CheckedChanged);
             // 
             // groupBox_Idle
             // 
@@ -1769,7 +1795,6 @@ namespace ZergPoolMiner.Forms
             // tabPageAdvanced1
             // 
             this.tabPageAdvanced1.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPageAdvanced1.Controls.Add(this.groupBoxConnection);
             this.tabPageAdvanced1.Controls.Add(this.groupBox_Miners);
             this.tabPageAdvanced1.Controls.Add(this.groupBox1);
             this.tabPageAdvanced1.Location = new System.Drawing.Point(4, 23);
@@ -1779,45 +1804,6 @@ namespace ZergPoolMiner.Forms
             this.tabPageAdvanced1.Size = new System.Drawing.Size(669, 491);
             this.tabPageAdvanced1.TabIndex = 2;
             this.tabPageAdvanced1.Text = "Advanced";
-            // 
-            // groupBoxConnection
-            // 
-            this.groupBoxConnection.Controls.Add(this.checkBoxEnableProxy);
-            this.groupBoxConnection.Controls.Add(this.checkBoxProxySSL);
-            this.groupBoxConnection.Location = new System.Drawing.Point(4, 399);
-            this.groupBoxConnection.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.groupBoxConnection.Name = "groupBoxConnection";
-            this.groupBoxConnection.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.groupBoxConnection.Size = new System.Drawing.Size(657, 51);
-            this.groupBoxConnection.TabIndex = 395;
-            this.groupBoxConnection.TabStop = false;
-            this.groupBoxConnection.Text = "Connection";
-            this.groupBoxConnection.Paint += new System.Windows.Forms.PaintEventHandler(this.groupBoxConnection_Paint);
-            // 
-            // checkBoxEnableProxy
-            // 
-            this.checkBoxEnableProxy.AutoSize = true;
-            this.checkBoxEnableProxy.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxEnableProxy.Location = new System.Drawing.Point(11, 19);
-            this.checkBoxEnableProxy.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.checkBoxEnableProxy.Name = "checkBoxEnableProxy";
-            this.checkBoxEnableProxy.Size = new System.Drawing.Size(137, 17);
-            this.checkBoxEnableProxy.TabIndex = 405;
-            this.checkBoxEnableProxy.Text = "Using proxy connection";
-            this.checkBoxEnableProxy.UseVisualStyleBackColor = true;
-            this.checkBoxEnableProxy.CheckedChanged += new System.EventHandler(this.checkBoxEnableProxy_CheckedChanged);
-            // 
-            // checkBoxProxySSL
-            // 
-            this.checkBoxProxySSL.AutoSize = true;
-            this.checkBoxProxySSL.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxProxySSL.Location = new System.Drawing.Point(304, 19);
-            this.checkBoxProxySSL.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.checkBoxProxySSL.Name = "checkBoxProxySSL";
-            this.checkBoxProxySSL.Size = new System.Drawing.Size(142, 17);
-            this.checkBoxProxySSL.TabIndex = 402;
-            this.checkBoxProxySSL.Text = "SSL connection to proxy";
-            this.checkBoxProxySSL.UseVisualStyleBackColor = true;
             // 
             // groupBox_Miners
             // 
@@ -2979,6 +2965,8 @@ namespace ZergPoolMiner.Forms
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form_Settings_Paint);
             this.tabControlGeneral.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
+            this.groupBoxConnection.ResumeLayout(false);
+            this.groupBoxConnection.PerformLayout();
             this.groupBox_Idle.ResumeLayout(false);
             this.groupBox_Idle.PerformLayout();
             this.groupBoxStart.ResumeLayout(false);
@@ -3002,8 +2990,6 @@ namespace ZergPoolMiner.Forms
             this.groupBoxTariffs.ResumeLayout(false);
             this.groupBoxTariffs.PerformLayout();
             this.tabPageAdvanced1.ResumeLayout(false);
-            this.groupBoxConnection.ResumeLayout(false);
-            this.groupBoxConnection.PerformLayout();
             this.groupBox_Miners.ResumeLayout(false);
             this.groupBox_Miners.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -3135,9 +3121,6 @@ namespace ZergPoolMiner.Forms
         private System.Windows.Forms.CheckBox checkBox_ABDefault_program_closing;
         private System.Windows.Forms.CheckBox checkBox_ABDefault_mining_stopped;
         private System.Windows.Forms.CheckBox checkBox_DisableTooltips;
-        private System.Windows.Forms.GroupBox groupBoxConnection;
-        private System.Windows.Forms.CheckBox checkBoxProxySSL;
-        private System.Windows.Forms.CheckBox checkBoxEnableProxy;
         private System.Windows.Forms.CheckBox checkBoxEnableRigRemoteView;
         private System.Windows.Forms.LinkLabel linkLabelRigRemoteView;
         private System.Windows.Forms.GroupBox groupBox_Logging;
@@ -3245,5 +3228,7 @@ namespace ZergPoolMiner.Forms
         private System.Windows.Forms.Button buttonAddWallet;
         public Components.WalletsListView walletsListView1;
         private System.Windows.Forms.CheckBox checkBoxAdaptive;
+        private System.Windows.Forms.GroupBox groupBoxConnection;
+        private System.Windows.Forms.CheckBox checkBoxEnableProxy;
     }
 }

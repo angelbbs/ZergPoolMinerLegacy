@@ -16,6 +16,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -116,6 +117,14 @@ namespace ZergPoolMiner.Miners
                 }
             }
 
+
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
             {
                 string _wallet = "-u " + wallet;
@@ -127,6 +136,7 @@ namespace ZergPoolMiner.Miners
                 return " -a " + _algo +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                        proxy + " " +
                         _wallet + " " + _password +
                         GetDevicesCommandString().Trim();
 
@@ -143,6 +153,7 @@ namespace ZergPoolMiner.Miners
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         GetServerDual(MiningSetup.CurrentAlgorithmType.ToString().ToLower(),
                         MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
+                        proxy + " " +
                         _wallet + " " + _password + " " +
                         GetDevicesCommandString().Trim();
             }
@@ -334,6 +345,14 @@ namespace ZergPoolMiner.Miners
         {
             _benchmarkTimeWait = time;
             var ret = "";
+
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
             {
                 string wallet = "-u " + Globals.DemoUser;
@@ -344,6 +363,7 @@ namespace ZergPoolMiner.Miners
                 ret = " --no-colour -a " + _algo +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                        proxy + " " +
                         wallet + " " + password + " " +
                         GetDevicesCommandString().Trim();
             }
@@ -358,6 +378,7 @@ namespace ZergPoolMiner.Miners
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         GetServerDual(MiningSetup.CurrentAlgorithmType.ToString().ToLower(),
                         MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
+                        proxy + " " +
                         wallet + " " + password + " " +
                         GetDevicesCommandString().Trim();
             }

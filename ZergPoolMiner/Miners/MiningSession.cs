@@ -97,10 +97,12 @@ namespace ZergPoolMiner.Miners
 
         }
 
+        public static List<ComputeDevice> _ComputeDevices = new();
         public MiningSession(List<ComputeDevice> devices,
             IMainFormRatesComunication mainFormRatesComunication,
             string wallet, string password)
         {
+            _ComputeDevices = devices;
             _ticks = new int[devices.Count];
             for (int d = 0; d < _ticks.Length; d++)
             {
@@ -370,7 +372,7 @@ namespace ZergPoolMiner.Miners
             {
                 Helpers.ConsolePrint(Tag, "Mining profit: " + 
                     ExchangeRateApi.ConvertBTCToNationalCurrency(totalRate).ToString("F2") + 
-                    " Most profit: " + ExchangeRateApi.ConvertBTCToNationalCurrency(mostProfitWithoutPower).ToString("F2") +
+                    " Calc profit: " + ExchangeRateApi.ConvertBTCToNationalCurrency(mostProfitWithoutPower).ToString("F2") +
                     " with power: " + currentProfitUsd.ToString("F2") + " " + 
                     ConfigManager.GeneralConfig.DisplayCurrency + "/Day");
                 if (!_isProfitable)
@@ -434,6 +436,7 @@ namespace ZergPoolMiner.Miners
 
         private double prev_percDiff = 0.0d;
         private bool coinChanged = false;
+        public static List<string> coinFail = new();
         public void SwichMostProfitableGroupUpMethod(object sender, SmaUpdateEventArgs e)
         {
             if (Miner.minerRestarting) return;
@@ -444,9 +447,51 @@ namespace ZergPoolMiner.Miners
                 var profitableDevices = new List<MiningPair>();
                 var mostProfit = 0.0d;
                 var currentProfit = 0.0d;
+                coinFail.Clear();
 
                 foreach (var device in _miningDevices)
                 {
+                    //задать порог 20%, иначе монета, у которой не найден блок, будет майниться до упора
+                    var c = Stats.Stats.CoinList.Find(e => e.symbol.Equals(device.Device._DeviceCurrentMiningCoin));
+                    if (c is object && c != null)
+                    {
+                        if (c.timesincelast_shared > device.Device.coinMiningTime && device.diffPercent < 20)
+                        {
+                            if (!coinFail.Contains(device.Device._DeviceCurrentMiningCoin))
+                            {
+                                if (!coinFail.Contains(device.Device.Coin))
+                                {
+                                    coinFail.Add(device.Device.Coin);
+                                    /*
+                                    Helpers.ConsolePrint(Tag, "No block found for " +
+                                        device.Device.Coin);
+                                    */
+                                }
+                            }
+                        }
+                        if (c.timesincelast_shared < device.Device.coinMiningTime &&
+                            coinFail.Contains(device.Device.Coin))
+                        {
+                            Helpers.ConsolePrint(Tag, "Block found for " + c.symbol);
+                            coinFail.Remove(device.Device.Coin);
+                        }
+                    }
+
+                    foreach (var _device in _ComputeDevices)
+                    {
+                        if (device.Device.BusID == _device.BusID)
+                        {
+                            _device._DeviceCurrentMiningCoin = device.DeviceCurrentMiningCoin;
+                            _device._DeviceMostProfitableCoin = device.DeviceMostProfitableCoin;
+                            _device._CurrentProfitableAlgorithmType = device.CurrentProfitableAlgorithmType;
+                            _device._MostProfitableAlgorithmType = device.MostProfitableAlgorithmType;
+                            _device._CurrentProfitableMinerBaseType = device.CurrentProfitableMinerBaseType;
+                            _device._MostProfitableMinerBaseType = device.MostProfitableMinerBaseType;
+                            _device._diffPercent = device.diffPercent;
+                        }
+                    }
+
+                    device.Device.coinMiningTime = device.Device.coinMiningTime + 0.5;
                     // calculate profits
                     device.CalculateProfits(e.NormalizedProfits);
                     // check if device has profitable algo
@@ -467,6 +512,7 @@ namespace ZergPoolMiner.Miners
                         }
                     }
                 }
+
                 var stringBuilderFull = new StringBuilder();
                 stringBuilderFull.AppendLine("Current device profits:");
                 double smaTmp = 0;
@@ -476,6 +522,7 @@ namespace ZergPoolMiner.Miners
                 bool algoZero = false;
                 string algoZeroS = "";
                 Form_Main.KawpowLiteEnabled = false;
+
                 foreach (var device in _miningDevices)
                 {
                     foreach (var algo in device.Algorithms)
@@ -511,18 +558,40 @@ namespace ZergPoolMiner.Miners
                     string currentStrWithPower = ExchangeRateApi.ConvertBTCToNationalCurrency(device.GetCurrentProfitValue).ToString("F2") + " " +
                         ConfigManager.GeneralConfig.DisplayCurrency;
                     var _diff = Math.Abs((device.GetMostProfitValueWithoutPower - device.GetCurrentProfitValueWithoutPower) / 100);
+
+                    device.diffPercent = Math.Abs(100 - (device.GetCurrentProfitValueWithoutPower / 
+                        (device.GetMostProfitValueWithoutPower + device.GetMostProfitValueWithoutPower *
+                        (device.diff / 100)) * 100));
+
                     Helpers.ConsolePrint($"BusID {device.Device.BusID}", $"({ device.Device.GetFullName()}):\n" +
                         $"CURRENT ALGO:\t\t{device.GetCurrentProfitableString()} ({device.DeviceCurrentMiningCoin}) " +//!неправильно
                         $"PROFIT: {currentStr} with pwr: {currentStrWithPower}\n" +
                         $"MOST PROFIT ALGO:\t{device.GetMostProfitableString()} ({device.DeviceMostProfitableCoin}) " +
-                        $"PROFIT: {profitStr} with pwr: {profitStrWithPower}. {device.diff.ToString("F2")} %");
+                        $"PROFIT: {profitStr} with pwr: {profitStrWithPower}. {(device.diffPercent).ToString("F2")} %");
                     
                     if (!device.DeviceCurrentMiningCoin.ToLower().Equals("none") &&
                         !device.DeviceMostProfitableCoin.ToLower().Equals("none") &&
-                        !device.DeviceCurrentMiningCoin.ToLower().Equals(device.DeviceMostProfitableCoin.ToLower()))//coin switch
+                        !device.DeviceCurrentMiningCoin.ToLower().Equals(device.DeviceMostProfitableCoin.ToLower()) &&
+                        device.CurrentProfitableAlgorithmType.Equals(device.MostProfitableAlgorithmType))//only coin switch
                     {
                         coinChanged = true;
-                    } 
+                    }
+
+                    foreach (var _device in _ComputeDevices)
+                    {
+                        if (device.Device.BusID == _device.BusID)
+                        {
+                            _device._DeviceCurrentMiningCoin = device.DeviceCurrentMiningCoin;
+                            _device._DeviceMostProfitableCoin = device.DeviceMostProfitableCoin;
+                            _device._CurrentProfitableAlgorithmType = device.CurrentProfitableAlgorithmType;
+                            _device._MostProfitableAlgorithmType = device.MostProfitableAlgorithmType;
+                            _device._CurrentProfitableMinerBaseType = device.CurrentProfitableMinerBaseType;
+                            _device._MostProfitableMinerBaseType = device.MostProfitableMinerBaseType;
+                            _device._diffPercent = device.diffPercent;
+                        }
+                    }
+                    
+
                     /*
                     if (_needswitch)
                     {
@@ -531,7 +600,7 @@ namespace ZergPoolMiner.Miners
                             " because diff is " + device.diff.ToString("F2") + " %");
                     }
                     */
-                    
+
                     if (device.needSwitch &&
                         !device.DeviceCurrentMiningCoin.ToLower().Equals("none") &&
                         !device.DeviceMostProfitableCoin.ToLower().Equals("none"))//coin switch
@@ -605,7 +674,6 @@ namespace ZergPoolMiner.Miners
                     }
                 }
 
-                
                 if (ConfigManager.GeneralConfig.By_profitability_of_all_devices)
                 {
                     if (ConfigManager.GeneralConfig.with_power)
@@ -632,7 +700,7 @@ namespace ZergPoolMiner.Miners
                     }
                     if (!coinChanged)
                     {
-                        Helpers.ConsolePrint(Tag,
+                        Helpers.ConsolePrint(Tag, 
                         $"NO SWITCH. There is no more profitable coin");
                         _ticks[0] = 0;
                         return;
@@ -647,51 +715,35 @@ namespace ZergPoolMiner.Miners
 
                     if (percDiff > ConfigManager.GeneralConfig.SwitchProfitabilityThreshold && coinChanged)
                     {
-                        if (!KawpowLiteForceStop)
+                        if (Form_Main.adaptiveRunning && !algoZero)
                         {
-                            if (Form_Main.adaptiveRunning && !algoZero)
+                            Helpers.ConsolePrint(Tag, "Switching temporary disabled because adaptive algo is running");
+                            needSwitch = false;
+                            // RESTORE OLD PROFITS STATE
+                            foreach (var device in _miningDevices)
                             {
-                                Helpers.ConsolePrint(Tag, "Switching temporary disabled because adaptive algo is running");
-                                needSwitch = false;
-                                // RESTORE OLD PROFITS STATE
-                                foreach (var device in _miningDevices)
-                                {
-                                    device.RestoreOldProfitsState();
-                                }
-                                return;
+                                device.RestoreOldProfitsState();
                             }
-                            if ((Form_Main.ZilCount == 96 || Form_Main.ZilCount == 97 || Form_Main.ZilCount == 98) && !Form_Main._NeedMiningStart)
-                            {
-                                Helpers.ConsolePrint(Tag, "Switching disabled because ZIL round is expected");
-                                needSwitch = false;
-                                // RESTORE OLD PROFITS STATE
-                                foreach (var device in _miningDevices)
-                                {
-                                    device.RestoreOldProfitsState();
-                                }
-                                return;
-                            }
-
-                            if ((Form_Main.ZilCount == 1 || Form_Main.ZilCount == 2) && !Form_Main._NeedMiningStart)
-                            {
-                                Helpers.ConsolePrint(Tag, "Switching disabled after ZIL round");
-                                needSwitch = false;
-                                // RESTORE OLD PROFITS STATE
-                                foreach (var device in _miningDevices)
-                                {
-                                    device.RestoreOldProfitsState();
-                                }
-                                return;
-                            }
+                            return;
                         }
-
+                        /*
+                        foreach (var device in _miningDevices)
+                        {
+                            Helpers.ConsolePrint("!!!!!!!!", device.Device.Name + " - " +
+                            "device.DeviceCurrentMiningCoin: " + device.DeviceCurrentMiningCoin + ", " +
+                            "device.DeviceMostProfitableCoin: " + device.DeviceMostProfitableCoin + " " +
+                            "device.GetCurrentProfitValue: " + device.GetCurrentProfitValue.ToString("F5") + " " +
+                            "device.GetMostProfitValue: " + device.GetMostProfitValue.ToString("F5") + " " +
+                            "diffPercent: " + device.diffPercent.ToString("F2"));
+                        }
+                        */
                         if (_ticks[0] + 1 >= AlgorithmSwitchingManager._ticksForStable || forceSwitch)
                         {
                             if (prev_percDiff > percDiff + percDiff * 0.2 && !needSwitch)
                             {
                                 if (!KawpowLiteForceStop)
                                 {
-                                    _ticks[0] = _ticks[0] - 1;
+                                    _ticks[0] = 0;
                                     needSwitch = false;
                                     Helpers.ConsolePrint(Tag,
                                         $"Switching delayed due profit down. Profit diff is " +
@@ -713,10 +765,11 @@ namespace ZergPoolMiner.Miners
                                     actualProfit = actualProfit + _algoProperty.actualProfit;
                                     localProfit = localProfit + _algoProperty.localProfit;
                                 }
+                                /*
                                 Helpers.ConsolePrint(Tag, $"current profit { Math.Round(actualProfit / localProfit * 100, 2):f2}% " +
                                             $"profit after switching {Math.Round(percDiff * 100, 2):f2}%");
-
-                                if (percDiff <= 5 || double.IsInfinity(percDiff) || forceSwitch)
+                                */
+                                if (percDiff <= 5 || double.IsInfinity(percDiff) || forceSwitch || coinChanged)
                                 {
                                     actualProfit = 0d;
                                     localProfit = 0d;
@@ -726,20 +779,6 @@ namespace ZergPoolMiner.Miners
                                         actualProfit = actualProfit + _algoProperty.actualProfit;
                                         localProfit = localProfit + _algoProperty.localProfit;
                                     }
-                                    if (actualProfit / localProfit - 1 > percDiff && currentProfit != 0)
-                                    {
-                                        Helpers.ConsolePrint(Tag, $"Switching temporary disabled because current actual " +
-                                            $"profit { Math.Round((actualProfit / localProfit) - 1 * 100, 2):f2}% " +
-                                            $"above than profit after switching {Math.Round(percDiff * 100, 2):f2}%");
-                                        needSwitch = false;
-                                        // RESTORE OLD PROFITS STATE
-                                        foreach (var device in _miningDevices)
-                                        {
-                                            device.RestoreOldProfitsState();
-                                        }
-                                        return;
-                                    }
-
                                     _ticks[0] = 0;
                                     needSwitch = true;
                                     Helpers.ConsolePrint(Tag,
@@ -816,12 +855,13 @@ namespace ZergPoolMiner.Miners
                         {
                             coinChanged = true;
                         }
-                        if (!coinChanged)
+                        //if (!coinChanged)
+                        if (device.DeviceCurrentMiningCoin.Equals(device.DeviceMostProfitableCoin))
                         {
-                            Helpers.ConsolePrint(Tag,
-                            $"NO SWITCH. There is no more profitable coin");
+                            Helpers.ConsolePrint(Tag, $"{device.Device.GetFullName()}: NO SWITCH." +
+                                $" There is no more profitable coin");
                             _ticks[device.Device.Index] = 0;
-                            return;
+                            continue;
                         }
 
                         var a = Math.Max(currentProfit, mostProfit);
@@ -833,67 +873,50 @@ namespace ZergPoolMiner.Miners
                             $"SWITCH DISABLED due api error. Profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
                             return;
                         }
-                        if (percDiff > ConfigManager.GeneralConfig.SwitchProfitabilityThreshold && coinChanged)
+                        if (percDiff > ConfigManager.GeneralConfig.SwitchProfitabilityThreshold &&
+                            !device.DeviceCurrentMiningCoin.Equals(device.DeviceMostProfitableCoin))
                         {
-                            if (!KawpowLiteForceStop)
+                            if (Form_Main.adaptiveRunning && !algoZero)
                             {
-                                if (Form_Main.adaptiveRunning && !algoZero)
-                                {
-                                    Helpers.ConsolePrint(Tag, "Switching temporary disabled because adaptive algo is running");
-                                    needSwitch = false;
-                                    device.RestoreOldProfitsState();
-                                    continue;
-                                }
-                                if ((Form_Main.ZilCount == 96 || Form_Main.ZilCount == 97 || Form_Main.ZilCount == 98) && !Form_Main._NeedMiningStart)
-                                {
-                                    Helpers.ConsolePrint(Tag, "Switching disabled because ZIL round is expected for " + device.Device.Name);
-                                    needSwitch = false;
-                                    device.RestoreOldProfitsState();
-                                    continue;
-                                }
-
-                                if ((Form_Main.ZilCount == 1 || Form_Main.ZilCount == 2 || Form_Main.ZilCount == 3) && !Form_Main._NeedMiningStart)
-                                {
-                                    Helpers.ConsolePrint(Tag, "Switching disabled after ZIL round for " + device.Device.Name);
-                                    needSwitch = false;
-                                    device.RestoreOldProfitsState();
-                                    continue;
-                                }
+                                Helpers.ConsolePrint(Tag, "Switching temporary disabled because adaptive algo is running");
+                                needSwitch = false;
+                                device.RestoreOldProfitsState();
+                                continue;
                             }
                             if (_ticks[device.Device.Index] + 1 >= AlgorithmSwitchingManager._ticksForStable ||
                                 forceSwitch)
                             {
                                 if (prev_percDiff > percDiff + percDiff * 0.2 && !needSwitch)
                                 {
-                                    if (!KawpowLiteForceStop)
-                                    {
-                                        _ticks[device.Device.Index] = _ticks[device.Device.Index] - 1;
-                                        needSwitch = false;
-                                        Helpers.ConsolePrint(Tag,
-                                            $"Switching delayed due profit down. Profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
-                                        device.RestoreOldProfitsState();
-                                    }
+                                    _ticks[device.Device.Index] = 0;
+                                    needSwitch = false;
+                                    Helpers.ConsolePrint(Tag,
+                                        $"Switching delayed due profit down. Profit diff is {Math.Round(percDiff * 100, 2):f2}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
+                                    device.RestoreOldProfitsState();
                                 }
                                 else
                                 {
-                                    if (percDiff <= 1 || double.IsInfinity(percDiff) || forceSwitch)
+                                    if (percDiff <= 5 || double.IsInfinity(percDiff) || forceSwitch ||
+                                        coinChanged)
                                     {
+                                        Helpers.ConsolePrint(Tag,
+                                            $"{device.Device.GetFullName()}: Will SWITCH (" +
+                                            device.DeviceCurrentMiningCoin + "->" +
+                                            device.DeviceMostProfitableCoin + $") profit diff is " +
+                                            $"{Math.Round(percDiff * 100, 2)}%, current threshold " +
+                                            $"{ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
                                         _ticks[device.Device.Index] = 0;
                                         needSwitch = true;
-                                        Helpers.ConsolePrint(Tag,
-                                            $"{device.Device.GetFullName()}: Will SWITCH profit diff is {Math.Round(percDiff * 100, 2)}%, current threshold {ConfigManager.GeneralConfig.SwitchProfitabilityThreshold * 100}%");
-                                    } else
+                                    }
+                                    else
                                     {
                                         _ticks[device.Device.Index] = 0;
                                         needSwitch = false;
                                         Helpers.ConsolePrint(Tag,
-                                            $"Will NOT SWITCH. Profit diff is {Math.Round(percDiff * 100, 2):f2}% above 100%. Maybe API bug");
+                                            $"Will NOT SWITCH. Profit diff is {Math.Round(percDiff * 100, 2):f2}% above 500%. Maybe API bug");
 
                                         // RESTORE OLD PROFITS STATE
-                                        if (!KawpowLiteForceStop)
-                                        {
-                                            device.RestoreOldProfitsState();
-                                        }
+                                        device.RestoreOldProfitsState();
                                     }
                                 }
 
@@ -966,12 +989,6 @@ namespace ZergPoolMiner.Miners
                 Form_Main._NeedMiningStart = false;
                 forceSwitch = false;
 
-                if (KawpowLiteForceStop && Form_Main.KawpowLiteEnabled)
-                {
-                    Helpers.ConsolePrint(Tag, "Force switch from KawpowLite mining");
-                    KawpowLiteForceStop = false;
-                    needSwitch = true;
-                }
                 if (algoZero)
                 {
                     Helpers.ConsolePrint(Tag, "Force switch from zero or deleted algo " + algoZeroS);
@@ -997,6 +1014,33 @@ namespace ZergPoolMiner.Miners
                     }
                 }
 
+                foreach (var pd in Enumerable.Reverse(profitableDevices).ToList())
+                {
+                    if (coinFail.Contains(pd.Algorithm.CurrentMiningCoin) &&
+                            pd.Algorithm.CurrentMiningCoin != pd.Algorithm.MostProfitCoin)
+                    {
+                        Helpers.ConsolePrint(Tag, $"{pd.Device.Name} Switching canceled. " +
+                            pd.Algorithm.CurrentMiningCoin + " block not found");
+                        foreach (var _device in _miningDevices)
+                        {
+                            if (_device.Device.BusID == pd.Device.BusID)
+                            {
+                                var itemToRemove = profitableDevices.SingleOrDefault(r => r.Device.BusID == pd.Device.BusID);
+                                if (itemToRemove != null)
+                                {
+                                    _device.RestoreOldProfitsState();
+                                    if (_device.HasProfitableAlgo())
+                                    {
+                                        profitableDevices.Remove(itemToRemove);
+                                        profitableDevices.Add(_device.GetCurrentProfitablePair());
+                                    }
+                                };
+                            }
+                        }
+                    }
+                }
+                Enumerable.Reverse(profitableDevices).ToList();
+
                 NewGrouping(profitableDevices);
             } catch (Exception ex)
             {
@@ -1008,19 +1052,24 @@ namespace ZergPoolMiner.Miners
 
         private void NewGrouping(List<MiningPair> profitableDevices)
         {
-            Form_Main.SwitchCount++;
-            Helpers.ConsolePrint("SWITCHING", "Number of switches: " + Form_Main.SwitchCount.ToString() + " Uptime: " + Form_Main.Uptime.ToString(@"d\ \d\a\y\s\ hh\:mm\:ss"));
             // group new miners
             var newGroupedMiningPairs = new Dictionary<string, List<MiningPair>>();
 
+            for (var first = 0; first < profitableDevices.Count; ++first)
+            {
+                var firstDev = profitableDevices[first].Device;
+            }
+            
             // group devices with same supported algorithms
             {
                 var currentGroupedDevices = new List<GroupedDevices>();
                 for (var first = 0; first < profitableDevices.Count; ++first)
                 {
                     var firstDev = profitableDevices[first].Device;
+                    
                     // check if is in group
                     var isInGroup = currentGroupedDevices.Any(groupedDevices => groupedDevices.Contains(firstDev.Uuid));
+
                     // if device is not in any group create new group and check if other device should group
                     if (isInGroup == false)
                     {
@@ -1042,12 +1091,12 @@ namespace ZergPoolMiner.Miners
                                 miningPairs.Add(profitableDevices[second]);
                             }
                         }
-
                         currentGroupedDevices.Add(newGroup);
                         newGroupedMiningPairs[CalcGroupedDevicesKey(newGroup)] = miningPairs;
                     }
                 }
             }
+
             {
                 // check which groupMiners should be stopped and which ones should be started and which to keep running
                 var toStopGroupMiners = new Dictionary<string, GroupMiner>();
@@ -1068,21 +1117,32 @@ namespace ZergPoolMiner.Miners
                         var newAlgoType = GetMinerPairAlgorithmType(miningPairs);
                         if (newAlgoType != AlgorithmType.NONE && newAlgoType != AlgorithmType.INVALID)
                         {
-
-                            var coinChanged = false;
+                            var _coinChanged = false;
                             foreach (var mPair in _runningGroupMiners[runningGroupKey].Miner.MiningSetup.MiningPairs)
                             {
                                 if (mPair.Algorithm is Algorithm algo
                                     && algo.CurrentMiningCoin != algo.MostProfitCoin)
                                 {
-                                    coinChanged = true;
-                                    break;
+                                    if (coinFail.Contains(algo.CurrentMiningCoin))
+                                    {
+                                        newAlgoType = mPair.Device._CurrentProfitableAlgorithmType;
+                                        algo.MostProfitCoin = algo.CurrentMiningCoin;
+                                        mPair.Algorithm.MostProfitCoin = mPair.Algorithm.CurrentMiningCoin;
+                                        mPair.Device._MostProfitableAlgorithmType = mPair.Device._CurrentProfitableAlgorithmType;
+                                        mPair.Device._MostProfitableMinerBaseType = mPair.Device._CurrentProfitableMinerBaseType;
+                                        mPair.Device._DeviceMostProfitableCoin = mPair.Device._DeviceCurrentMiningCoin;
+                                        //mPair.Algorithm.DualZergPoolID = mPair.Device._CurrentProfitableAlgorithmType;
+                                    }
+                                    else
+                                    {
+                                        _coinChanged = true;
+                                        break;
+                                    }
                                 }
                             }
 
-
                             // if algoType valid and different from currently running update
-                            if (newAlgoType != _runningGroupMiners[runningGroupKey].DualAlgorithmType || coinChanged)
+                            if (newAlgoType != _runningGroupMiners[runningGroupKey].DualAlgorithmType || _coinChanged)
                             {
                                 // remove current one and schedule to stop mining
                                 toStopGroupMiners[runningGroupKey] = _runningGroupMiners[runningGroupKey];
@@ -1116,16 +1176,22 @@ namespace ZergPoolMiner.Miners
                         toRunNewGroupMiners[key] = newGroupMiner;
                     }
                 }
+
                 if ((toStopGroupMiners.Values.Count > 0) || (toRunNewGroupMiners.Values.Count > 0))
                 {
                     var stringBuilderPreviousAlgo = new StringBuilder();
                     var stringBuilderCurrentAlgo = new StringBuilder();
                     var stringBuilderNoChangeAlgo = new StringBuilder();
+
+                    Form_Main.SwitchCount++;
+                    Helpers.ConsolePrint("SWITCHING", "Number of switches: " +
+                        Form_Main.SwitchCount.ToString() + " Uptime: " +
+                        Form_Main.Uptime.ToString(@"d\ \d\a\y\s\ hh\:mm\:ss"));
+
                     // stop old miners
                     foreach (var toStop in toStopGroupMiners.Values)
                     {
-                        stringBuilderPreviousAlgo.Append($"{toStop.DevicesInfoString}: {toStop.AlgorithmType}, ");
-
+                        stringBuilderPreviousAlgo.Append($"{toStop.DevicesInfoString}: {toStop.AlgorithmType}({toStop.Coin}), ");
                         toStop.Stop();
                         toStop.StartMinerTime = new DateTime(0);
                         _runningGroupMiners.Remove(toStop.Key);
@@ -1135,6 +1201,7 @@ namespace ZergPoolMiner.Miners
                     {
                         foreach (var device in _miningDevices)
                         {
+                            device.Device.coinMiningTime = 0;
                             device.DeviceCurrentMiningCoin = toStart.Coin;
                             foreach (var algo in device.Algorithms)
                             {
@@ -1173,7 +1240,7 @@ namespace ZergPoolMiner.Miners
                     }
                     // which miners dosen't change
                     foreach (var noChange in noChangeGroupMiners.Values)
-                        stringBuilderNoChangeAlgo.Append($"{noChange.DevicesInfoString}: {noChange.AlgorithmType}, ");
+                        stringBuilderNoChangeAlgo.Append($"{noChange.DevicesInfoString}: {noChange.AlgorithmType}({noChange.Coin}), ");
                 }
             }
             AlgorithmSwitchingManager.SmaCheckTimerOnElapsedRun = false;

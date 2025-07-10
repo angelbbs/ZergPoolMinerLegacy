@@ -188,7 +188,6 @@ namespace ZergPoolMiner.Configs
                    || GeneralConfig.ColorProfileIndex != _generalConfigBackup.ColorProfileIndex
                    || GeneralConfig.DevicesCountIndex != _generalConfigBackup.DevicesCountIndex
                    || GeneralConfig.ProgramMonitoring != _generalConfigBackup.ProgramMonitoring
-                   || GeneralConfig.EnableProxy != _generalConfigBackup.EnableProxy
                    || GeneralConfig.Show_ShowDeviceMemSize != _generalConfigBackup.Show_ShowDeviceMemSize
                    || GeneralConfig.InstallRootCerts != _generalConfigBackup.InstallRootCerts
                    || GeneralConfig.Use_OpenHardwareMonitor != _generalConfigBackup.Use_OpenHardwareMonitor

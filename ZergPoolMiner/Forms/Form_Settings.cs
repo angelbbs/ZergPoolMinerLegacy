@@ -69,7 +69,6 @@ namespace ZergPoolMiner.Forms
 
             button_ZIL_additional_mining.Visible = false;
             button_Lite_Algo.Visible = false;
-            groupBoxConnection.Visible = false;
             IsChange = false;
             IsChangeSaved = false;
 
@@ -504,21 +503,10 @@ namespace ZergPoolMiner.Forms
             buttonDeleteWallet.Text = International.GetText("Form_Settings_buttonDeleteWallet");
 
             groupBoxConnection.Text = International.GetText("FormSettings_Tab_Advanced_Group_Connection");
-            checkBoxProxySSL.Text = International.GetText("FormSettings_Tab_Advanced_checkBoxProxySSL");
             checkBoxEnableProxy.Text = International.GetText("FormSettings_Tab_Advanced_checkBoxEnableProxy");
             //checkBoxProxyAsFailover.Text = International.GetText("FormSettings_Tab_Advanced_ProxyAsFailover");
             //checkBoxStale.Text = International.GetText("FormSettings_Tab_Advanced_StaleProxy");
-            if (Globals.MiningLocation.Length > 1)
-            {
-                checkBoxEnableProxy.Enabled = true;
-                checkBoxProxySSL.Enabled = true;
-            }
-            else
-            {
-                checkBoxEnableProxy.Enabled = false;
-                checkBoxProxySSL.Enabled = false;
-            }
-
+            
             richTextBoxInfo.ReadOnly = true;
             richTextBoxInfo.SelectionFont = new Font(richTextBoxInfo.Font, FontStyle.Bold);
             richTextBoxInfo.AppendText("Miner Legacy Fork Fix");
@@ -918,7 +906,6 @@ namespace ZergPoolMiner.Forms
                 checkBox_ABDefault_mining_stopped.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBox_ABDefault_program_closing.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBox_ABMinimize.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
-                checkBoxProxySSL.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBoxEnableProxy.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 //checkBoxProxyAsFailover.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 //checkBoxStale.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
@@ -1065,7 +1052,6 @@ namespace ZergPoolMiner.Forms
                 checkBox_ABDefault_mining_stopped.Checked = ConfigManager.GeneralConfig.ABDefaultMiningStopped;
                 checkBox_ABDefault_program_closing.Checked = ConfigManager.GeneralConfig.ABDefaultProgramClosing;
                 checkBox_ABMinimize.Checked = ConfigManager.GeneralConfig.ABMinimize;
-                checkBoxProxySSL.Checked = ConfigManager.GeneralConfig.ProxySSL;
                 checkBoxEnableProxy.Checked = ConfigManager.GeneralConfig.EnableProxy;
                 //checkBoxProxyAsFailover.Checked = ConfigManager.GeneralConfig.ProxyAsFailover;
                 //checkBoxStale.Checked = ConfigManager.GeneralConfig.StaleProxy;
@@ -1082,21 +1068,6 @@ namespace ZergPoolMiner.Forms
                 ConfigManager.GeneralConfig.ProxyAsFailover = false; //отключим до лучших времён
                 ConfigManager.GeneralConfig.StaleProxy = false;
 
-                if (checkBoxEnableProxy.Checked)
-                {
-                    if (Globals.MiningLocation.Length > 1)
-                    {
-                        checkBoxProxySSL.Enabled = true;
-                    }
-                    else
-                    {
-                        checkBoxProxySSL.Enabled = false;
-                    }
-                }
-                else
-                {
-                    checkBoxProxySSL.Enabled = false;
-                }
                 if (checkBoxEnableRigRemoteView.Checked)
                 {
                     string ip = GetLocalIPAddress();
@@ -1608,7 +1579,6 @@ namespace ZergPoolMiner.Forms
             ConfigManager.GeneralConfig.ABDefaultProgramClosing = checkBox_ABDefault_program_closing.Checked;
             ConfigManager.GeneralConfig.ABMinimize = checkBox_ABMinimize.Checked;
             ConfigManager.GeneralConfig.EnableProxy = checkBoxEnableProxy.Checked;
-            ConfigManager.GeneralConfig.ProxySSL = checkBoxProxySSL.Checked;
 
             if (checkBox_LogToFile.Checked)
             {
@@ -1779,7 +1749,7 @@ namespace ZergPoolMiner.Forms
         {
             walletsListView1.SaveWallets();
             Stats.Stats.ClearBalance();
-            new Task(() => Stats.Stats.GetWalletBalance(null, null)).Start();
+            new Task(() => Stats.Stats.GetWalletBalanceAsync(null, null)).Start();
             if (!ForceClosingForm)
             {
                 MessageBox.Show(International.GetText("Form_Settings_buttonSaveMsg"),
@@ -2642,23 +2612,6 @@ namespace ZergPoolMiner.Forms
             ConfigManager.GeneralConfig.DisplayCurrency = selected;
             ConfigManager.GeneralConfigFileCommit();
         }
-
-        private void checkBoxEnableProxy_CheckedChanged(object sender, EventArgs e)
-        {
-            ConfigManager.GeneralConfig.EnableProxy = checkBoxEnableProxy.Checked;
-            if (checkBoxEnableProxy.Checked)
-            {
-                checkBoxProxySSL.Enabled = true;
-                //checkBoxProxyAsFailover.Enabled = true;
-                //checkBoxStale.Enabled = true;
-            }
-            else
-            {
-                checkBoxProxySSL.Enabled = false;
-                //checkBoxProxyAsFailover.Enabled = false;
-                //checkBoxStale.Enabled = false;
-            }
-        }
         public static string GetLocalIPAddress()
         {
             IPHostEntry host;
@@ -3503,13 +3456,6 @@ namespace ZergPoolMiner.Forms
             Form_Main.DrawGroupBox(box, e.Graphics, Form_Main._foreColor, Form_Main._grey);
         }
 
-        private void groupBoxConnection_Paint(object sender, PaintEventArgs e)
-        {
-            if (ConfigManager.GeneralConfig.ColorProfileIndex != 14) return;
-            GroupBox box = sender as GroupBox;
-            Form_Main.DrawGroupBox(box, e.Graphics, Form_Main._foreColor, Form_Main._grey);
-        }
-
         private void algorithmSettingsControl1_Paint(object sender, PaintEventArgs e)
         {
             if (ConfigManager.GeneralConfig.ColorProfileIndex != 14) return;
@@ -3740,13 +3686,6 @@ namespace ZergPoolMiner.Forms
             }
             UpdateSpeedText();
         }
-        public void HandleCheck(ListViewItem lvi)
-        {
-            if (ReferenceEquals(_currentlySelectedLvi, lvi))
-            {
-                Enabled = lvi.Checked;
-            }
-        }
         private void UpdateSpeedText()
         {
             var speed = _currentlySelectedAlgorithm.BenchmarkSpeed;
@@ -3827,7 +3766,7 @@ namespace ZergPoolMiner.Forms
                 checkBoxCurrentEstimate.Checked = true;
             }
             ConfigManager.GeneralConfig.CurrentEstimate = checkBoxCurrentEstimate.Checked;
-            Stats.Stats.LoadAlgoritmsList(true);
+            Stats.Stats.LoadAlgoritmsListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3839,7 +3778,7 @@ namespace ZergPoolMiner.Forms
                 checkBox24hEstimate.Checked = true;
             }
             ConfigManager.GeneralConfig._24hEstimate = checkBox24hEstimate.Checked;
-            Stats.Stats.LoadAlgoritmsList(true);
+            Stats.Stats.LoadAlgoritmsListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3851,7 +3790,7 @@ namespace ZergPoolMiner.Forms
                 checkBox24hActual.Checked = true;
             }
             ConfigManager.GeneralConfig._24hActual = checkBox24hActual.Checked;
-            Stats.Stats.LoadAlgoritmsList(true);
+            Stats.Stats.LoadAlgoritmsListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3902,7 +3841,7 @@ namespace ZergPoolMiner.Forms
             checkBox24hActual.Enabled = !checkBoxAdaptive.Checked;
 
             ConfigManager.GeneralConfig.AdaptiveAlgo = checkBoxAdaptive.Checked;
-            Stats.Stats.LoadAlgoritmsList(true);
+            Stats.Stats.LoadAlgoritmsListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3916,6 +3855,26 @@ namespace ZergPoolMiner.Forms
                 checkBoxAutoupdate.Checked = false;
                 ConfigManager.GeneralConfig.ProgramAutoUpdate = false;
             }
+        }
+
+        private void checkBoxEnableProxy_CheckedChanged(object sender, EventArgs e)
+        {
+            ConfigManager.GeneralConfig.EnableProxy = checkBoxEnableProxy.Checked;
+            if (checkBoxEnableProxy.Checked)
+            {
+                Stats.Stats.GetWalletBalance(null, null);
+                if (!Stats.Socks5Relay.started)
+                {
+                    Socks5Relay.Socks5RelayStart();
+                }
+            }
+        }
+
+        private void groupBoxConnection_Paint(object sender, PaintEventArgs e)
+        {
+            if (ConfigManager.GeneralConfig.ColorProfileIndex != 14) return;
+            GroupBox box = sender as GroupBox;
+            Form_Main.DrawGroupBox(box, e.Graphics, Form_Main._foreColor, Form_Main._grey);
         }
     }
 }

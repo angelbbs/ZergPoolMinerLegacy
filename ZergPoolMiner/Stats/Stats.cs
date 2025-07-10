@@ -16,10 +16,21 @@ using System.Collections.Concurrent;
 using System.Text;
 using ZergPoolMiner.Algorithms;
 using ZergPoolMinerLegacy.UUID;
+using System.Threading;
+using System.Globalization;
+using SystemTimer = System.Timers.Timer;
+using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Net.Http;
+using SocksSharp;
+using SocksSharp.Proxy;
+using System.Diagnostics;
+using ZergPoolMiner.Devices.Algorithms;
+using ZergPoolMiner.Devices;
 
 namespace ZergPoolMiner.Stats
 {
-    public static class Stats
+    public class Stats
     {
         public static double Balance { get; private set; }
         public static string Version = "";
@@ -67,8 +78,11 @@ namespace ZergPoolMiner.Stats
             public double mbtc_mh_factor { get; set; }
             public double pool_ttf { get; set; }
             public double real_ttf { get; set; }
+            public double timesincelast_shared { get; set; }
             public double minpay { get; set; }
             public double minpay_sunday { get; set; }
+            public double owed { get; set; }
+            public double effort { get; set; }
             public bool apibug { get; set; }
             public bool CPU { get; set; }
             public bool GPU { get; set; }
@@ -80,63 +94,188 @@ namespace ZergPoolMiner.Stats
             public int noautotrade { get; set; }
         }
 
-        public static string GetPoolApiData(string url)
+        private static int httpsProxyCheck = 0;
+        public static string CurrentProxyIP;
+        public static int CurrentProxyHTTPSPort;
+        public static int CurrentProxySocks5SPort;
+        public static async Task<string> GetPoolApiAsync(string url, int timeout = 5)
+        {
+            string responseFromServer = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                foreach (var proxy in ProxyCheck.HttpsProxyList)
+                {
+                    if (proxy.Valid)
+                    {
+                        try
+                        {
+                            responseFromServer = await GetPoolApiDataAsync(url, proxy, true);
+                            if (!string.IsNullOrEmpty(responseFromServer))
+                            {
+                                Helpers.ConsolePrint("GetPoolApiData", "Received bytes: " +
+                                responseFromServer.Length.ToString() + " from " + url + " " +
+                                proxy.Ip + ":" + proxy.HTTPSPort);
+                                /*
+                                CurrentProxyIP = proxy.Ip;
+                                CurrentProxyHTTPSPort = proxy.HTTPSPort;
+                                CurrentProxySocks5SPort = proxy.Socks5Port;
+                                */
+                                break;
+                            }
+                            else
+                            {
+                                Helpers.ConsolePrintError("GetPoolApiAsync", "Proxy offline: " + 
+                                    proxy.Ip + ":" + proxy.HTTPSPort.ToString());
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Helpers.ConsolePrintError("GetPoolApiAsync", ex.ToString());
+                        }
+                    }
+                }
+
+                if (string.IsNullOrEmpty(responseFromServer))
+                {
+                    Helpers.ConsolePrintError("GetPoolApiAsync", "All proxy unavailable");
+                    new Task(() => ProxyCheck.GetHttpsProxy()).Start();
+                }
+            } else
+            {
+                try
+                {
+                    responseFromServer = await GetPoolApiDataAsync(url, null, false);
+                    if (!string.IsNullOrEmpty(responseFromServer))
+                    {
+                        Helpers.ConsolePrint("GetPoolApiData", "Received bytes: " +
+                        responseFromServer.Length.ToString() + " from " + url + " ");
+                    }
+                    else
+                    {
+                        Helpers.ConsolePrintError("GetPoolApiData", "Error getting data from " + url);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.ConsolePrintError("GetPoolApiAsync", ex.ToString());
+                }
+            }
+            return responseFromServer;
+        }
+
+        public static async Task<string> GetPoolApiDataAsync(string url, ProxyChecker.Proxy proxy, bool viaProxy)
         {
             var uri = new Uri(url);
             string host = new Uri(url).Host;
             var responseFromServer = "";
+            Random r = new Random();
+            var id = "[" + r.Next(100, 999).ToString() + "] ";
+            var watch = Stopwatch.StartNew();
             try
             {
-                ServicePointManager.ServerCertificateValidationCallback = (s, cert, chain, ssl) => true;
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                var wr = (HttpWebRequest)WebRequest.Create(new Uri(url));
-                string RequestId = System.Guid.NewGuid().ToString().Replace("-", "");
-
-                //wr.UserAgent = "name=Edge;version=100.0.1185.39;buildNumber=1;os=Windows;osVersion=10;deviceVersion=amd64;lang=en";
-                //wr.Headers.Add("X-Request-Id", RequestId);
-                //wr.Headers.Add("X-User-Lang", "en");
-
-                wr.Host = host;
-                wr.Timeout = 5 * 1000;
-                var response = wr.GetResponse();
-                var ss = response.GetResponseStream();
-                if (ss != null && ss is object)
+                //ServicePointManager.ServerCertificateValidationCallback = (s, cert, chain, ssl) => true;
+                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                var httpClient = new HttpClient();
+                if (viaProxy)
                 {
-                    ss.ReadTimeout = 3 * 1000;
-                    var reader = new StreamReader(ss);
-                    responseFromServer = reader.ReadToEnd();
-                    if (responseFromServer.Length == 0 || (responseFromServer[0] != '{' && responseFromServer[0] != '['))
+                    Helpers.ConsolePrint("GetPoolApiData", id + "Try connect to " + url + " via proxy " +
+                        proxy.Ip + ":" + proxy.HTTPSPort.ToString());
+                    var _proxy = new WebProxy
                     {
-                        Helpers.ConsolePrintError("GetPoolApiData", "Error! Not JSON from " +url);
-                    }
-                    reader.Close();
+                        Address = new Uri("http://" + proxy.Ip + ":" + proxy.HTTPSPort.ToString())
+
+                    };
+                    //proxy.Credentials = new NetworkCredential(); //Used to set Proxy logins.
+
+                    var proxyClientHandler = new HttpClientHandler
+                    {
+                        Proxy = _proxy
+                    };
+                    httpClient = new HttpClient(proxyClientHandler);
+                } else
+                {
+                    Helpers.ConsolePrint("GetPoolApiData", id + "Try connect to " + url);
                 }
-                response.Close();
+                using (httpClient)
+                {
+                    bool success = false;
+                    new Thread(() =>
+                    {
+                        Thread.Sleep(1000 * 15);
+                        if (httpClient is object && httpClient is not null && !success)
+                        {
+                            httpClient.Dispose();
+                        }
+                    }).Start();
+                    
+                    var response = await httpClient.GetAsync(url);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        success = true;
+                        var contents = await response.Content.ReadAsStringAsync();
+                        if (contents.Length == 0 || (contents[0] != '{' && contents[0] != '['))
+                        {
+                            Helpers.ConsolePrintError("GetPoolApiDataAsync", id + "Error! Not JSON from " + url);
+                            responseFromServer = "";
+                        }
+                        else
+                        {
+                            responseFromServer = contents;
+                            if (viaProxy)
+                            {
+                                CurrentProxyIP = proxy.Ip;
+                                CurrentProxyHTTPSPort = proxy.HTTPSPort;
+                                CurrentProxySocks5SPort = proxy.Socks5Port;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Helpers.ConsolePrintError("GetPoolApiDataAsync", id + response.ReasonPhrase + ", " +
+                            response.StatusCode.ToString() + ", " +
+                            response.RequestMessage.ToString() + ", " +
+                            response.Headers.ToString() + ", ");
+                    }
+                }
+                if (httpClient is object && httpClient != null)
+                {
+                    httpClient.Dispose();
+                }
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrintError("GetPoolApiData", ex.ToString());
-                Form_Main.apiConnectionsErrors++;
-                return null;
+                var t = (int)watch.ElapsedMilliseconds;
+                watch.Stop();
+                if (viaProxy)
+                {
+                    Helpers.ConsolePrintError("GetPoolApiDataAsync", id + "Connection error in " + t.ToString() + " ms " + ex.Message + " " +
+                    url + " " + proxy.Ip + ":" + proxy.HTTPSPort.ToString());
+                } else
+                {
+                    Helpers.ConsolePrintError("GetPoolApiDataAsync", id + "Connection error in " + t.ToString() + 
+                        " ms " + ex.Message + " " + url);
+                }
+                //Form_Main.ZergPoolAPIError = ex.Message;
+                //Form_Main.ZergPoolAPIError = "Connection error";
+                return "";
             }
-            Form_Main.apiConnectionsErrors = 0;
+            Form_Main.ZergPoolAPIError = null;
             return responseFromServer;
         }
-
         public class AlgoCoin
         {
             public string algo;
             public string coin;
         }
-        public static List<Coin> GetCoins()
+        public static async Task<List<Coin>> GetCoinsAsync(string link)
         {
-            Helpers.ConsolePrint("Stats", "Trying GetCoins");
+            Helpers.ConsolePrint("Stats", "Trying " + link);
             double correction = 0.95;
             List<AlgoCoin> noautotradeCoin = new();
             List<AlgoCoin> zeroHashrateCoin = new();
             try
             {
-                string ResponseFromAPI = GetPoolApiData(Links.Currencies);
+                string ResponseFromAPI = await GetPoolApiAsync(link, 7);
                 if (ResponseFromAPI != null)
                 {
                     var data = JObject.Parse(ResponseFromAPI);
@@ -161,6 +300,9 @@ namespace ZergPoolMiner.Stats
                         var hashrate = coin.Value<double>("hashrate");
                         var pool_ttf = coin.Value<double>("pool_ttf");
                         var real_ttf = coin.Value<double>("real_ttf");
+                        var timesincelast_shared = coin.Value<double>("timesincelast_shared");
+                        var owed = coin.Value<double>("owed");
+                        var effort = coin.Value<double>("effort");
                         var minpay = coin.Value<double>("minpay");
                         var minpay_sunday = coin.Value<double>("minpay_sunday");
                         var noautotrade = coin.Value<int>("noautotrade");
@@ -171,6 +313,9 @@ namespace ZergPoolMiner.Stats
                         _coin.symbol = symbol;
                         _coin.pool_ttf = pool_ttf;
                         _coin.real_ttf = real_ttf;
+                        _coin.timesincelast_shared = Math.Round(timesincelast_shared / 60, 1);
+                        _coin.owed = owed;
+                        _coin.effort = effort;
                         _coin.minpay = minpay;
                         _coin.minpay_sunday = minpay_sunday;
                         _coin.port = port;
@@ -252,12 +397,73 @@ namespace ZergPoolMiner.Stats
                         var unstableAlgosList = AlgorithmSwitchingManager.unstableAlgosList.Select(s => s.ToString().ToLower()).ToList();
                         if (unstableAlgosList.Contains(algo.ToLower()))
                         {
+                            _coin.estimate = _coin.estimate * 0.3;
+                            _coin.estimate_current = _coin.estimate_current * 0.3;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.3;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.3;
+                        }
+
+                        if (_coin.owed < -1 && (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
                             _coin.estimate = _coin.estimate * 0.5;
                             _coin.estimate_current = _coin.estimate_current * 0.5;
                             _coin.estimate_last24h = _coin.estimate_last24h * 0.5;
                             _coin.actual_last24h = _coin.actual_last24h * 0.5;
                         }
-                        
+
+                        if (_coin.effort / _coin.real_ttf > 500 && (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
+                            _coin.estimate = _coin.estimate * 0.5;
+                            _coin.estimate_current = _coin.estimate_current * 0.5;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.5;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.5;
+                        }
+
+                        if (_coin.effort / _coin.real_ttf > 50 && (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
+                            _coin.estimate = _coin.estimate * 0.5;
+                            _coin.estimate_current = _coin.estimate_current * 0.5;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.5;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.5;
+                        }
+
+                        //18++ hours
+                        if ((real_ttf - timesincelast_shared >= 64800) &&
+                            (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
+                            _coin.estimate = _coin.estimate * 0.70;
+                            _coin.estimate_current = _coin.estimate_current * 0.70;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.70;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.70;
+                        }
+                        //12-18 hours
+                        if ((real_ttf - timesincelast_shared >= 43200 && real_ttf - timesincelast_shared < 64800) && 
+                            (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
+                            _coin.estimate = _coin.estimate * 0.80;
+                            _coin.estimate_current = _coin.estimate_current * 0.80;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.80;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.80;
+                        }
+                        //6-12 hours
+                        if ((real_ttf - timesincelast_shared >= 21600 && real_ttf - timesincelast_shared < 43200) && 
+                            (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
+                            _coin.estimate = _coin.estimate * 0.85;
+                            _coin.estimate_current = _coin.estimate_current * 0.85;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.85;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.85;
+                        }
+                        //2-6 hours
+                        if ((real_ttf - timesincelast_shared > 7200 && real_ttf - timesincelast_shared < 21600) && 
+                            (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
+                        {
+                            _coin.estimate = _coin.estimate * 0.90;
+                            _coin.estimate_current = _coin.estimate_current * 0.90;
+                            _coin.estimate_last24h = _coin.estimate_last24h * 0.90;
+                            _coin.actual_last24h = _coin.actual_last24h * 0.90;
+                        }
+
                         //test
                         /*
                         if (_coin.symbol.ToLower().Equals("btg"))
@@ -380,24 +586,27 @@ namespace ZergPoolMiner.Stats
                 }
 
                 var json = JsonConvert.SerializeObject(CoinList, Formatting.Indented);
-                Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
-                
+                if (json.Length > 5)
+                {
+                    Helpers.WriteAllTextWithBackup("configs\\CoinList.json", json);
+                }
             }
             catch (Exception ex)
             {
                 Helpers.ConsolePrintError("GetCoins", ex.ToString());
+                var json = File.ReadAllText("configs\\CoinList.json");
+                CoinList = (List<Coin>)JsonConvert.DeserializeObject(json);
             }
-            CoinList.Sort((x, y) => x.algo.CompareTo(y.algo));
             return CoinList;
         }
 
-        public static List<Coin> GetZPool()
+        public static async Task<List<Coin>> GetZPoolAsync()
         {
             Helpers.ConsolePrint("Stats", "Trying GetZPool");
             double correction = 0.9;
             try
             {
-                string ResponseFromAPI = GetPoolApiData(Links.CurrenciesZPool);
+                string ResponseFromAPI = await GetPoolApiAsync(Links.CurrenciesZPool);
                 if (ResponseFromAPI != null)
                 {
                     var data = JObject.Parse(ResponseFromAPI);
@@ -452,12 +661,12 @@ namespace ZergPoolMiner.Stats
         //hashrate.no 5d3c49fe72c884c1c8522d13d8edbdd1
         //test cb4a618e1fd885361563c881a1ce3e25
         //ошибки на монетах. нет половины монет. не используется
-        public static List<Coin> GetHashrateNo()
+        public static async Task<List<Coin>> GetHashrateNoAsync()
         {
             Helpers.ConsolePrint("Stats", "Trying GetHashrateNo");
             try
             {
-                string ResponseFromAPI = GetPoolApiData(Links.hashrateno + "cb4a618e1fd885361563c881a1ce3e25");
+                string ResponseFromAPI = await GetPoolApiAsync(Links.hashrateno + "cb4a618e1fd885361563c881a1ce3e25");
                 if (ResponseFromAPI != null)
                 {
                     Helpers.ConsolePrint("*", ResponseFromAPI);
@@ -559,12 +768,12 @@ namespace ZergPoolMiner.Stats
         }
 
         //ошибки на порядок на разных монетах - не используется
-        public static List<Coin> GetMinerStat()
+        public static async Task<List<Coin>> GetMinerStatAsync()
         {
             Helpers.ConsolePrint("Stats", "Trying GetMinerStat");
             try
             {
-                string ResponseFromAPI = GetPoolApiData(Links.minerstat);
+                string ResponseFromAPI = await GetPoolApiAsync(Links.minerstat);
                 if (ResponseFromAPI != null)
                 {
                     dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
@@ -630,11 +839,11 @@ namespace ZergPoolMiner.Stats
         }
 
         public static List<string> zergpoolAlgos = new();
-        public static List<MiningAlgorithms> GetZergPoolAlgosListEx()
+        public static async Task<List<MiningAlgorithms>> GetZergPoolAlgosListExAsync()
         {
             List<string> progAlgosList = new();
             List<string> poolAlgosList = new();
-            var coins = GetCoins();
+            var coins = await GetCoinsAsync(Links.Currencies);
             //var hashratenocoins = GetHashrateNo();
             //var minerStatcoins = GetMinerStat();
             //var ZPoolcoins = GetZPool();
@@ -749,6 +958,15 @@ namespace ZergPoolMiner.Stats
                     if (!poolAlgosList.Contains(_alg))
                     {
                         Helpers.ConsolePrint("Stats", "Deleted? - " + _alg);
+                        /*
+                        foreach (var alg in ComputeDevice.AlgorithmSettings)
+                        {
+                            if (alg.DualZergPoolID == AlgorithmType.NexaPow)
+                            {
+                                alg.Hidden = true;
+                            }
+                        }
+                        */
                         //a.tempDeleted = true;
                         var itemToDelete = MiningAlgorithmsList.Find(r => r.name.ToLower() == _alg);
                         if (itemToDelete != null) itemToDelete.algoTempDeleted = true;
@@ -901,6 +1119,11 @@ namespace ZergPoolMiner.Stats
 
         public static void GetWalletBalance(object sender, EventArgs e)
         {
+            GetWalletBalanceAsync(sender, e);
+        }
+
+        public static async Task GetWalletBalanceAsync(object sender, EventArgs e)
+        {
             if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.Wallet))
             {
                 Helpers.ConsolePrint("Stats", "Error getting wallet balance. Wallet not entered");
@@ -908,13 +1131,13 @@ namespace ZergPoolMiner.Stats
             }
             try
             {
-                string ResponseFromAPI = GetPoolApiData(Links.WalletBalance + ConfigManager.GeneralConfig.Wallet);
+                string ResponseFromAPI = await GetPoolApiAsync(Links.WalletBalance + ConfigManager.GeneralConfig.Wallet);
                 if (!string.IsNullOrEmpty(ResponseFromAPI))
                 {
                     dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
                     double unpaid = data.@unpaid;
-                    Helpers.ConsolePrint("GetWalletBalance", unpaid.ToString() + " " + ConfigManager.GeneralConfig.PayoutCurrency);
-                    Balance = unpaid;
+                    double balance = data.balance;
+                    Balance = balance;
                 } else
                 {
                     //Balance = 0;
@@ -954,35 +1177,46 @@ namespace ZergPoolMiner.Stats
             public string symbol;
             public string hashrate_shared;
         }
-        public static void GetWalletBalanceEx(object sender, EventArgs e)
+        public static async Task GetWalletBalanceExAsync(object sender, EventArgs e)
         {
             Form_Main.adaptiveRunning = false;
             if (string.IsNullOrEmpty(ConfigManager.GeneralConfig.Wallet))
             {
-                Helpers.ConsolePrint("Stats", "Error getting wallet balance. Wallet not entered");
+                Helpers.ConsolePrintError("Stats", "Error getting wallet balance. Wallet not entered");
                 return;
             }
             try
             {
-                string ResponseFromAPI = GetPoolApiData(Links.WalletBalanceEx + ConfigManager.GeneralConfig.Wallet);
+                string ResponseFromAPI = await GetPoolApiAsync(Links.WalletBalanceEx + ConfigManager.GeneralConfig.Wallet);
                 if (!string.IsNullOrEmpty(ResponseFromAPI))
                 {
                     coinsMining.Clear();
                     double overallBTC = 0;
                     dynamic data = JsonConvert.DeserializeObject(ResponseFromAPI);
-                    
+                    double localProfit = 0d;
+                    double actualProfit = 0d;
+                    double balance = data.balance;
+                    Balance = balance;
+
+                    Helpers.ConsolePrint("Stats", "Wallet balance: " + Balance.ToString() + " " +
+                        ConfigManager.GeneralConfig.PayoutCurrency +
+                        " (" + (Balance * ExchangeRateApi.GetPayoutCurrencyExchangeRate()).ToString("F2") + " " +
+                        ConfigManager.GeneralConfig.DisplayCurrency + ")");
+
                     if (MiningSession._miningDevices is not object) return;
                     if (MiningSession._miningDevices.Count == 0) return;
 
-                    double localProfit = 0d;
-                    double actualProfit = 0d;
                     List<string> currentminingAlgos = new();
                     List<string> currentminingAlgosZergPool = new();
                     foreach (var alg in MiningAlgorithmsList)
                     {
-                        if (alg.adaptive_factor != 0 && alg.adaptive_factor < 0.9)
+                        if (alg.adaptive_factor != 0 && alg.adaptive_factor < 0.95)
                         {
-                            alg.adaptive_factor = alg.adaptive_factor + 0.00001;
+                            alg.adaptive_factor = alg.adaptive_factor + 0.00002;
+                        }
+                        if (alg.adaptive_factor != 0 && alg.adaptive_factor > 1.01)
+                        {
+                            alg.adaptive_factor = alg.adaptive_factor - 0.00002;
                         }
                         if (alg.algoTempDeleted) continue;
                         if (alg.tempDisabled) continue;
@@ -1027,7 +1261,7 @@ namespace ZergPoolMiner.Stats
                                 }
 
                                 localProfit = (localHashrate * alg.profit);
-                                actualHashrate = actualHashrate + _accepted * (1.06);
+                                actualHashrate = actualHashrate + _accepted * (1.00);
 
                                 if (algosProperty.ContainsKey(alg.name.ToLower()))
                                 {
@@ -1138,7 +1372,7 @@ namespace ZergPoolMiner.Stats
                             //Form_Main.adaptiveRunning = false;
                         }
 
-                        if (_algoProperty.localhashrate != 0)
+                        if (_algoProperty.localhashrate > 0)
                         {
                             _algoProperty.ticks++;
                             _algoProperty.actualProfit = (_algoProperty.actualhashrate * alg.profit);
@@ -1209,6 +1443,7 @@ namespace ZergPoolMiner.Stats
                     overallBTC = actualProfit;
                     Form_Main.TotalActualProfitability = overallBTC;
                     Form_Main.lastRigProfit.currentProfitAPI = overallBTC * Algorithm.Mult;
+                    //Helpers.ConsolePrint("GetWalletBalance", "Actual profit: " + actualProfit.ToString());
                 }
                 else
                 {
@@ -1224,12 +1459,12 @@ namespace ZergPoolMiner.Stats
 
         public static bool emptypool = true;
         [HandleProcessCorruptedStateExceptions]
-        public static void GetAlgos()
+        public static async Task GetAlgosAsync()
         {
-            setAlgos(GetZergPoolAlgosListEx());
+            setAlgos(await GetZergPoolAlgosListExAsync());
         }
 
-        public static void LoadAlgoritmsList(bool onlyCached = false)
+        public static async Task LoadAlgoritmsListAsync(bool onlyCached = false)
         {
             List<MiningAlgorithms> algolist = new List<MiningAlgorithms>();
             try
@@ -1255,7 +1490,7 @@ namespace ZergPoolMiner.Stats
             }
             setAlgos(algolist);
             if (onlyCached) return;
-            setAlgos(GetZergPoolAlgosListEx());
+            setAlgos(await GetZergPoolAlgosListExAsync());
         }
         private static double getMin(double a, double b, double c)
         {
@@ -1456,11 +1691,13 @@ namespace ZergPoolMiner.Stats
                         }
                     }
                 }
+                /*
                 if (zeroAlgos.Count > 0)
                 {
                     string zA = string.Join(", ", zeroAlgos);
                     Helpers.ConsolePrint("Stats", "Zero pool hashrate: " + zA);
                 }
+                */
                 delalgos.Remove("neoscrypt_xaya");
                 delalgos.Remove("xelisv2_pepew");
                 SetAlgorithmRates(data, 1, false);

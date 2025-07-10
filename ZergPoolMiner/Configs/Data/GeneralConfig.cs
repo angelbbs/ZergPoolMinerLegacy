@@ -127,8 +127,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool ABDefaultMiningStopped = false;
         public bool ABDefaultProgramClosing = false;
         public bool ABMinimize = false;
-        public bool EnableProxy = true;
-        public bool ProxySSL = true;
+        public bool EnableProxy = false;
         public bool ProxyAsFailover = false;
         public bool StaleProxy = false;
 
@@ -310,9 +309,8 @@ namespace ZergPoolMiner.Configs.Data
             ApiBindPortPoolStart = 4000;
             MinimumProfit = 0;
             DownloadInit = false;
-            EnableProxy = true;
+            EnableProxy = false;
             ProxyAsFailover = false;
-            ProxySSL = true;
             IdleWhenNoInternetAccess = false;
             DownloadInit3rdParty = false;
             AllowMultipleInstances = false;

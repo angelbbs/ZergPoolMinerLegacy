@@ -137,6 +137,10 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (Environment.ProcessorCount).ToString()
                             },
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.YespowerADVC, "YespowerADVC")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (Environment.ProcessorCount).ToString()
+                            },
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.RandomARQ, "RandomARQ")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (Environment.ProcessorCount).ToString()
@@ -159,13 +163,15 @@ namespace ZergPoolMiner.Devices.Algorithms
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (ComputeDeviceManager.CoresCount).ToString()
                             },
-                            /*
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.YescryptR32, "YescryptR32")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (ComputeDeviceManager.CoresCount).ToString()
                             },
-                            */
                             new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.Power2b, "Power2b")
+                            {
+                                ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (ComputeDeviceManager.CoresCount).ToString()
+                            },
+                            new Algorithm(MinerBaseType.SRBMiner, AlgorithmType.RinHash, "RinHash")
                             {
                                 ExtraLaunchParameters = "--max-rejected-shares 100 --cpu-threads " + (ComputeDeviceManager.CoresCount).ToString()
                             }

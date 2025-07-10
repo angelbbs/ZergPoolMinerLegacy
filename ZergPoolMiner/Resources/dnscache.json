@@ -1,5 +1,5 @@
 {
-  "TimeCached": "2024-11-25T23:00:10.0437559+03:00",
+  "TimeCached": "2025-07-10T21:09:42.2356985+03:00",
   "domains": [
     {
       "Updated": "2022-03-24T11:37:36.3102588+03:00",
@@ -9,10 +9,10 @@
       ]
     },
     {
-      "Updated": "2024-11-25T22:14:06.1306211+03:00",
+      "Updated": "2025-07-10T21:01:22.4849271+03:00",
       "domainName": "api.github.com",
       "IPs": [
-        "140.82.121.5"
+        "140.82.121.6"
       ]
     },
     {
@@ -23,18 +23,18 @@
       ]
     },
     {
-      "Updated": "2024-11-05T17:01:22.1875016+03:00",
+      "Updated": "2025-07-08T17:13:27.6164164+03:00",
       "domainName": "zergpool.com",
       "IPs": [
-        "188.114.99.233",
-        "188.114.98.233"
+        "8.6.112.0",
+        "8.47.69.0"
       ]
     },
     {
-      "Updated": "2024-11-05T17:01:22.3223786+03:00",
+      "Updated": "2025-06-30T23:23:41.0923364+03:00",
       "domainName": "mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
@@ -59,52 +59,374 @@
       ]
     },
     {
-      "Updated": "2024-11-05T17:01:46.1127385+03:00",
+      "Updated": "2025-07-01T15:35:14.95719+03:00",
       "domainName": "equihash144.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
-      "Updated": "2024-11-06T15:20:46.4972066+03:00",
+      "Updated": "2025-06-30T16:48:23.0573599+03:00",
       "domainName": "evrprogpow.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
-      "Updated": "2024-11-06T16:30:21.0725678+03:00",
+      "Updated": "2025-07-01T14:11:13.593841+03:00",
       "domainName": "ethash.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
-      "Updated": "2024-11-06T21:07:56.6405347+03:00",
+      "Updated": "2025-06-30T17:33:52.8137185+03:00",
       "domainName": "karlsenhashv2.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
-      "Updated": "2024-11-06T21:07:56.7627611+03:00",
+      "Updated": "2025-06-30T16:20:22.3895828+03:00",
       "domainName": "hoohash.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
-      "Updated": "2024-11-06T21:10:25.2463762+03:00",
+      "Updated": "2025-06-30T22:33:57.7013251+03:00",
       "domainName": "kawpow.mine.zergpool.com",
       "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T03:36:58.3809925+03:00",
+      "domainName": "verushash.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T14:19:28.527776+03:00",
+      "domainName": "ethashb3.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2024-11-27T18:03:45.5656247+03:00",
+      "domainName": "nexapow.mine.zergpool.com",
+      "IPs": [
         "103.249.70.7"
       ]
     },
     {
-      "Updated": "2024-11-06T21:11:41.2235326+03:00",
-      "domainName": "verushash.mine.zergpool.com",
+      "Updated": "2025-06-30T11:47:00.5240181+03:00",
+      "domainName": "cryptonight_gpu.mine.zergpool.com",
+      "IPs": [
+        "54.36.60.142"
+      ]
+    },
+    {
+      "Updated": "2025-07-07T12:15:45.551192+03:00",
+      "domainName": "equihash125.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-06-30T22:13:21.1186475+03:00",
+      "domainName": "firopow.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2024-12-02T13:31:26.1145729+03:00",
+      "domainName": "x16rv2.mine.zergpool.com",
       "IPs": [
         "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T10:33:20.4435902+03:00",
+      "domainName": "ghostrider.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2024-12-03T11:50:23.3388037+03:00",
+      "domainName": "allium.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-07-07T14:51:16.9538688+03:00",
+      "domainName": "equihash192.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-06-30T19:07:56.5769223+03:00",
+      "domainName": "heavyhash.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-06-30T22:46:06.1740675+03:00",
+      "domainName": "meowpow.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T12:34:00.7372401+03:00",
+      "domainName": "xelisv2-pepew.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T07:22:34.5147949+03:00",
+      "domainName": "cryptonight_upx.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-06-30T23:40:37.0050621+03:00",
+      "domainName": "meraki.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T14:11:13.6857717+03:00",
+      "domainName": "sha256dt.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T03:26:25.3869384+03:00",
+      "domainName": "verthash.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2024-12-26T14:41:05.9427741+03:00",
+      "domainName": "curvehash.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T11:47:48.0757198+03:00",
+      "domainName": "power2b.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-07T17:30:03.7968074+03:00",
+      "domainName": "cpupower.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T04:25:58.2809592+03:00",
+      "domainName": "flex.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T10:43:05.8444201+03:00",
+      "domainName": "mike.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T10:54:30.4241633+03:00",
+      "domainName": "minotaurx.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T12:04:31.9909868+03:00",
+      "domainName": "panthera.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T07:39:12.5499467+03:00",
+      "domainName": "randomx.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T11:55:18.9670883+03:00",
+      "domainName": "randomarq.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T12:14:54.8456433+03:00",
+      "domainName": "randomxeq.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-01-15T11:27:48.4832966+03:00",
+      "domainName": "yescryptr8.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T12:55:30.3919227+03:00",
+      "domainName": "yescryptr16.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-01-15T11:36:11.1577676+03:00",
+      "domainName": "yespower.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-01-15T11:38:57.4397561+03:00",
+      "domainName": "yespowerltncg.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-01-15T11:41:32.7603046+03:00",
+      "domainName": "yespowermgpc.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-01-15T11:43:49.1201337+03:00",
+      "domainName": "yespowerr16.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T13:18:36.706792+03:00",
+      "domainName": "yespowersugar.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T13:26:44.6262793+03:00",
+      "domainName": "yespowertide.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T13:10:07.8500089+03:00",
+      "domainName": "yespowerurx.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T12:43:45.5374311+03:00",
+      "domainName": "yescrypt.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-06-30T23:52:48.2098888+03:00",
+      "domainName": "phihash.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-02-02T18:01:50.0134301+03:00",
+      "domainName": "sha512256d.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T00:03:05.8156619+03:00",
+      "domainName": "progpowz.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-01T12:25:29.5873428+03:00",
+      "domainName": "rinhash.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-05-10T17:04:41.6130693+03:00",
+      "domainName": "yespoweradvc.mine.zergpool.com",
+      "IPs": [
+        "103.249.70.7"
+      ]
+    },
+    {
+      "Updated": "2025-06-29T13:54:52.8729884+03:00",
+      "domainName": "evrprogpow.na.mine.zergpool.com",
+      "IPs": [
+        "144.217.252.206"
+      ]
+    },
+    {
+      "Updated": "2025-06-29T13:55:25.8393409+03:00",
+      "domainName": "evrprogpow.asia.mine.zergpool.com",
+      "IPs": [
+        "54.36.60.142"
+      ]
+    },
+    {
+      "Updated": "2025-06-29T15:41:45.7371871+03:00",
+      "domainName": "ethash.asia.mine.zergpool.com",
+      "IPs": [
+        "54.36.60.142"
+      ]
+    },
+    {
+      "Updated": "2025-06-29T15:41:45.9131204+03:00",
+      "domainName": "sha256dt.asia.mine.zergpool.com",
+      "IPs": [
+        "54.36.60.142"
+      ]
+    },
+    {
+      "Updated": "2025-07-07T17:28:12.3844026+03:00",
+      "domainName": "yescryptr32.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
       ]
     }
   ]

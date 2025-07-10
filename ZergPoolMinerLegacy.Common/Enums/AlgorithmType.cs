@@ -40,7 +40,8 @@
         x13_UNUSED = 115,
         blake2s_UNUSED = 116,
 
-        Allium = 1000,//_UNUSED
+        Allium = 1000,//
+        Argon2d1000 = 1005,//_UNUSED
         BMW512 = 1010,//_UNUSED
         CPUPower = 1020,
         Cryptonight_GPU = 1030,
@@ -81,6 +82,7 @@
         RandomX = 1310,
         RandomARQ = 1320,
         RandomXEQ = 1330,
+        RinHash = 1335,
         Scryptn2 = 1340, //https://github.com/JayDDee/cpuminer-opt
         Skydoge = 1350,//
         //SHA3d = 1360,//no mem
@@ -98,8 +100,9 @@
         Yescrypt = 1480,
         YescryptR8 = 1490,
         YescryptR16 = 1500,
-        //YescryptR32 = 1510,
+        YescryptR32 = 1510,
         Yespower = 1520,
+        YespowerADVC = 1522,
         YespowerLTNCG = 1530,
         YespowerMGPC = 1540,
         YespowerR16 = 1550,

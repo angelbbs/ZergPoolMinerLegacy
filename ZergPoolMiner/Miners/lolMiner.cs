@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static ZergPoolMiner.Devices.ComputeDeviceManager;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -143,12 +144,19 @@ namespace ZergPoolMiner.Miners
             _algo = _algo.Replace("hoohash", "-a hoohash");
             _algo = _algo.Replace("ethash", "-a ETHASH");
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--socks5 " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--socks5 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
                 
                 LastCommandLine = _algo +
                     " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-                    " -u " + wallet + _password + 
+                    " -u " + wallet + _password + " " + proxy +
                    " --apiport " + ApiPort + 
                    " --devices " + GetDevicesCommandString().Trim();
             } else
@@ -211,10 +219,17 @@ namespace ZergPoolMiner.Miners
             _algo = _algo.Replace("nexapow", "-a NEXA");
             _algo = _algo.Replace("ethash", "-a ETHASH");
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--socks5 127.0.0.1:" + Socks5Relay.Port;
+            }
+
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
                 CommandLine = _algo +
-                " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
+                " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " + proxy +
                 " -u " + Globals.DemoUser +
                 " --pass c=LTC" +
                 " --apiport " + ApiPort +

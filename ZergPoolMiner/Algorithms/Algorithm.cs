@@ -21,7 +21,7 @@ namespace ZergPoolMiner.Algorithms
         /// <summary>
         /// Friendly display name for this algorithm
         /// </summary>
-        public string AlgorithmName { get; protected set; }
+        public string AlgorithmName { get; set; }
         public string CurrentMiningCoin = "nonE";
         public string MostProfitCoin = "nonE";
         /// <summary>
@@ -31,7 +31,7 @@ namespace ZergPoolMiner.Algorithms
         /// <summary>
         /// Friendly name for this algorithm/miner combo
         /// </summary>
-        public string AlgorithmStringID { get; protected set; }
+        public string AlgorithmStringID { get; set; }
         /// <summary>
         /// AlgorithmType used by this Algorithm
         /// </summary>
@@ -39,11 +39,11 @@ namespace ZergPoolMiner.Algorithms
         /// <summary>
         /// MinerBaseType used by this algorithm
         /// </summary>
-        public readonly MinerBaseType MinerBaseType;
+        public MinerBaseType MinerBaseType;
         /// <summary>
         /// Used for miner ALGO flag parameter
         /// </summary>
-        public readonly string AlgorithmNameCustom;
+        public string AlgorithmNameCustom;
         public DeviceType DeviceType;
 
         #endregion
@@ -348,13 +348,13 @@ namespace ZergPoolMiner.Algorithms
                 _payingSecond = payingSecond.profit;
             }
             CurNhmSmaDataVal = _paying;
-
             CurrentProfit = (CurNhmSmaDataVal * AvaragedSpeed + _payingSecond * BenchmarkSecondarySpeed) * Mult;
-
+            /*
             if (Form_additional_mining.isAlgoZIL(AlgorithmName, mbt, devtype))
             {
                 CurrentProfit += CurrentProfit * Form_Main.ZilFactor;
             }
+            */
             CurrentProfitWithoutPower = CurrentProfit;
             if (ConfigManager.GeneralConfig.with_power)
             {

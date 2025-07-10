@@ -57,13 +57,12 @@ namespace ZergPoolMiner.Stats
         public static List<ConcurrentDictionary<string, double>> GetApi()
         {
             List<ConcurrentDictionary<string, double>> exchanges_rates = new();
-            exchanges_rates.Add(GetRatesXeggex());
             exchanges_rates.Add(GetRatesgateio());
             exchanges_rates.Add(GetRatesTradeogre());
             exchanges_rates.Add(GetRatesNonkyc());
             exchanges_rates.Add(GetRatesCoinex());
             exchanges_rates.Add(GetRatesMexc());
-            exchanges_rates.Add(GetRatesSafetrade());
+            //exchanges_rates.Add(GetRatesSafetrade());
             return exchanges_rates;
         }
 
@@ -158,33 +157,7 @@ namespace ZergPoolMiner.Stats
         {
             Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Tradeogre");
             ConcurrentDictionary<string, double> _MarketRatesList = new ConcurrentDictionary<string, double>();
-            string ResponseFromAPI;
-            try
-            {
-                HttpWebRequest WR = (HttpWebRequest)WebRequest.Create(Links.TradeogreMarket);
-                WR.UserAgent = "GET / HTTP/1.1\r\n\r\n";
-                WR.Timeout = 5 * 1000;
-                WR.Credentials = CredentialCache.DefaultCredentials;
-                WebResponse Response = WR.GetResponse();
-                Stream SS = Response.GetResponseStream();
-                SS.ReadTimeout = 5 * 1000;
-                StreamReader Reader = new StreamReader(SS);
-                reader_timer = new SystemTimer();
-                reader_timer.Elapsed += StopReader;
-                reader_timer.Interval = 5000;
-                reader_timer.Start();
-                ResponseFromAPI = Reader.ReadToEnd();
-                Reader.Close();
-                Response.Close();
-                reader_timer.Stop();
-                reader_timer.Dispose();
-                Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
-            }
-            catch (Exception ex)
-            {
-                Helpers.ConsolePrint("ExchangeRateApi", ex.ToString());
-                return _MarketRatesList;
-            }
+            string ResponseFromAPI = GetAPI(Links.TradeogreMarket);
 
             try
             {
@@ -235,112 +208,13 @@ namespace ZergPoolMiner.Stats
             }
             return _MarketRatesList;
         }
-        public static ConcurrentDictionary<string, double> GetRatesXeggex()
-        {
-            ConcurrentDictionary<string, double> _MarketRatesList = new ConcurrentDictionary<string, double>();
-            string ResponseFromAPI;
-            Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Xeggex");
-            try
-            {
-                HttpWebRequest WR = (HttpWebRequest)WebRequest.Create(Links.XeggexMarket);
-                WR.UserAgent = "GET / HTTP/1.1\r\n\r\n";
-                WR.Timeout = 5 * 1000;
-                WR.Credentials = CredentialCache.DefaultCredentials;
-                WebResponse Response = WR.GetResponse();
-                Stream SS = Response.GetResponseStream();
-                SS.ReadTimeout = 5 * 1000;
-                StreamReader Reader = new StreamReader(SS);
-                reader_timer = new SystemTimer();
-                reader_timer.Elapsed += StopReader;
-                reader_timer.Interval = 5000;
-                reader_timer.Start();
-                ResponseFromAPI = Reader.ReadToEnd();
-                Reader.Close();
-                Response.Close();
-                reader_timer.Stop();
-                reader_timer.Dispose();
-                Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
-            }
-            catch (Exception ex)
-            {
-                Helpers.ConsolePrint("ExchangeRateApi", ex.ToString());
-                return _MarketRatesList;
-            }
-
-            try
-            {
-                dynamic resp = JsonConvert.DeserializeObject(ResponseFromAPI);
-                if (resp != null)
-                {
-                    foreach (var pair in resp)
-                    {
-                        string symbol = pair.symbol;
-                        string primaryName = pair.primaryName;
-
-                        if (excludeExchange.Contains(primaryName)) continue;
-
-                        if (!symbol.Contains("/USDT") && !symbol.Contains("USDT/")) continue;
-                        string _lastPrice = pair.lastPrice;
-                        double.TryParse(_lastPrice, out double lastPrice);
-
-                        if (symbol.Equals("BTC/USDT"))
-                        {
-                            BTCcostUSD = lastPrice;
-                            Helpers.ConsolePrint("ExchangeRateApi", "BTC rate " + BTCcostUSD.ToString() + " USD");
-                        }
-                        symbol = symbol.Replace("/USDT", "");
-                        _MarketRatesList.TryAdd(symbol, lastPrice);
-
-                        foreach (var coin in CoinsList)
-                        {
-                            if (coin.Equals(symbol))
-                            {
-                                _MarketRatesList.TryAdd(coin, lastPrice);
-                            }
-                        }
-
-                    }
-                    return _MarketRatesList;
-                }
-            }
-            catch (Exception ex)
-            {
-                Helpers.ConsolePrint("ExchangeRateApi", ex.ToString());
-            }
-            return _MarketRatesList;
-        }
+        
         public static ConcurrentDictionary<string, double> GetRatesMexc()
         {
             ConcurrentDictionary<string, double> _MarketRatesList = new ConcurrentDictionary<string, double>();
-            string ResponseFromAPI;
             Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Mexc");
-            try
-            {
-                HttpWebRequest WR = (HttpWebRequest)WebRequest.Create(Links.mexcMarket);
-                WR.UserAgent = "GET / HTTP/1.1\r\n\r\n";
-                WR.Timeout = 5 * 1000;
-                WR.Credentials = CredentialCache.DefaultCredentials;
-                WebResponse Response = WR.GetResponse();
-                Stream SS = Response.GetResponseStream();
-                SS.ReadTimeout = 5 * 1000;
-                StreamReader Reader = new StreamReader(SS);
-                reader_timer = new SystemTimer();
-                reader_timer.Elapsed += StopReader;
-                reader_timer.Interval = 5000;
-                reader_timer.Start();
-                ResponseFromAPI = Reader.ReadToEnd();
-                Reader.Close();
-                Response.Close();
-                reader_timer.Stop();
-                reader_timer.Dispose();
-                Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
-            }
-            catch (Exception ex)
-            {
-                Helpers.ConsolePrint("ExchangeRateApi", ex.ToString());
-                return _MarketRatesList;
-            }
-
+            string ResponseFromAPI = GetAPI(Links.mexcMarket);
+            
             try
             {
                 dynamic resp = JsonConvert.DeserializeObject(ResponseFromAPI);
@@ -370,35 +244,10 @@ namespace ZergPoolMiner.Stats
         public static ConcurrentDictionary<string, double> GetRatesSafetrade()
         {
             ConcurrentDictionary<string, double> _MarketRatesList = new ConcurrentDictionary<string, double>();
-            string ResponseFromAPI;
-            Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from SafeTrade");
-            try
-            {
-                HttpWebRequest WR = (HttpWebRequest)WebRequest.Create(Links.mexcMarket);
-                WR.UserAgent = "GET / HTTP/1.1\r\n\r\n";
-                WR.Timeout = 5 * 1000;
-                WR.Credentials = CredentialCache.DefaultCredentials;
-                WebResponse Response = WR.GetResponse();
-                Stream SS = Response.GetResponseStream();
-                SS.ReadTimeout = 5 * 1000;
-                StreamReader Reader = new StreamReader(SS);
-                reader_timer = new SystemTimer();
-                reader_timer.Elapsed += StopReader;
-                reader_timer.Interval = 5000;
-                reader_timer.Start();
-                ResponseFromAPI = Reader.ReadToEnd();
-                Reader.Close();
-                Response.Close();
-                reader_timer.Stop();
-                reader_timer.Dispose();
-                Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
-            }
-            catch (Exception ex)
-            {
-                Helpers.ConsolePrint("ExchangeRateApi", ex.ToString());
-                return _MarketRatesList;
-            }
 
+            Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from SafeTrade");
+            string ResponseFromAPI = GetAPI(Links.safetradeMarket);
+            
             try
             {
                 dynamic resp = JsonConvert.DeserializeObject(ResponseFromAPI);
@@ -570,7 +419,7 @@ namespace ZergPoolMiner.Stats
         private static SystemTimer reader_timer;
         private static void StopReader(object sender, EventArgs e)
         {
-            Helpers.ConsolePrint("StopReader", "Timeout");
+            //Helpers.ConsolePrint("StopReader", "Timeout");
             Application.DoEvents();
             try
             {
@@ -585,24 +434,46 @@ namespace ZergPoolMiner.Stats
                 Helpers.ConsolePrint("StopReader", ex.ToString());
             }
         }
-        public static ConcurrentDictionary<string, double> GetRatesgateio()
+
+        private static string GetAPI(string url)
         {
-            ConcurrentDictionary<string, double> _MarketRatesList = new ConcurrentDictionary<string, double>();
             string ResponseFromAPI = "";
-            Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Gate.io");
+
             try
             {
-
                 DateTime currentDateTime = DateTime.Now;
                 long unixTimestamp = ConvertToUnixTimestamp(currentDateTime);
 
-                HttpWebRequest WR = (HttpWebRequest)WebRequest.Create(Links.gateioMarket);
+                HttpWebRequest WR = (HttpWebRequest)WebRequest.Create(url);
+
+                if (ConfigManager.GeneralConfig.EnableProxy)
+                {
+                    if (string.IsNullOrEmpty(Stats.CurrentProxyIP))
+                    {
+                        Stats.CurrentProxyIP = ProxyCheck.HttpsProxyList[0].Ip;
+                        Stats.CurrentProxyHTTPSPort = ProxyCheck.HttpsProxyList[0].HTTPSPort;
+                        Stats.CurrentProxySocks5SPort = ProxyCheck.HttpsProxyList[0].Socks5Port;
+                    }
+                    WebProxy proxy = new WebProxy(Stats.CurrentProxyIP, Stats.CurrentProxyHTTPSPort);
+                    WR.Proxy = proxy;
+                }
                 //WR.UserAgent = "GET / HTTP/1.1\r\n\r\n";
                 WR.Accept = "application/json";
                 WR.ContentType = "application/json";
                 WR.Headers.Add("Timestamp", unixTimestamp.ToString());
                 WR.Timeout = 10 * 1000;
                 WR.Credentials = CredentialCache.DefaultCredentials;
+
+                bool success = false;
+                new Thread(() =>
+                {
+                    Thread.Sleep(1000 * 12);
+                    if (WR is object && WR is not null && !success)
+                    {
+                        WR.Abort();
+                    }
+                }).Start();
+
                 WebResponse Response = WR.GetResponse();
                 Stream SS = Response.GetResponseStream();
                 SS.ReadTimeout = 10 * 1000;
@@ -611,23 +482,51 @@ namespace ZergPoolMiner.Stats
 
                 reader_timer = new SystemTimer();
                 reader_timer.Elapsed += StopReader;
-                reader_timer.Interval = 15000;
+                reader_timer.Interval = 10000;
                 reader_timer.Start();
 
+                success = true;
                 ResponseFromAPI = Reader.ReadToEnd();
                 Reader.Close();
                 Response.Close();
                 reader_timer.Stop();
                 reader_timer.Dispose();
-                Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
+                if (SS is object && SS != null)
+                {
+                    SS.Dispose();
+                }
+                if (WR is object && WR != null)
+                {
+                    WR.Abort();
+                }
+
+                    Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
 
             }
             catch (Exception ex)
             {
                 Helpers.ConsolePrint("ExchangeRateApi", ex.ToString());
                 Helpers.ConsolePrint("GetRates", "Received: " + ResponseFromAPI.Length.ToString() + " bytes");
-                return _MarketRatesList;
+                return "";
             }
+            return ResponseFromAPI;
+        }
+
+        public static ConcurrentDictionary<string, double> GetRatesgateio()
+        {
+            ConcurrentDictionary<string, double> _MarketRatesList = new ConcurrentDictionary<string, double>();
+            string ResponseFromAPI = "";
+            
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Gate.io " +
+                    "via proxy " + Stats.CurrentProxyIP);
+            } else
+            {
+                Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Gate.io");
+            }
+
+            ResponseFromAPI = GetAPI(Links.gateioMarket);
 
             try
             {

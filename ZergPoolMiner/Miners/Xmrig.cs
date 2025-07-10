@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ZergPoolMiner.Stats;
 
 namespace ZergPoolMiner.Miners
 {
@@ -73,17 +74,24 @@ namespace ZergPoolMiner.Miners
             }
 
             string _wallet = "-u " + wallet + ".xmrig" +
-                ":" + password.Trim() + " "; 
+                ":" + password.Trim() + " ";
+
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = " --proxy=127.0.0.1:" + Socks5Relay.Port + " ";
+            }
 
             if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.RandomX))
             {
-                return " --algo=rx/0 " + GetServer("randomx") + _wallet + extras + " --http-port " + ApiPort + 
+                return " --algo=rx/0 " + GetServer("randomx") + proxy + _wallet + extras + " --http-port " + ApiPort + 
                platform + " " + $"--http-port { ApiPort} " +
                 GetDevicesCommandString().TrimStart();
             }
             if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.Ghostrider))
             {
-                return " --algo=gr " + GetServer("ghostrider") + _wallet + extras + " --http-port " + ApiPort +
+                return " --algo=gr " + GetServer("ghostrider") + proxy + _wallet + extras + " --http-port " + ApiPort +
                platform + " " + $"--http-port { ApiPort} "+
                GetDevicesCommandString().TrimStart();
             }
@@ -148,16 +156,23 @@ namespace ZergPoolMiner.Miners
             var pool = "";
             _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
 
+            string proxy = "";
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                //proxy = "--proxy " + Stats.Stats.CurrentProxyIP + ":" + Stats.Stats.CurrentProxySocks5SPort + " ";
+                proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port + " ";
+            }
+
             if (_a is object && _a != null)
             {
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " + proxy + " ";
             }
             else
             {
                 Helpers.ConsolePrint("XMRig", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
                 algo = algo.Replace("_", "-");
                 _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " + proxy + " ";
             }
 
             return " " + "-a " + _algo +

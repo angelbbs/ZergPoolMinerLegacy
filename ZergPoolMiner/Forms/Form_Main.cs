@@ -193,6 +193,7 @@ namespace ZergPoolMiner
         public static bool needGMinerRestart = false;
         public static bool adaptiveRunning = false;
         public static int ZIL_mining_state = 0;
+        public static string ZergPoolAPIError = "";
 
         public MemoryMappedFile MonitorSharedMemory = MemoryMappedFile.CreateOrOpen("MinerLegacyForkFixMonitor", 100);
 
@@ -1225,6 +1226,18 @@ namespace ZergPoolMiner
             {
                 Helpers.ConsolePrint("StartupTimer_Tick", ex.ToString());
             }
+            
+            _loadingScreen.SetValueAndMsg(26, "Checking proxy");
+            //new Task(() => Stats.ProxyCheck.GetHttpsProxy()).Start();
+            Stats.ProxyCheck.GetHttpsProxy();
+
+            _loadingScreen.SetValueAndMsg(28, International.GetText("Form_Main_loadtext_GetBalance"));
+            //_getBalanceTimer = new Timer();
+            //_getBalanceTimer.Tick += Stats.Stats.GetWalletBalance;
+            //_getBalanceTimer.Interval = 1000 * 60 * 5;
+            //_getBalanceTimer.Start();
+            Stats.Stats.GetWalletBalanceAsync(null, null);
+            Application.DoEvents();
 
             _loadingScreen.SetValueAndMsg(30, "Checking server: zergpool.com");
             this.Update();
@@ -1251,7 +1264,7 @@ namespace ZergPoolMiner
             _loadingScreen.SetValueAndMsg(55, International.GetText("Form_Main_loadtext_GetAlgosProfit"));
             Helpers.DisableWindowsErrorReporting(ConfigManager.GeneralConfig.DisableWindowsErrorReporting);
             AlgosProfitData.InitializeIfNeeded();
-            Stats.Stats.LoadAlgoritmsList();
+            Stats.Stats.LoadAlgoritmsListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
             Application.DoEvents();
             try
@@ -1275,9 +1288,6 @@ namespace ZergPoolMiner
             }
 
             List<ConcurrentDictionary<string, double>> exchanges_rates = new();
-            _loadingScreen.SetValueAndMsg(56, International.GetText("Form_Main_loadtext_GetBTCRate") + 
-                " (Xeggex)");
-            exchanges_rates.Add(ExchangeRateApi.GetRatesXeggex());
             Application.DoEvents();
             _loadingScreen.SetValueAndMsg(57, International.GetText("Form_Main_loadtext_GetBTCRate") +
                 " (Gate.io)");
@@ -1299,9 +1309,9 @@ namespace ZergPoolMiner
                 " (Mexc)");
             exchanges_rates.Add(ExchangeRateApi.GetRatesMexc());
             Application.DoEvents();
-            _loadingScreen.SetValueAndMsg(62, International.GetText("Form_Main_loadtext_GetBTCRate") +
-                " (SafeTrade)");
-            exchanges_rates.Add(ExchangeRateApi.GetRatesSafetrade());
+            //_loadingScreen.SetValueAndMsg(62, International.GetText("Form_Main_loadtext_GetBTCRate") +
+              //  " (SafeTrade)");
+            //exchanges_rates.Add(ExchangeRateApi.GetRatesSafetrade());
             Application.DoEvents();
             ExchangeRateApi.GetBTCRate(exchanges_rates);
             exchanges_rates = null;
@@ -1323,7 +1333,7 @@ namespace ZergPoolMiner
 
             _updateSMATimer = new Timer();
             _updateSMATimer.Tick += UpdateSMATimer_Tick;
-            _updateSMATimer.Interval = 1000 * 60;
+            _updateSMATimer.Interval = 1000 * 120;
             _updateTimerCount = 0;
             _updateSMATimer.Start();
             new Task(() => UpdateSMATimer_Tick(null, null)).Start();
@@ -1333,17 +1343,16 @@ namespace ZergPoolMiner
             _finalizeSMATimer.Interval = 1000 * 60;
             _finalizeSMATimer.Start();
             */
-            _loadingScreen.SetValueAndMsg(69, International.GetText("Form_Main_loadtext_GetBalance"));
-            _getBalanceTimer = new Timer();
-            _getBalanceTimer.Tick += Stats.Stats.GetWalletBalance;
-            _getBalanceTimer.Interval = 1000 * 60 * 5;
-            _getBalanceTimer.Start();
-            Stats.Stats.GetWalletBalance(null, null);
-            Application.DoEvents();
-            Stats.Stats.GetWalletBalanceEx(null, null);
-            Application.DoEvents();
 
-            _loadingScreen.SetValueAndMsg(74, International.GetText("Form_Main_loadtext_CheckLatestVersion"));
+            /*
+            if (Stats.Stats.Balance == 0)
+            {
+                Thread.Sleep(2000);
+                Stats.Stats.GetWalletBalanceAsync(null, null);
+                Application.DoEvents();
+            }
+            */
+            _loadingScreen.SetValueAndMsg(70, International.GetText("Form_Main_loadtext_CheckLatestVersion"));
             _loadingScreen.Update();
             //new Task(() => CheckUpdates()).Start();
             CheckUpdates();
@@ -1391,13 +1400,24 @@ namespace ZergPoolMiner
                             //new Task(() => Updater.Updater.EmergencyDownloader(Form_Main.miners_url)).Start();
                             Updater.Updater.EmergencyDownloader(Form_Main.miners_url);
                         }
-                        /*
                         else if (Updater.Updater.GetGITLABVersion() > 0)
                         {
                             //new Task(() => Updater.Updater.EmergencyDownloader(Form_Main.miners_url)).Start();
                             Updater.Updater.EmergencyDownloader(Form_Main.miners_url);
                         }
-                        */
+                        else
+                        {
+                            Helpers.ConsolePrint("Download miners", "Miners downloading error.");
+                            new Task(() => MessageBox.Show(International.GetText("Form_Main_miners_download_error"),
+                                    International.GetText("Warning_with_Exclamation"),
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning)).Start();
+                            //Updater.Updater.MinersEmergencyDownloading(Form_Main.miners_url);
+                            Form_Downloading.ActiveForm.Close();
+                            MakeRestart(600);
+                        }
+                        
+
+                        
                     }
                     //блокировка формы блокирует всё
                     /*
@@ -1520,6 +1540,13 @@ namespace ZergPoolMiner
                 new Task(() => APIServer.Listener(true)).Start();
             }
 
+            if (ConfigManager.GeneralConfig.EnableProxy)
+            {
+                _loadingScreen.SetValueAndMsg(91, "Start internal socks5 relay");
+                Thread.Sleep(10);
+                Socks5Relay.Socks5RelayStart();
+            }
+
             if (ConfigManager.GeneralConfig.ABEnableOverclock)
             {
                 bool MSIAfterburnerRunning = true;
@@ -1585,7 +1612,8 @@ namespace ZergPoolMiner
                     if (m.Contains("MSIAfterburner") || m.Contains("NvidiaGPUGetDataHost") ||
                         m.Contains("netsh") || m.Contains("cports") || m.Contains("sc") ||
                         m.Contains("igfx") || m.Contains("vc_redist") || m.ToLower().Contains("notepad") ||
-                        m.ToLower().Contains("form_splash") || m.ToLower().Contains("reg"))
+                        m.ToLower().Contains("form_splash") || m.ToLower().Contains("reg") ||
+                        m.ToLower().Contains("cmd"))
                     {
                         continue;
                     }
@@ -2043,7 +2071,7 @@ namespace ZergPoolMiner
 
             Form_Main.lastRigProfit.totalRate = Math.Round(MinersManager.GetTotalRate(), 9);
             Form_Main.lastRigProfit.totalPowerRate = totalPowerConsumptionBTC;
-            Stats.Stats.GetWalletBalanceEx(null, null);
+            Stats.Stats.GetWalletBalanceExAsync(null, null);
 
             Form_Main.RigProfits.Add(Form_Main.lastRigProfit);
 
@@ -2074,7 +2102,7 @@ namespace ZergPoolMiner
             double bytesInUse = currentProc.PrivateMemorySize64;
             Helpers.ConsolePrint("MEMORY", "Mem used: " + Math.Round(bytesInUse / 1048576, 2).ToString() + "MB");
 
-            Stats.Stats.GetAlgos();
+            Stats.Stats.GetAlgosAsync();
             AlgosProfitData.FinalizeAlgosProfitList();
 
             _updateTimerCount++;
@@ -2325,7 +2353,7 @@ namespace ZergPoolMiner
         {
             //Form_Main.currentVersion = 0;//testing проверка загрузки программы
             Helpers.ConsolePrint("GITHUB", "Check new version");
-            Helpers.ConsolePrint("GITHUB", "Current version: " + Form_Main.currentVersion.ToString());
+            Helpers.ConsolePrint("GITHUB", "Current version: " + Form_Main.currentVersion.ToString(""));
             Helpers.ConsolePrint("GITHUB", "Current build: " + Form_Main.currentBuild.ToString());
             bool ret = CheckNewVersion();
             Helpers.ConsolePrint("GITHUB", "GITHUB Version: " + Form_Main.githubVersion.ToString());
@@ -2338,7 +2366,7 @@ namespace ZergPoolMiner
         {
             bool ret = false;
             Form_Main.githubVersion = Updater.Updater.GetGITHUBVersion();
-            //Form_Main.gitlabVersion = Updater.Updater.GetGITLABVersion();
+            Form_Main.gitlabVersion = Updater.Updater.GetGITLABVersion();
 
             if (linkLabelNewVersion != null)
             {
@@ -2735,7 +2763,27 @@ namespace ZergPoolMiner
                 TotalPowerConsumption = TotalPowerConsumption + totalPower / 3600;
                 TotalBTC = TotalBTC + (((totalRateBTC) / 24) / _factorTimeUnit) / 3600;
                 TotalActualBTC = TotalActualBTC + ((((TotalActualProfitability) / 24) / _factorTimeUnit) / 3600) * Algorithm.Mult;
-
+                if (!string.IsNullOrEmpty(ZergPoolAPIError))
+                {
+                    //toolStripStatusLabelBTCDayValue.Text = "";
+                    toolStripStatusLabelBalanceText.Text = toolStripStatusLabelBalanceText.Text.Replace("Баланс:", "").Replace("Balance:", "");
+                    toolStripStatusLabelBalanceBTCValue.Spring = true;
+                    //toolStripStatusLabelBalanceBTCValue.TextAlign = te;
+                    toolStripStatusLabelBalanceBTCValue.Text = "■ ZergPool API Error: " + 
+                                                                ZergPoolAPIError + " ■  ";
+                    toolStripStatusLabelBalanceBTCCode.Text = "";
+                    toolStripStatusLabelBalanceDollarText.Text = "";
+                    toolStripStatusLabelBalanceDollarValue.Text = "";
+                    toolStripStatusLabel_power1.Text = "";
+                    toolStripStatusLabel_power2.Text = "";
+                    toolStripStatusLabel_power3.Text = "";
+                    toolStripStatusLabel_power4.Text = "";
+                    toolStripStatusLabel_power5.Text = "";
+                    toolStripStatusLabel_power6.Text = "";
+                } else
+                {
+                    toolStripStatusLabelBalanceBTCValue.Spring = false;
+                }
                 //*******
                 APIServer.balance = Stats.Stats.Balance * 1;
                 APIServer.Rate = totalRateBTC;
@@ -3154,6 +3202,25 @@ namespace ZergPoolMiner
                 }
                 Process mproc = Process.GetProcessById(mainproc.Id);
                 Helpers.ConsolePrint("Closing", mproc.Id.ToString() + " " + mproc.ProcessName);
+
+                ProcessStartInfo cports;
+                cports = new ProcessStartInfo("utils/cports-x64/cports.exe");
+                cports.Arguments = "/close * * * * " + mainproc.Id.ToString();
+                cports.UseShellExecute = false;
+                cports.RedirectStandardError = false;
+                cports.RedirectStandardOutput = false;
+                cports.CreateNoWindow = true;
+                cports.WindowStyle = ProcessWindowStyle.Hidden;
+                try
+                {
+                    Process.Start(cports);
+                }
+                catch (Exception ex)
+                {
+                    Helpers.ConsolePrint("Closing", ex.Message);
+                }
+
+
                 //mproc.Kill();
             }
             catch (Exception ex)
@@ -3443,7 +3510,6 @@ namespace ZergPoolMiner
         {
             MakeRestart(0);
         }
-
 
         private void DeviceStatusTimer_Tick(object sender, EventArgs e)
         {

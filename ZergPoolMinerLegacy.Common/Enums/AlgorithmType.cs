@@ -7,15 +7,11 @@
         ZIL = -200,
         KawPowLite = -100,
 
+        EthashSHA256dt = -19,
+        Ethashb3SHA256dt = -18,
         Ethashb3SHA512256d = -17,
-        //Ethashb3PyrinHashV2 = -16,
-        //Ethashb3KarlsenHash = -15,
-
-        //KarlsenHashV2PyrinHashV2 = -14,
         KarlsenHashV2HooHash = -13,
         EthashSHA512256d = -12,
-        //EthashPyrinHashV2 = -11,
-        //EthashKarlsenHash = -10,
 
         INVALID = -2,
         NONE = -1,

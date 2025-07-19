@@ -61,11 +61,10 @@ namespace ZergPoolMiner.Miners
                 else
                 */
                 {
-                    ret = "--pool " +
+                    ret = "--give-up-limit 1 --retry-time 1 --pool " +
                         //Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " --retry-time 1 ";
                         Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "stratum+ssl://") +
-                        ":" + _a.tls_port.ToString() + " " +
-                        "--give-up-limit 1 --retry-time 1";
+                        ":" + _a.tls_port.ToString();
                 }
             } catch (Exception ex)
             {
@@ -91,35 +90,12 @@ namespace ZergPoolMiner.Miners
         
         private string GetStartCommand(string wallet, string password)
         {
-            string ZilMining = "";
             string disablePlatform = "--disable-gpu-nvidia ";
             DeviceType devtype = DeviceType.NVIDIA;
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
             foreach (var mPair in sortedMinerPairs)
             {
                 devtype = mPair.Device.DeviceType;
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.SRBMiner, devtype))
-            {
-                ZilClient.needConnectionZIL = true;
-                ZilClient.StartZilMonitor();
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.SRBMiner, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 1)
-            {
-                //прокси не используется
-                ZilMining = " --zil-enable --zil-pool stratum+tcp://daggerhashimoto.auto.nicehash.com:9200 --zil-wallet " +
-                            ConfigManager.GeneralConfig.Wallet + " --zil-esm 2 --disable-worker-watchdog ";
-            }
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.SRBMiner, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 2)
-            {
-                //прокси не используется
-                ZilMining = " --zil-enable --zil-pool " + ConfigManager.GeneralConfig.ZIL_mining_pool + ":" +
-                    ConfigManager.GeneralConfig.ZIL_mining_port + " --zil-wallet " +
-                            ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + "worker" + " --zil-esm 2 --disable-worker-watchdog ";
             }
 
             if (devtype == DeviceType.CPU)
@@ -203,6 +179,7 @@ namespace ZergPoolMiner.Miners
 
             return deviceStringCommand;
         }
+
         private string GetStartBenchmarkCommand(string btcAddress, string worker)
         {
             string disablePlatform = "--disable-gpu-nvidia ";
@@ -245,36 +222,230 @@ namespace ZergPoolMiner.Miners
 
             var algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             Stats.Stats.MiningAlgorithms _a = new();
-            
+
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("sha512256d", "sha512_256d_radiant");
+
+            string failoverPool = "";
+            string failoverWallet = "";
+            string failoverPassword = "";
+            string failoverPool2 = "";
+            string failoverWallet2 = "";
+            string failoverPassword2 = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.RandomX:
+                    failoverPool = ",stratum+tcp://kz.vipor.net:5040";
+                    failoverWallet = ",42fV4v2EC4EALhKWKNCEJsErcdJygynt7RJvFZk8HSeYA9srXdJt58D9fQSwZLqGHbijCSMqSP4mU7inEEWNyer6F7PiqeX";
+                    break;
+                case AlgorithmType.VerusHash:
+                    failoverPool = ",stratum+ssl://pool.hashvault.pro:443";
+                    failoverWallet = ",RX8dEm1eqgmXmUm4iQ1Vg5LRaxuzophkTJ";
+                    break;
+                case AlgorithmType.CPUPower:
+                    failoverPool = ",stratum+tcp://cpupower.eu.mine.zpool.ca:6240";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Cryptonight_UPX://tradeogre
+                    failoverPool = ",stratum+tcp://fr-upx.miningocean.org:4332";
+                    failoverWallet = ",UmVjjd7xBGgDB7JE7XdV9zVuutkk8LQcA6T9f4LRx1WSY7uHqJiaMYrXwPJPPUhdSniY3NYLKxt8EUF5oPJVBS8g37gsyZTm9";
+                    break;
+                case AlgorithmType.Flex:
+                    failoverPool = ",stratum+tcp://flex.eu.mine.zpool.ca:3340";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Ghostrider:
+                    failoverPool = ",stratum+tcp://ghostrider.eu.mine.zpool.ca:5354";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Mike:
+                    failoverPool = ",stratum+tcp://mike.eu.mine.zpool.ca:5356";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Minotaurx:
+                    failoverPool = ",stratum+tcp://minotaurx.eu.mine.zpool.ca:7019";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Panthera:
+                    failoverPool = ",stratum+tcp://mine.scalaproject.io:3333";
+                    failoverWallet = ",Ssy2KnStasELAdgN7Nt2XfPw7UoGrWxSX6izJY9AHaqFTGAtvhAck8Ac9UR36qgSgd6bEKdqb4KHWJotFqwNdrSH5BSLH11TnP";
+                    break;
+                case AlgorithmType.Xelisv2_Pepew:
+                    failoverPool = ",stratum+tcp://xelisv2-pepew.eu.mine.zpool.ca:4833";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Yespower:
+                    failoverPool = ",stratum+tcp://yespower.eu.mine.zpool.ca:6234";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerLTNCG:
+                    failoverPool = ",stratum+tcp://yespowerLTNCG.eu.mine.zpool.ca:6245";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerMGPC:
+                    failoverPool = ",stratum+tcp://yespowerMGPC.eu.mine.zpool.ca:6247";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerR16:
+                    failoverPool = ",stratum+tcp://yespowerR16.eu.mine.zpool.ca:6534";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerSUGAR:
+                    failoverPool = ",stratum+tcp://yespowerSUGAR.eu.mine.zpool.ca:6241";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerTIDE:
+                    failoverPool = ",stratum+tcp://yespowerTIDE.eu.mine.zpool.ca:6239";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerURX:
+                    failoverPool = ",stratum+tcp://yespowerURX.eu.mine.zpool.ca:6236";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YespowerADVC:
+                    failoverPool = ",stratum+tcp://yespowerADVC.eu.mine.zpool.ca:6248";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.RandomARQ:
+                    failoverPool = ",stratum+tcp://arqma.supportcryptonight.com:9633";
+                    failoverWallet = $",aRi1eFMtoYTV1aXoe7NzFr7i39sKzd9xPdaCZkqqUUU9PPcbAN3YpeuM6cU6ifjyEKcvFw4g5y9UH9p2DZT6N4VNNrkFrsvyzod2r7m5v9Srj";
+                    break;
+                case AlgorithmType.RandomXEQ:
+                    failoverPool = ",stratum+tcp://fastpool.xyz:6265";
+                    failoverWallet = $",Tsz55sboLxy8An46s69h9wKwZTAg762yC2DAS2bioW9f1br6isYTromTMjjUazYad39jLsD8eYRR9e328BnCpAvh4Rya5HtTUs";
+                    break;
+                case AlgorithmType.Yescrypt:
+                    failoverPool = ",stratum+tcp://yescrypt.eu.mine.zpool.ca:6233";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YescryptR8:
+                    failoverPool = ",stratum+tcp://yescryptR8.eu.mine.zpool.ca:6323";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YescryptR16:
+                    failoverPool = ",stratum+tcp://yescryptR16.eu.mine.zpool.ca:6333";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.YescryptR32:
+                    failoverPool = ",stratum+tcp://yescryptR32.eu.mine.zpool.ca:6343";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Power2b:
+                    failoverPool = ",stratum+tcp://power2b.eu.mine.zpool.ca:6242";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.RinHash:
+                    failoverPool = ",stratum+tcp://pool.rplant.xyz:7148";
+                    failoverWallet = $",rin1xxxxxxxxx1";//fake
+                    break;
+
+                case AlgorithmType.VertHash:
+                    failoverPool = ",stratum+tcp://verthash.eu.mine.zpool.ca:6144";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.SHA256dt:
+                    failoverPool = ",stratum+tcp://sha256.eu.mine.zpool.ca:3333";//fake
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Ethash:
+                    failoverPool = ",ethw.2miners.com:2020";
+                    failoverWallet = $",bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq";
+                    break;
+                case AlgorithmType.Ethashb3:
+                    failoverPool = ",stratum+tcp://eu.mining4people.com:3454";
+                    failoverWallet = $",0xcd0E6454702D676B165cE7Dc6E42f3F692f7F147";
+                    break;
+                case AlgorithmType.EvrProgPow:
+                    failoverPool = ",stratum+tcp://eu.evrpool.org:1111";
+                    failoverWallet = $",EbdCsvB491DULZQjfpBGKEhaHURDEFH9Rk";
+                    break;
+                case AlgorithmType.FiroPow:
+                    failoverPool = ",stratum+tcp://firopow.eu.mine.zpool.ca:1326";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.HeavyHash:
+                    failoverPool = ",stratum+tcp://heavyhash.eu.mine.zpool.ca:5138";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.KarlsenHashV2:
+                    failoverPool = ",stratum+tcp://pool.woolypooly.com:3132";
+                    failoverWallet = $",karlsen:qzads9u466f9zvuk79em9er2a4tcy4h023v22araf9wka9etdcf02dxv2rec9";
+                    break;
+                case AlgorithmType.KawPow:
+                    failoverPool = ",stratum+tcp://rvn.2miners.com:6060";
+                    failoverWallet = $",bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq";
+                    break;
+                case AlgorithmType.Meraki:
+                    failoverPool = ",stratum+tcp://meraki.eu.mine.zpool.ca:3387";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.Cryptonight_GPU:
+                    failoverPool = ",stratum+tcp://pool.ryo-currency.com:3333";
+                    failoverWallet = $",RYoNsCHsnFSQLS5JUWzd9ee7N7pe44gTE9JUmjYHUgT6RRLL76x35pwiJ9aVU141s6JnBachuzCJWcPFn9zEdvM9WhsSswFbwzB5tKi6LLL6Zh";
+                    break;
+                case AlgorithmType.HooHash:
+                    failoverPool = ",stratum+tcp://nushypool.com:40012";
+                    failoverWallet = $",hoosat:qzuy0ydzzmw82ffa8j30m724w4cmwnxk9864meytpkgs0y502pmwzk886446m";
+                    break;
+                case AlgorithmType.ProgPowZ:
+                    failoverPool = ",stratum+tcp://zano.luckypool.io:8866";
+                    failoverWallet = $",iZ2NyxEHg87VTyQzUyYL7zgSDbA9Q3zk9V9kZQKwm2ucCw43nHXaTLWVhrDW3Up5tFgEjjZi6Yxh6gouWdLCKddxRVwBGFkFXQw4t5PxP";
+                    break;
+                case AlgorithmType.CurveHash:
+                    failoverPool = ",stratum+tcp://curve.eu.mine.zpool.ca:4633";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.PhiHash:
+                    failoverPool = ",stratum+tcp://phihash.eu.mine.zpool.ca:1329";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.MeowPow:
+                    failoverPool = ",stratum+tcp://meowpow.eu.mine.zpool.ca:1327";
+                    failoverWallet = $",{Globals.DemoUser}";
+                    break;
+                default:
+                    break;
+            }
+
+            switch (MiningSetup.CurrentSecondaryAlgorithmType)
+            {
+                case AlgorithmType.SHA256dt:
+                    failoverPool2 = ",stratum+tcp://sha256.eu.mine.zpool.ca:3333";//fake
+                    failoverWallet2 = $",{Globals.DemoUser}";
+                    break;
+                case AlgorithmType.HooHash:
+                    failoverPool2 = ",stratum+tcp://nushypool.com:40012";
+                    failoverWallet2 = $",hoosat:qzuy0ydzzmw82ffa8j30m724w4cmwnxk9864meytpkgs0y502pmwzk886446m";
+                    break;
+                default:
+                    break;
+            }
 
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
                 return " " + disablePlatform + "--algorithm " + _algo + " " +
-                    GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()).Trim() + failoverPool + " " +
+                    $"--wallet {Globals.DemoUser}{failoverWallet} --password c=LTC{failoverPassword}" + " " +
                     proxy + " " +
-                    $"--wallet {Globals.DemoUser} --password c=LTC" + " " +
-                    $"--api-enable --api-port {ApiPort} {extras}" + " --gpu-id " +
+                    $"--api-enable --api-port {ApiPort} {extras}" + " --give-up-limit 1 --retry-time 1 --gpu-id " +
                     GetDevicesCommandString().Trim();
             }
             else
             {
-
                 var _algo2 = MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower();
                 _algo2 = _algo2.Replace("sha512256d", "sha512_256d_radiant");
 
                 return " " + disablePlatform + "--algorithm " + _algo + " " +
-                     GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) +
-                    $" --wallet {Globals.DemoUser} --password c=LTC" +
-                    " --algorithm " + _algo2 + " " +
-                    GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) +
-                    $" --wallet {Globals.DemoUser} --password c=LTC" +
-                    $" --api-enable --api-port {ApiPort} {extras}" + " --gpu-id " +
+                     GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()).Trim() + failoverPool + " " +
+                    $"--wallet {Globals.DemoUser}{failoverWallet} --password c=LTC{failoverPassword}" + " " +
+                    "--algorithm " + _algo2 + " " +
+                    GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()).Trim() + failoverPool2 + " " +
+                    $"--wallet {Globals.DemoUser}{failoverWallet2} --password c=LTC{failoverPassword2}" + " " +
+                     proxy + " " +
+                    $"--api-enable --api-port {ApiPort} {extras}" + " --give-up-limit 1 --retry-time 1 --gpu-id " +
                     GetDevicesCommandString().Trim();
             }
         }
-
         protected override void _Stop(MinerStopType willswitch)
         {
             Helpers.ConsolePrint("SRBMINER Stop", "");
@@ -363,12 +534,11 @@ namespace ZergPoolMiner.Miners
                 {
                     devtype = mPair.Device.DeviceType;
                 }
-                ad.ZilRound = false;
+
                 if (resp != null)
                 {
                     if (MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.NONE) &&
-                        !ResponseFromSRBMiner.ToLower().Contains("\"name\": \"zil\"") &&
-                        devtype != DeviceType.CPU)//single, no zil
+                        devtype != DeviceType.CPU)//single,
                     {
                         foreach (var mPair in sortedMinerPairs)
                         {
@@ -395,77 +565,8 @@ namespace ZergPoolMiner.Miners
                         }
                     }
 
-                    if (MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.NONE) &&
-                        ResponseFromSRBMiner.ToLower().Contains("\"name\": \"zil\"") &&
-                        devtype != DeviceType.CPU)//single, + zil
-                    {
-                        foreach (var mPair in sortedMinerPairs)
-                        {
-                            try
-                            {
-                                string token0 = $"algorithms[0].hashrate.gpu.gpu{mPair.Device.IDByBus}";
-                                var hash0 = resp.SelectToken(token0);
-                                int gpu_hr0 = (int)Convert.ToInt32(hash0, CultureInfo.InvariantCulture.NumberFormat);
-                                mPair.Device.MiningHashrate = gpu_hr0;
-
-                                string token1 = $"algorithms[1].hashrate.gpu.gpu{mPair.Device.IDByBus}";
-                                var hash1 = resp.SelectToken(token1);
-                                int gpu_hr1 = (int)Convert.ToInt32(hash1, CultureInfo.InvariantCulture.NumberFormat);
-                                mPair.Device.MiningHashrateSecond = gpu_hr1;
-
-                                string tokenerrors = $"algorithms[0].gpu_compute_errors.gpu{mPair.Device.IDByBus}";
-                                var hasherror = resp.SelectToken(tokenerrors);
-                                int gpu_compute_errors = (int)Convert.ToInt32(hasherror, CultureInfo.InvariantCulture.NumberFormat);
-                                //total_gpu_compute_errors = + gpu_compute_errors;
-                                /*
-                                if (gpu_compute_errors >= 10)
-                                {
-                                    Helpers.ConsolePrint("GetSummaryAsync", "RESTART SRBMiner due rejects above limit: " + total_gpu_compute_errors.ToString());
-                                    total_gpu_compute_errors = 0;
-                                    Restart();
-                                }
-                                */
-                                if (Form_Main.isZilRound)
-                                {
-                                    mPair.Device.MiningHashrate = 0;
-                                    mPair.Device.MiningHashrateThird = 0;
-                                    mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                    mPair.Device.SecondAlgorithmID = (int)AlgorithmType.Ethash;
-                                    mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                                }
-                                else
-                                {
-                                    mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
-                                    mPair.Device.MiningHashrateSecond = 0;
-                                    mPair.Device.MiningHashrateThird = 0;
-                                    mPair.Device.SecondAlgorithmID = (int)AlgorithmType.NONE;
-                                    mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                                }
-                                _power = mPair.Device.PowerUsage;
-                            }
-                            catch (Exception ex)
-                            {
-                                Helpers.ConsolePrint("API Exception:", ex.ToString());
-                            }
-                        }
-                        try
-                        {
-                            totalsMain = resp.algorithms[0].hashrate.gpu.total;
-                            totalsSecond = resp.algorithms[1].hashrate.gpu.total;
-                        }
-                        catch
-                        {
-
-                        }
-                        /*
-                        Helpers.ConsolePrint("******", "isZilRound?: " + Form_Main.isZilRound.ToString() +
-                            " totalsMain: " + totalsMain.ToString() +
-                            " totalsSecond: " + totalsSecond.ToString());
-                        */
-                    }
-
                     if (!MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.NONE) &&
-                        devtype != DeviceType.CPU)//dual no zil
+                        devtype != DeviceType.CPU)//dual 
                     {
                         foreach (var mPair in sortedMinerPairs)
                         {
@@ -512,56 +613,6 @@ namespace ZergPoolMiner.Miners
                         {
                             totalsSecond = 0;
                         }
-                    }
-
-                    if (!MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.NONE) &&
-                        ResponseFromSRBMiner.ToLower().Contains("\"name\": \"zil\"") &&
-                        devtype != DeviceType.CPU)//dual + zil
-                    {
-                        foreach (var mPair in sortedMinerPairs)
-                        {
-                            try
-                            {
-                                string token0 = $"algorithms[0].hashrate.gpu.gpu{mPair.Device.IDByBus}";
-                                var hash0 = resp.SelectToken(token0);
-                                int gpu_hr0 = (int)Convert.ToInt32(hash0, CultureInfo.InvariantCulture.NumberFormat);
-
-                                string token1 = $"algorithms[1].hashrate.gpu.gpu{mPair.Device.IDByBus}";
-                                var hash1 = resp.SelectToken(token1);
-                                int gpu_hr1 = (int)Convert.ToInt32(hash1, CultureInfo.InvariantCulture.NumberFormat);
-
-                                string token2 = $"algorithms[2].hashrate.gpu.gpu{mPair.Device.IDByBus}";
-                                var hash2 = resp.SelectToken(token2);
-                                int gpu_hr2 = (int)Convert.ToInt32(hash2, CultureInfo.InvariantCulture.NumberFormat);
-
-                                mPair.Device.MiningHashrate = gpu_hr0;
-                                mPair.Device.MiningHashrateSecond = gpu_hr1;
-                                mPair.Device.MiningHashrateThird = gpu_hr2;
-
-                                if (Form_Main.isZilRound)
-                                {
-                                    mPair.Device.MiningHashrate = 0;
-                                    mPair.Device.MiningHashrateSecond = 0;
-                                    mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                    mPair.Device.SecondAlgorithmID = (int)AlgorithmType.NONE;
-                                    mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.Ethash;
-                                }
-                                else
-                                {
-                                    mPair.Device.MiningHashrateThird = 0;
-                                    mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                                }
-
-                                _power = mPair.Device.PowerUsage;
-                            }
-                            catch (Exception ex)
-                            {
-                                Helpers.ConsolePrint("API Exception:", ex.ToString());
-                            }
-                        }
-                        totalsMain = resp.algorithms[0].hashrate.gpu.total;
-                        totalsSecond = resp.algorithms[1].hashrate.gpu.total;
-                        totalsThird = resp.algorithms[2].hashrate.gpu.total;
                     }
 
                     if (devtype == DeviceType.CPU)
@@ -612,64 +663,22 @@ namespace ZergPoolMiner.Miners
                 return ad;
             }
 
-            ad.ZilRound = false;
             ad.Speed = totalsMain;
             ad.SecondarySpeed = totalsSecond;
-            ad.ThirdSpeed = totalsThird;
-
-            if (Form_Main.isZilRound)
-            {
-                if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
-                {
-                    if (ResponseFromSRBMiner.ToLower().Contains("\"name\": \"zil\""))//dual+zil
-                    {
-                        ad.Speed = 0;
-                        ad.SecondarySpeed = 0;
-                        ad.ThirdSpeed = totalsThird;
-                        ad.ZilRound = true;
-                        ad.AlgorithmID = AlgorithmType.NONE;
-                        ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                        ad.ThirdAlgorithmID = AlgorithmType.Ethash;
-                    }
-                }
-                else
-                {
-                    if (ResponseFromSRBMiner.ToLower().Contains("\"name\": \"zil\"") && totalsSecond > 0)//+zil
-                    {
-                        ad.Speed = 0;
-                        ad.SecondarySpeed = totalsSecond;
-                        ad.ThirdSpeed = 0;
-                        ad.ZilRound = true;
-                        ad.AlgorithmID = AlgorithmType.NONE;
-                        ad.SecondaryAlgorithmID = AlgorithmType.Ethash;
-                    }
-                }
-            }
-            else
-            {
-                ad.ZilRound = false;
                 ad.ThirdSpeed = 0;
                 ad.ThirdAlgorithmID = AlgorithmType.NONE;
 
                 if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
                 {
-                    //if (_algo.ToLower().Contains("zil"))//dual
-                    {
                         ad.Speed = totalsMain;
                         ad.SecondarySpeed = totalsSecond;
-                    }
                 }
                 else
                 {
-                    //if (_algo.ToLower().Contains("zil"))
-                    {
                         ad.Speed = totalsMain;
                         ad.SecondarySpeed = 0;
                         ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                    }
                 }
-            }
-
 
             Thread.Sleep(1);
             return ad;

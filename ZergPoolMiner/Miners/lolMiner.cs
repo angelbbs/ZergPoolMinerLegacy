@@ -226,12 +226,33 @@ namespace ZergPoolMiner.Miners
                 proxy = "--socks5 127.0.0.1:" + Socks5Relay.Port;
             }
 
+            string failover = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.KarlsenHashV2:
+                    failover = $" -p kls.2miners.com:12020 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq --pass x ";
+                    break;
+                case AlgorithmType.NexaPow:
+                    failover = $" -p nexa.2miners.com:15050 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq --pass x ";
+                    break;
+                case AlgorithmType.Equihash125:
+                    failover = $" -p flux.2miners.com:19090 -u t1e4GBC9UUZVaJSeML9HgrKbJUm61GQ3Y8q --pass x ";
+                    break;
+                case AlgorithmType.Equihash144:
+                    failover = $" -p equihash125.eu.mine.zpool.ca:12125 -u LPeihdgf7JRQUNq5cwZbBQQgEmh1m7DSgH --pass c=LTC ";
+                    break;
+                default:
+                    break;
+            }
+
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
                 CommandLine = _algo +
-                " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " + proxy +
+                    " --tls on -p " + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                 " -u " + Globals.DemoUser +
-                " --pass c=LTC" +
+                " --pass c=LTC " +
+                " " + failover +
+                proxy +
                 " --apiport " + ApiPort +
                 " --devices " + GetDevicesCommandString().Trim();
             }

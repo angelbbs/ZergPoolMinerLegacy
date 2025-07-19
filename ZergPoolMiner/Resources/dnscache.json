@@ -1,5 +1,5 @@
 {
-  "TimeCached": "2025-07-10T21:09:42.2356985+03:00",
+  "TimeCached": "2025-07-19T17:26:36.720541+03:00",
   "domains": [
     {
       "Updated": "2022-03-24T11:37:36.3102588+03:00",
@@ -9,10 +9,10 @@
       ]
     },
     {
-      "Updated": "2025-07-10T21:01:22.4849271+03:00",
+      "Updated": "2025-07-19T17:26:16.7828101+03:00",
       "domainName": "api.github.com",
       "IPs": [
-        "140.82.121.6"
+        "140.82.121.5"
       ]
     },
     {
@@ -115,10 +115,10 @@
       ]
     },
     {
-      "Updated": "2024-11-27T18:03:45.5656247+03:00",
+      "Updated": "2025-07-18T12:29:20.1558721+03:00",
       "domainName": "nexapow.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
@@ -157,10 +157,10 @@
       ]
     },
     {
-      "Updated": "2024-12-03T11:50:23.3388037+03:00",
+      "Updated": "2025-07-13T15:54:19.8845404+03:00",
       "domainName": "allium.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
@@ -220,10 +220,10 @@
       ]
     },
     {
-      "Updated": "2024-12-26T14:41:05.9427741+03:00",
+      "Updated": "2025-07-11T16:23:19.7871673+03:00",
       "domainName": "curvehash.mine.zergpool.com",
       "IPs": [
-        "103.249.70.7"
+        "51.91.7.170"
       ]
     },
     {
@@ -427,6 +427,97 @@
       "domainName": "yescryptr32.mine.zergpool.com",
       "IPs": [
         "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:22:15.4309963+03:00",
+      "domainName": "karlsenhashv2.na.mine.zergpool.com",
+      "IPs": [
+        "144.217.252.206"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:22:37.2345049+03:00",
+      "domainName": "karlsenhashv2.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:22:50.6591555+03:00",
+      "domainName": "karlsenhashv2.asia.mine.zergpool.com",
+      "IPs": [
+        "51.91.7.170"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:27:06.1721836+03:00",
+      "domainName": "panthera.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:37:55.3705683+03:00",
+      "domainName": "equihash125.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:38:53.9021798+03:00",
+      "domainName": "equihash144.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T17:41:44.767248+03:00",
+      "domainName": "nexapow.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-14T22:11:00.9786375+03:00",
+      "domainName": "kawpow.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-15T12:55:41.9896771+03:00",
+      "domainName": "equihash192.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-15T17:29:38.1896186+03:00",
+      "domainName": "verushash.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-16T15:56:16.332628+03:00",
+      "domainName": "verthash.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-17T09:47:37.2586049+03:00",
+      "domainName": "xelisv2-pepew.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
+      ]
+    },
+    {
+      "Updated": "2025-07-17T14:44:13.429179+03:00",
+      "domainName": "ethash.eu.mine.zergpool.com",
+      "IPs": [
+        "51.91.74.9"
       ]
     }
   ]

@@ -125,23 +125,41 @@ namespace ZergPoolMiner.Miners
 
             if (_a is object && _a != null)
             {
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " +
-                    proxy;
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString();
             }
             else
             {
                 Helpers.ConsolePrint("CryptoDredge", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
 
                 _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " + proxy;
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.tls_port.ToString() + " ";
             }
+
+            string failover = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.Allium:
+                    failover = $" -o stratum+tcp://allium.eu.mine.zpool.ca:6433 -u {Globals.DemoUser} -p c=LTC ";
+                    break;
+                case AlgorithmType.NeoScrypt:
+                    failover = $" -o stratum+tcp://neoscrypt.eu.mine.zpool.ca:4233 -u {Globals.DemoUser} -p c=LTC ";
+                    break;
+                case AlgorithmType.SHA256csm:
+                    failover = $" -o stratum+tcp://sha256csm.eu.mine.zpool.ca:3341 -u {Globals.DemoUser} -p c=LTC ";
+                    break;
+                default:
+                    break;
+            }
+
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("cryptonight_gpu", "cngpu");
 
             return " " + "--algo " + _algo +
-            $" -o {pool} -u {Globals.DemoUser} -p c=LTC" +
+            failover +
+            $" -o {pool} -u {Globals.DemoUser} -p c=LTC " +
+            proxy +
             apiBind +
-            " -d " + GetDevicesCommandString() + " " +
+            " --retry-pause 1 -d" + GetDevicesCommandString() + " " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";
 
             return commandLine;

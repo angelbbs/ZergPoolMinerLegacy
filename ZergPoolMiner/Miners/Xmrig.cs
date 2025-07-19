@@ -172,11 +172,26 @@ namespace ZergPoolMiner.Miners
                 Helpers.ConsolePrint("XMRig", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
                 algo = algo.Replace("_", "-");
                 _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
-                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " + proxy + " ";
+                pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " ";
+            }
+
+            string failover = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.Ghostrider:
+                    failover = $"-o stratum+tcp://ghostrider.eu.mine.zpool.ca:5354 -u {Globals.DemoUser} -p x ";
+                    break;
+                case AlgorithmType.RandomX:
+                    failover = "-o stratum+tcp://kz.vipor.net:5040 -u 42fV4v2EC4EALhKWKNCEJsErcdJygynt7RJvFZk8HSeYA9srXdJt58D9fQSwZLqGHbijCSMqSP4mU7inEEWNyer6F7PiqeX -p x ";
+                    break;
+                default:
+                    break;
             }
 
             return " " + "-a " + _algo +
-            $" -o {pool} -u {Globals.DemoUser} -p c=LTC" +
+            $" -o {pool} -u {Globals.DemoUser} -p c=LTC " +
+            failover +
+            proxy +
             $" --http-port {ApiPort} {extras}";
             return "unsupported algo";
         }

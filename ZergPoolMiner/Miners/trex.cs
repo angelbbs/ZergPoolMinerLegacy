@@ -138,6 +138,7 @@ namespace ZergPoolMiner.Miners
                 return commandLine;
             }
 
+            /*
             var apiBind = " --api-bind-http 0.0.0.0:" + ApiPort;
 
             string wallet = "-u " + Globals.DemoUser;
@@ -151,14 +152,31 @@ namespace ZergPoolMiner.Miners
                 proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
             }
 
+            string failover = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.X16RV2:
+                    failover = $"-o stratum+tcp://x16rv2.eu.mine.zpool.ca:3637 -u {Globals.DemoUser} -p x ";
+                    break;
+                case AlgorithmType.X21S:
+                    failover = $"-o stratum+tcp://x21s.eu.mine.zpool.ca:3224 -u {Globals.DemoUser} -p x ";
+                    break;
+                case AlgorithmType.X25X:
+                    failover = $"-o stratum+tcp://x25x.eu.mine.zpool.ca:3423 -u {Globals.DemoUser} -p x ";
+                    break;
+                default:
+                    break;
+            }
+
             commandLine = " --algo " + _algo +
             " " + apiBind +
                     GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                    wallet + " " + password + " " +
+                    failover +
                     proxy + " " +
-                    wallet + " " + password +
                     " -d " + GetDevicesCommandString() + " --no-watchdog " +
                 ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA) + " ";
-
+            */
             return commandLine;
         }
 

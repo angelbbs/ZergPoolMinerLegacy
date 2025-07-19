@@ -999,7 +999,7 @@ namespace ZergPoolMiner
                 {AlgorithmType.RandomX, 10},
                 {AlgorithmType.RandomARQ, 10},
                 {AlgorithmType.RandomXEQ, 10},
-                {AlgorithmType.VerusHash, 10},
+                {AlgorithmType.VerusHash, 10},//CPU, GPU
                 {AlgorithmType.Xelisv2_Pepew, 10},
                 {AlgorithmType.Yescrypt, 10},
                 {AlgorithmType.YescryptR16, 10},
@@ -1369,6 +1369,10 @@ namespace ZergPoolMiner
 
         protected virtual MinerProcess _Start()
         {
+            if (!Socks5Relay.started)
+            {
+                Socks5Relay.Socks5RelayStart();
+            }
             try
             {
                 RunCMDBeforeOrAfterMining(true);

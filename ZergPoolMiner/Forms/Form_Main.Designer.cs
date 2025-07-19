@@ -154,7 +154,7 @@ namespace ZergPoolMiner
             // toolStripStatusLabelBTCDayText
             // 
             this.toolStripStatusLabelBTCDayText.Name = "toolStripStatusLabelBTCDayText";
-            this.toolStripStatusLabelBTCDayText.Size = new System.Drawing.Size(51, 17);
+            this.toolStripStatusLabelBTCDayText.Size = new System.Drawing.Size(52, 17);
             this.toolStripStatusLabelBTCDayText.Text = "BTC/Day";
             // 
             // toolStripStatusLabelBTCDayValue
@@ -182,7 +182,7 @@ namespace ZergPoolMiner
             // toolStripStatusLabelBalanceBTCCode
             // 
             this.toolStripStatusLabelBalanceBTCCode.Name = "toolStripStatusLabelBalanceBTCCode";
-            this.toolStripStatusLabelBalanceBTCCode.Size = new System.Drawing.Size(26, 17);
+            this.toolStripStatusLabelBalanceBTCCode.Size = new System.Drawing.Size(27, 17);
             this.toolStripStatusLabelBalanceBTCCode.Text = "BTC";
             // 
             // toolStripStatusLabelBalanceDollarText
@@ -220,7 +220,7 @@ namespace ZergPoolMiner
             // toolStripStatusLabel_power4
             // 
             this.toolStripStatusLabel_power4.Name = "toolStripStatusLabel_power4";
-            this.toolStripStatusLabel_power4.Size = new System.Drawing.Size(41, 17);
+            this.toolStripStatusLabel_power4.Size = new System.Drawing.Size(42, 17);
             this.toolStripStatusLabel_power4.Text = ", Total:";
             this.toolStripStatusLabel_power4.MouseHover += new System.EventHandler(this.toolStripStatusLabel_power4_MouseHover);
             // 
@@ -243,7 +243,7 @@ namespace ZergPoolMiner
             this.linkLabelCheckStats.AutoSize = true;
             this.linkLabelCheckStats.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
             this.linkLabelCheckStats.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.linkLabelCheckStats.Location = new System.Drawing.Point(647, 45);
+            this.linkLabelCheckStats.Location = new System.Drawing.Point(647, 44);
             this.linkLabelCheckStats.Name = "linkLabelCheckStats";
             this.linkLabelCheckStats.Size = new System.Drawing.Size(94, 13);
             this.linkLabelCheckStats.TabIndex = 9;
@@ -314,7 +314,7 @@ namespace ZergPoolMiner
             this.buttonLogo.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonLogo.FlatAppearance.BorderSize = 0;
             this.buttonLogo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonLogo.Location = new System.Drawing.Point(647, 3);
+            this.buttonLogo.Location = new System.Drawing.Point(647, 2);
             this.buttonLogo.Margin = new System.Windows.Forms.Padding(0);
             this.buttonLogo.Name = "buttonLogo";
             this.buttonLogo.Size = new System.Drawing.Size(105, 35);
@@ -441,9 +441,9 @@ namespace ZergPoolMiner
             this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanel1.Controls.Add(this.linkLabelNewVersion);
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(459, 62);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(459, 61);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(305, 26);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(305, 28);
             this.flowLayoutPanel1.TabIndex = 119;
             // 
             // labelTreshold

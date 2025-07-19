@@ -27,7 +27,6 @@ namespace ZergPoolMiner.Miners
         protected AlgorithmType SecondaryAlgorithmType = AlgorithmType.NONE;
         private double _power = 0.0d;
         int _apiErrors = 0;
-        bool isZILround = false;
         int RejectsLimit = 0;
 
         public Rigel() : base("Rigel")
@@ -66,57 +65,13 @@ namespace ZergPoolMiner.Miners
             string port = "";
             string port2 = "";
 
-            string ZilMining = "";
             string MainMining = "";
-            string ZilAlgo = "";
             DeviceType devtype = DeviceType.NVIDIA;
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
             foreach (var mPair in sortedMinerPairs)
             {
                 devtype = mPair.Device.DeviceType;
             }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Rigel, devtype))
-            {
-                ZilClient.needConnectionZIL = true;
-                ZilClient.StartZilMonitor();
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Rigel, devtype) &&
-                MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
-            {
-                //прокси не используется
-                ZilAlgo = "+zil";
-                MainMining = "[1]";
-                if (ConfigManager.GeneralConfig.ZIL_mining_state == 1)
-                {
-                    ZilMining = " -o [2]ethstratum+tcp://daggerhashimoto.auto.nicehash.com:9200 -u [2]" + ConfigManager.GeneralConfig.Wallet + " ";
-                }
-                if (ConfigManager.GeneralConfig.ZIL_mining_state == 2)
-                {
-                    ZilMining = " -o [2]ethstratum+tcp://" +
-                        ConfigManager.GeneralConfig.ZIL_mining_pool.Replace("stratum+tcp://", "") + ":" + ConfigManager.GeneralConfig.ZIL_mining_port +
-                        " -u [2]" + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + "worker" + " ";
-                }
-            }
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Rigel, devtype) &&
-                MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
-            {
-                //прокси не используется
-                ZilAlgo = "+zil";
-                MainMining = "";
-                if (ConfigManager.GeneralConfig.ZIL_mining_state == 1)
-                {
-                    ZilMining = " -o [3]ethstratum+tcp://daggerhashimoto.auto.nicehash.com:9200 -u [3]" + ConfigManager.GeneralConfig.Wallet + " ";
-                }
-                if (ConfigManager.GeneralConfig.ZIL_mining_state == 2)
-                {
-                    ZilMining = " -o [3]ethstratum+tcp://" +
-                        ConfigManager.GeneralConfig.ZIL_mining_pool.Replace("stratum+tcp://", "") + ":" + ConfigManager.GeneralConfig.ZIL_mining_port +
-                        " -u [3]" + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + "worker" + " ";
-                }
-            }
-
 
             string proxy = "";
             if (ConfigManager.GeneralConfig.EnableProxy)
@@ -187,7 +142,6 @@ namespace ZergPoolMiner.Miners
 
             var deviceStringCommand = " --no-watchdog -d ";
             var ids = new List<string>();
-            var zil = new List<string>();
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
             var extra = "";
             int id;
@@ -214,27 +168,10 @@ namespace ZergPoolMiner.Miners
                 {
                     ids.Add(id.ToString());
                 }
-
-                if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Rigel, devtype))
-                {
-                    if (mPair.Device.GpuRam / 1024 > 9 * 1024 * 1024)
-                    {
-                        zil.Add("on");
-                    }
-                    else
-                    {
-                        zil.Add("off");
-                    }
-                }
             }
 
             deviceStringCommand += string.Join(",", ids);
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Rigel, devtype))
-            {
-                deviceStringCommand += " --zil-cache-dag " + string.Join(",", zil);
-            }
             deviceStringCommand = deviceStringCommand + extra + " ";
-
             return deviceStringCommand;
         }
 
@@ -353,18 +290,40 @@ namespace ZergPoolMiner.Miners
                 proxy = "--proxy 127.0.0.1:" + Socks5Relay.Port;
             }
 
+            string failover = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.Ethash:
+                    failover = $"-o stratum+tcp://ethw.2miners.com:2020 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
+                    break;
+                case AlgorithmType.KawPow:
+                    failover = $"-o stratum+tcp://rvn.2miners.com:6060 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
+                    break;
+                case AlgorithmType.Ethashb3:
+                    failover = $"-o stratum+tcp://eu.mining4people.com:3454 -u 0xcd0E6454702D676B165cE7Dc6E42f3F692f7F147 -p x ";
+                    break;
+                case AlgorithmType.NexaPow:
+                    failover = $"-o stratum+tcp://nexa.2miners.com:5050 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
+                    break;
+                case AlgorithmType.KarlsenHashV2:
+                    failover = $"-o stratum+tcp://kls.2miners.com:2020 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
+                    break;
+                default:
+                    break;
+            }
+
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
             {
                 string wallet = "-u " + Globals.DemoUser;
                 string password = " -p c=LTC ";
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
-                _algo = _algo.Replace("xelisv2_pepew", "xelishashv2");
 
                 ret = " --no-colour -a " + _algo +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
-                        proxy + " " +
                         wallet + " " + password + " " +
+                        failover + " " +
+                        proxy + " " +
                         GetDevicesCommandString().Trim();
             }
             else //duals
@@ -416,7 +375,6 @@ namespace ZergPoolMiner.Miners
             string ResponseFromRigel;
             double total = 0;
             double total2 = 0;
-            double totalZIL = 0;
             try
             {
                 HttpWebRequest WR = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:" + ApiPort.ToString() + "/stat");
@@ -469,16 +427,10 @@ namespace ZergPoolMiner.Miners
                 {
                     var devices = resp.devices;
                     string algorithm = resp.algorithm;
-                    string zil_state = "";
-                    zil_state = resp.zil_state;
-                    if (string.IsNullOrEmpty(zil_state))
-                    {
-                        zil_state = "";
-                    }
 
                     double[] hashrates = new double[devices.Count];
                     double[] hashrates2 = new double[devices.Count];
-                    double[] hashratesZIL = new double[devices.Count];
+
                     int _dev = 0;
                     foreach (var d in resp.devices)
                     {
@@ -488,11 +440,9 @@ namespace ZergPoolMiner.Miners
 
                         double hashrate = 0.0d;
                         double hashrate2 = 0.0d;
-                        double hashrateZIL = 0.0d;
 
                         ulong _hashrate = 0ul;
                         ulong _hashrate2 = 0ul;
-                        ulong _hashrateZIL = 0ul;
                         if (selected)
                         {
                             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
@@ -517,46 +467,12 @@ namespace ZergPoolMiner.Miners
                                 hashrate = (double)_hashrate;
                                 hashrate2 = (double)_hashrate2;
                             }
-
-                            if (d.hashrate.zil == null)
-                            {
-                                _hashrateZIL = 0ul;
-                            }
-                            else
-                            {
-                                _hashrateZIL = d.hashrate.zil;
-                            }
-                            hashrateZIL = (double)_hashrateZIL;
-
-                            if (zil_state.Contains("mining"))
-                            {
-                                isZILround = true;
-                                Form_Main.isForceZilRound = true;
-                                //Helpers.ConsolePrint("Rigel", "_hashrateZIL: " + hashrateZIL.ToString());
-                            }
-                            else
-                            {
-                                isZILround = false;
-                                Form_Main.isForceZilRound = false;
-                                //Helpers.ConsolePrint("Rigel", "isZILround = false");
-                            }
                         }
 
                         total = total + hashrate;
-                        if (isZILround)
-                        {
-                            total2 = total2 + hashrateZIL;
-                            hashrates2[_dev] = hashrateZIL;
-                        }
-                        else
-                        {
-                            total2 = total2 + hashrate2;
-                            hashrates2[_dev] = hashrate2;
-                        }
-                        totalZIL = totalZIL + hashrateZIL;
-
+                        total2 = total2 + hashrate2;
+                        hashrates2[_dev] = hashrate2;
                         hashrates[_dev] = hashrate;
-                        hashratesZIL[_dev] = hashrateZIL;
 
                         _dev++;
                     }
@@ -575,42 +491,20 @@ namespace ZergPoolMiner.Miners
 
                         if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
                         {
-                            if (isZILround)
-                            {
-                                mPair.Device.MiningHashrate = 0;
-                                mPair.Device.MiningHashrateThird = 0;
-                                mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.SecondAlgorithmID = (int)AlgorithmType.Ethash;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
-                            else
-                            {
-                                mPair.Device.MiningHashrateSecond = 0;
-                                mPair.Device.MiningHashrateThird = 0;
-                                mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
-                                mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
-                        } else //dual
+                            mPair.Device.MiningHashrateSecond = 0;
+                            mPair.Device.MiningHashrateThird = 0;
+                            mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
+                            mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
+                            mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
+                        }
+                        else //dual
                         {
-                            if (isZILround)
-                            {
-                                mPair.Device.MiningHashrate = 0;
-                                mPair.Device.MiningHashrateThird = 0;
-                                mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.SecondAlgorithmID = (int)AlgorithmType.Ethash;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
-                            else
-                            {
-                                mPair.Device.MiningHashrateThird = 0;
-                                mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
-                                mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
+                            mPair.Device.MiningHashrateThird = 0;
+                            mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
+                            mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
+                            mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
                         }
                     }
-
                 }
                 else
                 {
@@ -624,52 +518,22 @@ namespace ZergPoolMiner.Miners
             }
             finally
             {
-                ad.ZilRound = false;
                 ad.Speed = total;
                 ad.SecondarySpeed = total2;
-                ad.ThirdSpeed = totalZIL;
+                ad.ZilRound = false;
+                ad.ThirdSpeed = 0;
+                ad.ThirdAlgorithmID = AlgorithmType.NONE;
 
-                if (isZILround)
+                if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single no zil
                 {
-                    if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single+zil
-                    {
-                        ad.Speed = 0;
-                        ad.SecondarySpeed = totalZIL;
-                        ad.ThirdSpeed = 0;
-                        ad.ZilRound = true;
-                        ad.AlgorithmID = AlgorithmType.NONE;
-                        ad.SecondaryAlgorithmID = AlgorithmType.Ethash;
-                        ad.ThirdAlgorithmID = AlgorithmType.NONE;
-                    }
-                    else
-                    {
-                        ad.Speed = 0;
-                        ad.SecondarySpeed = 0;
-                        ad.ThirdSpeed = totalZIL;
-                        ad.ZilRound = true;
-                        ad.AlgorithmID = AlgorithmType.NONE;
-                        ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                        ad.ThirdAlgorithmID = AlgorithmType.Ethash;
-                    }
+                    ad.Speed = total;
+                    ad.SecondarySpeed = 0;
+                    ad.ThirdSpeed = 0;
+                    ad.SecondaryAlgorithmID = AlgorithmType.NONE;
+                    ad.ThirdAlgorithmID = AlgorithmType.NONE;
                 }
                 else
                 {
-                    ad.ZilRound = false;
-                    ad.ThirdSpeed = 0;
-                    ad.ThirdAlgorithmID = AlgorithmType.NONE;
-
-                    if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single no zil
-                    {
-                        ad.Speed = total;
-                        ad.SecondarySpeed = 0;
-                        ad.ThirdSpeed = 0;
-                        ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                        ad.ThirdAlgorithmID = AlgorithmType.NONE;
-                    }
-                    else
-                    {
-
-                    }
 
                 }
 
@@ -687,7 +551,6 @@ namespace ZergPoolMiner.Miners
                         devtype = mPair.Device.DeviceType;
                     }
                 }
-
             }
 
             Thread.Sleep(100);

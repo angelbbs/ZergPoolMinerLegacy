@@ -270,7 +270,7 @@ namespace ZergPoolMiner.Stats
         public static async Task<List<Coin>> GetCoinsAsync(string link)
         {
             Helpers.ConsolePrint("Stats", "Trying " + link);
-            double correction = 0.95;
+            double correction = 0.90;
             List<AlgoCoin> noautotradeCoin = new();
             List<AlgoCoin> zeroHashrateCoin = new();
             try
@@ -306,7 +306,7 @@ namespace ZergPoolMiner.Stats
                         var minpay = coin.Value<double>("minpay");
                         var minpay_sunday = coin.Value<double>("minpay_sunday");
                         var noautotrade = coin.Value<int>("noautotrade");
-                       
+
                         Coin _coin = new();
                         _coin.name = name;
                         _coin.algo = algo;
@@ -332,14 +332,14 @@ namespace ZergPoolMiner.Stats
                                  correction;//zergpool api bug
                         }
                         _coin.mbtc_mh_factor = mbtc_mh_factor;//multiplier,
-                                                                         //value 1 represents Mh,
-                                                                         //1000 represents GH,
-                                                                         //1000000 represents TH,
-                                                                         //0.001 represents KH
-                                                                         //miningAlgorithms.algotype = algotype;//integer value of a 4-bit value
-                                                                         //representing platforms supported.
-                                                                         //Bit 3 = CPU, bit 2 = GPU,
-                                                                         //bit 1 = ASIC, bit 0 = FPGA
+                                                              //value 1 represents Mh,
+                                                              //1000 represents GH,
+                                                              //1000000 represents TH,
+                                                              //0.001 represents KH
+                                                              //miningAlgorithms.algotype = algotype;//integer value of a 4-bit value
+                                                              //representing platforms supported.
+                                                              //Bit 3 = CPU, bit 2 = GPU,
+                                                              //bit 1 = ASIC, bit 0 = FPGA
 
                         BitArray b = new BitArray(new int[] { algotype });
                         _coin.CPU = b[3];
@@ -393,7 +393,7 @@ namespace ZergPoolMiner.Stats
                             _coin.actual_last24h = _coin.actual_last24h / 99;
                         }
 
-                        
+
                         var unstableAlgosList = AlgorithmSwitchingManager.unstableAlgosList.Select(s => s.ToString().ToLower()).ToList();
                         if (unstableAlgosList.Contains(algo.ToLower()))
                         {
@@ -437,7 +437,7 @@ namespace ZergPoolMiner.Stats
                             _coin.actual_last24h = _coin.actual_last24h * 0.70;
                         }
                         //12-18 hours
-                        if ((real_ttf - timesincelast_shared >= 43200 && real_ttf - timesincelast_shared < 64800) && 
+                        if ((real_ttf - timesincelast_shared >= 43200 && real_ttf - timesincelast_shared < 64800) &&
                             (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
                         {
                             _coin.estimate = _coin.estimate * 0.80;
@@ -446,7 +446,7 @@ namespace ZergPoolMiner.Stats
                             _coin.actual_last24h = _coin.actual_last24h * 0.80;
                         }
                         //6-12 hours
-                        if ((real_ttf - timesincelast_shared >= 21600 && real_ttf - timesincelast_shared < 43200) && 
+                        if ((real_ttf - timesincelast_shared >= 21600 && real_ttf - timesincelast_shared < 43200) &&
                             (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
                         {
                             _coin.estimate = _coin.estimate * 0.85;
@@ -455,13 +455,21 @@ namespace ZergPoolMiner.Stats
                             _coin.actual_last24h = _coin.actual_last24h * 0.85;
                         }
                         //2-6 hours
-                        if ((real_ttf - timesincelast_shared > 7200 && real_ttf - timesincelast_shared < 21600) && 
+                        if ((real_ttf - timesincelast_shared > 7200 && real_ttf - timesincelast_shared < 21600) &&
                             (_coin.CPU || _coin.GPU) && !_coin.tempTTF_Disabled)
                         {
                             _coin.estimate = _coin.estimate * 0.90;
                             _coin.estimate_current = _coin.estimate_current * 0.90;
                             _coin.estimate_last24h = _coin.estimate_last24h * 0.90;
                             _coin.actual_last24h = _coin.actual_last24h * 0.90;
+                        }
+
+                        if (_coin.actual_last24h != 0 && _coin.estimate_current > _coin.actual_last24h * 100)
+                        {
+                            Helpers.ConsolePrint("Stats", _coin.symbol + " API bug");
+                            _coin.estimate = _coin.actual_last24h;
+                            _coin.estimate_current = _coin.actual_last24h;
+                            _coin.estimate_last24h = _coin.actual_last24h;
                         }
 
                         //test
@@ -953,23 +961,17 @@ namespace ZergPoolMiner.Stats
                 foreach (var a in progAlgosList)
                 {
                     string _alg = a.ToLower();
-                    _alg = _alg.Replace("xelisv2_pepew", "xelisv2-pepew");
-                    _alg = _alg.Replace("neoscrypt_xaya", "neoscrypt-xaya");
+                    _alg = _alg.Replace("xelisv2-pepew", "xelisv2_pepew");
+                    _alg = _alg.Replace("neoscrypt-xaya", "neoscrypt_xaya");
                     if (!poolAlgosList.Contains(_alg))
                     {
                         Helpers.ConsolePrint("Stats", "Deleted? - " + _alg);
-                        /*
-                        foreach (var alg in ComputeDevice.AlgorithmSettings)
-                        {
-                            if (alg.DualZergPoolID == AlgorithmType.NexaPow)
-                            {
-                                alg.Hidden = true;
-                            }
-                        }
-                        */
                         //a.tempDeleted = true;
                         var itemToDelete = MiningAlgorithmsList.Find(r => r.name.ToLower() == _alg);
-                        if (itemToDelete != null) itemToDelete.algoTempDeleted = true;
+                        if (itemToDelete != null)
+                        {
+                            itemToDelete.algoTempDeleted = true;
+                        }
                         //MiningAlgorithmsList.RemoveAll(x => x.name.ToLower() == _alg);
                     } else
                     {

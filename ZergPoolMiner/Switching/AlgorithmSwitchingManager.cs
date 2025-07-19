@@ -48,6 +48,7 @@ namespace ZergPoolMiner.Switching
         public static List<AlgorithmType> unstableAlgosList = new List<AlgorithmType>()
         {
             AlgorithmType.Allium,
+            AlgorithmType.CurveHash,
             AlgorithmType.HooHash,
             AlgorithmType.KarlsenHashV2,
             AlgorithmType.NeoScrypt,

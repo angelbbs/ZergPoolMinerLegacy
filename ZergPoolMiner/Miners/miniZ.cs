@@ -70,47 +70,11 @@ namespace ZergPoolMiner.Miners
 
         private string GetStartCommand(string wallet, string password)
         {
-            string ZilMining = "";
             DeviceType devtype = DeviceType.NVIDIA;
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
             foreach (var mPair in sortedMinerPairs)
             {
                 devtype = mPair.Device.DeviceType;
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype))
-            {
-                ZilClient.needConnectionZIL = true;
-                ZilClient.StartZilMonitor();
-            }
-
-            if (!MinerVersion.Get_miniZ().MinerVersion.Trim().Equals("2.1c"))
-            {
-                if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 1)
-                {
-                    //прокси не используется
-                    ZilMining = " --url=zil://" + ConfigManager.GeneralConfig.Wallet + "@daggerhashimoto.auto.nicehash.com:9200";//не работает на найсе
-                    /*
-                    logFile = GetDeviceID() + ".csv";
-                    log = " --csv=" + logFile + " --log-period=1";
-                    try
-                    {
-                    if (File.Exists("miners\\miniz\\" + logFile)) File.Delete("miners\\miniz\\" + logFile);
-                    }
-                    catch (Exception ex)
-                    {
-                        Helpers.ConsolePrint("GetStartCommand", ex.ToString());
-                    }
-                    */
-                }
-            }
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 2)
-            {
-                ZilMining = " --url " + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + wallet + "@" +
-                    ConfigManager.GeneralConfig.ZIL_mining_pool.Replace("stratum+tcp://", "") + ":" +
-                    ConfigManager.GeneralConfig.ZIL_mining_port;
             }
 
             string sColor = "";
@@ -134,7 +98,7 @@ namespace ZergPoolMiner.Miners
             }
 
             return " --par=" + _algo +
-            " " + ZilMining + " --telemetry=" + ApiPort +
+            " " + " --telemetry=" + ApiPort +
             " --url=ssl://" + wallet + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                     proxy + " " +
                     _password + " --retrydelay=1 " +
@@ -207,11 +171,24 @@ namespace ZergPoolMiner.Miners
                     proxy = "--socks=127.0.0.1:" + Socks5Relay.Port + " --socksdns ";
                 }
 
+                string failover = "";//не работает
+                /*
+                switch (MiningSetup.CurrentAlgorithmType)
+                {
+                    case AlgorithmType.Equihash125:
+                        failover = " --url=tcp://t1e4GBC9UUZVaJSeML9HgrKbJUm61GQ3Y8q@" + "flux.2miners.com:9090 --pass x ";
+                        break;
+                    default:
+                        break;
+                }
+                */
                 ret = GetDevicesCommandString() +
-                      "--nocolour --par=" + _algo +
-                      " --url=ssl://" + Globals.DemoUser + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
+                      " --nocolour --par=" + _algo +
+                      " --url=ssl://" + Globals.DemoUser + "@" + 
+                      GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " --pass c=LTC " +
+                      failover +
                       proxy + " " + 
-                      "--pass=c=LTC" + " --telemetry=" + ApiPort;
+                      "--telemetry=" + ApiPort;
                 _benchmarkTimeWait = time;
 
             }
@@ -315,13 +292,7 @@ namespace ZergPoolMiner.Miners
             try
             {
                 byte[] bytesToSend;
-                if (Form_Main.isZilRound)
-                {
-                   bytesToSend = Encoding.ASCII.GetBytes(variables.miniZ_toSend_zil);
-                } else
-                {
-                    bytesToSend = Encoding.ASCII.GetBytes(variables.miniZ_toSend);
-                }
+                bytesToSend = Encoding.ASCII.GetBytes(variables.miniZ_toSend);
                 var client = new TcpClient("127.0.0.1", ApiPort);
                 client.ReceiveTimeout = 2000;
                 var nwStream = client.GetStream();
@@ -401,16 +372,8 @@ namespace ZergPoolMiner.Miners
                     }
                     ad.SecondarySpeed = resp.result.Aggregate<Result, double>(0, (current, t1) => current + t1.speed_is) * 1000000;
                     pers = resp.pers;
-                    /*
-                    if (pers.Contains("zil"))
-                    {
-                        Form_Main.isZilRound = true;
-                    } else
-                    {
-                        Form_Main.isZilRound = false;
-                    }
-                    */
-                        double[] hashrates = new double[resp.result.Count];
+
+                    double[] hashrates = new double[resp.result.Count];
                     //double[] hashrates2 = new double[resp.result.Count];
                     for (var i = 0; i < resp.result.Count; i++)
                     {
@@ -431,27 +394,11 @@ namespace ZergPoolMiner.Miners
 
                         if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
                         {
-                            if (Form_Main.isZilRound && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, mPair.Device.DeviceType))
-                            {
-                                //double hashrate = readCSV(mPair.Device.ID);
-                                total = total + hashrates[dev];
-                                mPair.Device.MiningHashrate = 0;
-                                if (hashrates[dev] > 0)
-                                {
-                                    mPair.Device.MiningHashrateSecond = hashrates[dev];
-                                }
-                                mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.SecondAlgorithmID = (int)AlgorithmType.Ethash;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
-                            else
-                            {
-                                mPair.Device.MiningHashrateSecond = 0;
-                                mPair.Device.MiningHashrateThird = 0;
-                                mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
-                                mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
+                            mPair.Device.MiningHashrateSecond = 0;
+                            mPair.Device.MiningHashrateThird = 0;
+                            mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
+                            mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
+                            mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
                         }
                         dev++;
                     }
@@ -470,15 +417,8 @@ namespace ZergPoolMiner.Miners
                         {
                             devtype = mPair.Device.DeviceType;
                         }
-
                     }
-
                     prevSpeed = ad.Speed;
-                    if (Form_Main.isZilRound && total > 0 && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype))
-                    {
-                        ad.SecondarySpeed = total;
-                        ad.Speed = 0;
-                    }
                 }
             }
             catch (Exception ex)
@@ -494,35 +434,12 @@ namespace ZergPoolMiner.Miners
             {
                 devtype = mPair.Device.DeviceType;
             }
+            ad.ZilRound = false;
+            ad.ThirdSpeed = 0;
+            ad.ThirdAlgorithmID = AlgorithmType.NONE;
+            ad.SecondarySpeed = 0;
+            ad.SecondaryAlgorithmID = AlgorithmType.NONE;
 
-            if (Form_Main.isZilRound && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype))
-            {
-                if (pers.Contains("zil"))//+zil
-                {
-                    ad.Speed = 0;
-                    ad.ThirdSpeed = 0;
-                    ad.ZilRound = true;
-                    ad.AlgorithmID = AlgorithmType.NONE;
-                    ad.SecondaryAlgorithmID = AlgorithmType.Ethash;
-                    ad.ThirdAlgorithmID = AlgorithmType.NONE;
-                }
-                else
-                {
-                    ad.ZilRound = false;
-                    ad.ThirdSpeed = 0;
-                    ad.ThirdAlgorithmID = AlgorithmType.NONE;
-                    ad.SecondarySpeed = 0;
-                    ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                }
-            }
-            else
-            {
-                ad.ZilRound = false;
-                ad.ThirdSpeed = 0;
-                ad.ThirdAlgorithmID = AlgorithmType.NONE;
-                ad.SecondarySpeed = 0;
-                ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-            }
             return ad;
         }
         private double readCSV(int gpiId)
@@ -594,11 +511,6 @@ namespace ZergPoolMiner.Miners
             foreach (var mPair in sortedMinerPairs)
             {
                 devtype = mPair.Device.DeviceType;
-            }
-            if (Form_Main.ZilMonitorRunning &&
-                Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.miniZ, devtype))
-            {
-                //ZilClient.needConnectionZIL = false;
             }
             Stop_cpu_ccminer_sgminer_nheqminer(willswitch);
         }

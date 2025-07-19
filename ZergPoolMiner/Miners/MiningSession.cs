@@ -521,6 +521,7 @@ namespace ZergPoolMiner.Miners
                 bool forceSwitch = false;
                 bool algoZero = false;
                 string algoZeroS = "";
+                string coinZeroS = "";
                 Form_Main.KawpowLiteEnabled = false;
 
                 foreach (var device in _miningDevices)
@@ -540,6 +541,9 @@ namespace ZergPoolMiner.Miners
                             {
                                 algoZero = true;
                                 algoZeroS = algo.AlgorithmName;
+                                coinZeroS = algo.CurrentMiningCoin;
+
+                                coinFail.Remove(coinZeroS);//иначе не переключится и на графике будет провал
                             }
                         }
                     }
@@ -571,8 +575,7 @@ namespace ZergPoolMiner.Miners
                     
                     if (!device.DeviceCurrentMiningCoin.ToLower().Equals("none") &&
                         !device.DeviceMostProfitableCoin.ToLower().Equals("none") &&
-                        !device.DeviceCurrentMiningCoin.ToLower().Equals(device.DeviceMostProfitableCoin.ToLower()) &&
-                        device.CurrentProfitableAlgorithmType.Equals(device.MostProfitableAlgorithmType))//only coin switch
+                        !device.DeviceCurrentMiningCoin.ToLower().Equals(device.DeviceMostProfitableCoin.ToLower()))//coin switch
                     {
                         coinChanged = true;
                     }
@@ -611,6 +614,7 @@ namespace ZergPoolMiner.Miners
                         Helpers.ConsolePrint("MiningSession", "Need switch " + ((AlgorithmType)device.Device.AlgorithmID).ToString() + " " +
                             device.DeviceCurrentMiningCoin + " -> " + device.DeviceMostProfitableCoin +
                             " because coin is inactive");
+                        coinFail.Remove(device.DeviceCurrentMiningCoin);
                     }
                     
                     /*

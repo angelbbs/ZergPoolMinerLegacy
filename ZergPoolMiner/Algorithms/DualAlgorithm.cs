@@ -32,18 +32,16 @@ namespace ZergPoolMiner.Algorithms
                 {
                     switch (SecondaryZergPoolID)
                     {
-                        //case AlgorithmType.KarlsenHash:
-                          //  return AlgorithmType.EthashKarlsenHash;
+                        case AlgorithmType.SHA256dt:
+                           return AlgorithmType.EthashSHA256dt;
                     }
                 }
-                if (ZergPoolID == AlgorithmType.Ethash)
+                if (ZergPoolID == AlgorithmType.Ethashb3)
                 {
                     switch (SecondaryZergPoolID)
                     {
-                        /*
-                        case AlgorithmType.PyrinHashV2:
-                            return AlgorithmType.EthashPyrinHashV2;
-                        */
+                        case AlgorithmType.SHA256dt:
+                            return AlgorithmType.Ethashb3SHA256dt;
                     }
                 }
                 if (ZergPoolID == AlgorithmType.Ethash)

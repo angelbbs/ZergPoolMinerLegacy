@@ -64,7 +64,7 @@ namespace ZergPoolMiner
         private Timer _finalizeSMATimer;
         private Timer _marketsTimer;
         private Timer _chartTimer;
-        private int _updateTimerCount;
+        private double _updateTimerCount;
         private int _updateTimerRestartProgramCount;
         private int _AutoStartMiningDelay = 0;
         private Timer _idleCheck;
@@ -415,12 +415,12 @@ namespace ZergPoolMiner
             if (d / i == 1)
             {
                 Form_Main.version = i.ToString();
-                Text += i.ToString();
+                Text += i.ToString("F1");
             }
             else
             {
                 Form_Main.version = d.ToString();
-                Text += d.ToString();
+                Text += d.ToString("F1");
             }
 
             Text += " for " + platform;
@@ -2125,9 +2125,10 @@ namespace ZergPoolMiner
                     period = 1140;
                     break;
             }
-            double mult = 60000 / _updateSMATimer.Interval;
 
-            if (_updateTimerCount * mult >= period)
+            double mult = (double)60000 / _updateSMATimer.Interval;
+
+            if (_updateTimerCount / mult >= period)
             {
                 _updateTimerCount = 0;
                 bool newver = false;
@@ -3097,6 +3098,10 @@ namespace ZergPoolMiner
                 foreach (var process in Process.GetProcessesByName("NvidiaGPUGetDataHost"))
                 {
                     process.Kill();
+                    if (Socks5Relay.started)
+                    {
+                        Socks5Relay.Listener.Stop();
+                    }
                 }
 
             }
@@ -3220,8 +3225,7 @@ namespace ZergPoolMiner
                     Helpers.ConsolePrint("Closing", ex.Message);
                 }
 
-
-                //mproc.Kill();
+                mproc.Kill();
             }
             catch (Exception ex)
             {

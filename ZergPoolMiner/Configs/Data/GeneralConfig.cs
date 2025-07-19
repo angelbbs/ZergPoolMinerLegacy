@@ -130,6 +130,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool EnableProxy = false;
         public bool ProxyAsFailover = false;
         public bool StaleProxy = false;
+        public int RelayPort = 13600;
 
         public bool MinimizeMiningWindows = false;
         public bool ShowMinersVersions = true;

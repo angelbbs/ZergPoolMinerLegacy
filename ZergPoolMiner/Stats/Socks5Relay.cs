@@ -12,32 +12,28 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Net.NetworkInformation;
 using ZergPoolMinerLegacy.Stats;
+using ZergPoolMiner.Configs;
 
 namespace ZergPoolMiner.Stats
 {
     public static class Socks5Relay
     {
         public static int Port = 13600;
-        static readonly TcpListener Listener = new TcpListener(IPAddress.Any, Port);
+        public static readonly TcpListener Listener = new TcpListener(IPAddress.Any, Port);
         public static bool started = false;
         const int BufferSize = 4096;
 
         public static void Socks5RelayStart()
         {
             if (started) return;
-            while (true)
+            started = true;
+            while (CheckRelayPort(Port))
             {
-                if (CheckRelayPort(Port))
-                {
-                    Port++;
-                    break;
-                } else
-                {
-                    break;
-                }
+                Port++;
+                Thread.Sleep(100);
             }
             Helpers.ConsolePrint("Socks5Relay", "Start relay 127.0.0.1:" + Port + " -> " + Stats.CurrentProxyIP + ":" + Stats.CurrentProxySocks5SPort.ToString());
-            started = true;
+            ConfigManager.GeneralConfig.RelayPort = Port;
             try
             {
                 Listener.Start();
@@ -45,18 +41,27 @@ namespace ZergPoolMiner.Stats
                 {
                     while (true)
                     {
-                        var minerClient = Listener.AcceptTcpClient();
-                        if (minerClient.Connected)
+                        try
                         {
-                            Helpers.ConsolePrint("Socks5Relay", "Miner connected to relay " + Stats.CurrentProxyIP + ":" + Stats.CurrentProxySocks5SPort.ToString());
-                            new Task(() => AcceptConnection(minerClient)).Start();
+                            var minerClient = Listener.AcceptTcpClient();
+                            if (minerClient.Connected)
+                            {
+                                Helpers.ConsolePrint("Socks5Relay", "Miner connected to relay 127.0.0.1:" + Port +
+                                    " Proxy: " + Stats.CurrentProxyIP + ":" + Stats.CurrentProxySocks5SPort.ToString());
+                                new Task(() => AcceptConnection(minerClient)).Start();
+                            }
+                        } catch (Exception ex)
+                        {
+                            Helpers.ConsolePrintError("Socks5Relay", ex.Message);
+                            started = false;
+                            break;
                         }
                     }
-                    started = false;
                 }).Start();
             } catch (Exception ex)
             {
                 Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
+                started = false;
             }
         }
 
@@ -72,6 +77,7 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
+                started = false;
                 Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
                 if (minerClient is object && minerClient != null)
                 {
@@ -94,7 +100,7 @@ namespace ZergPoolMiner.Stats
                 }
                 catch (Exception ex)
                 {
-                    Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
+                    //Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
                     break;
                 }
                 if (serverBytes == 0)
@@ -128,7 +134,7 @@ namespace ZergPoolMiner.Stats
                 }
                 catch (Exception ex)
                 {
-                    Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
+                    //Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
                     break;
                 }
                 if (minerBytes == 0)

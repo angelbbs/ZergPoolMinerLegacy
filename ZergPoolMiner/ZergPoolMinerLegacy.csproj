@@ -428,7 +428,6 @@
     <Compile Include="Miners\ClaymoreNeoscryptMiner.cs" />
     <Compile Include="Miners\CryptoDredge.cs" />
     <Compile Include="Miners\Rigel.cs" />
-    <Compile Include="Miners\ZilClient.cs" />
     <Compile Include="Miners\Ethash\ArrayExtensions.cs" />
     <Compile Include="Miners\Ethash\Converters.cs" />
     <Compile Include="Miners\Ethash\Hash.cs" />

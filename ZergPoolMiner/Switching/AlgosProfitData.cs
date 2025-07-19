@@ -127,8 +127,16 @@ namespace ZergPoolMiner.Switching
                     {
                         Helpers.ConsolePrint("AlgosProfitData", "AlgosProfitData API bug. " + algo.ToString() + ": " +
                             "old value: " + _currentAlgosProfit[algo].Paying.ToString() + " new value: " + paying);
+                        paying = _currentAlgosProfit[algo].Paying;
                         return;
                     }
+
+                    if (paying > 1000000)
+                    {
+                        Helpers.ConsolePrint("AlgosProfitData", "AlgosProfitData API bug. " + algo.ToString() + ": " + paying);
+                        return;
+                    }
+
 
                     if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
                         paying > _currentAlgosProfit[algo].Paying * 2)

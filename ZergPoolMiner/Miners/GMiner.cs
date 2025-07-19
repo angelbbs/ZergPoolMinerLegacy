@@ -78,31 +78,11 @@ namespace ZergPoolMiner.Miners
         }
         private string GetStartCommand(string url, string wallet, string password)
         {
-            string ZilMining = "";
             DeviceType devtype = DeviceType.NVIDIA;
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
             foreach (var mPair in sortedMinerPairs)
             {
                 devtype = mPair.Device.DeviceType;
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype))
-            {
-                ZilClient.needConnectionZIL = true;
-                ZilClient.StartZilMonitor();
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 1)
-            {
-                ZilMining = " --zilserver stratum+tcp://daggerhashimoto.auto.nicehash.com:9200 --ziluser " + ConfigManager.GeneralConfig.Wallet + " ";
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 2)
-            {
-                ZilMining = " --zilserver " + ConfigManager.GeneralConfig.ZIL_mining_pool + ":" +
-                    ConfigManager.GeneralConfig.ZIL_mining_port + " --ziluser " + ConfigManager.GeneralConfig.ZIL_mining_wallet + "." + wallet + " ";
             }
 
             string _wallet = "--user " + wallet;
@@ -316,7 +296,7 @@ namespace ZergPoolMiner.Miners
             if (_a is object && _a != null)
             {
                 pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + 
-                    " --port " + _a.port.ToString() + " " + proxy;
+                    ":" + _a.port.ToString() + " ";
             }
             else
             {
@@ -324,14 +304,36 @@ namespace ZergPoolMiner.Miners
                 algo = algo.Replace("_", "-");
                 _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
                 pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + 
-                    " --port " + _a.port.ToString() + " " + proxy;
+                    ":" + _a.port.ToString() + " ";
             }
+
+            string failover = "";
+            switch (MiningSetup.CurrentAlgorithmType)
+            {
+                case AlgorithmType.Ethash:
+                    failover = $" -s ethw.2miners.com:2020 --user bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
+                    break;
+                case AlgorithmType.KawPow:
+                    failover = $" -s rvn.2miners.com:6060 --user bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
+                    break;
+                case AlgorithmType.Equihash125:
+                    failover = $" -s flux.2miners.com:9090 --user t1e4GBC9UUZVaJSeML9HgrKbJUm61GQ3Y8q -p x ";
+                    break;
+                case AlgorithmType.Equihash144:
+                    failover = $" -s equihash125.eu.mine.zpool.ca:2125 --user LPeihdgf7JRQUNq5cwZbBQQgEmh1m7DSgH -p c=LTC ";
+                    break;
+                default:
+                    break;
+            }
+
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("equihash125", "equihash125_4");
             _algo = _algo.Replace("equihash144", "equihash144_5 --pers auto");
 
             return " " + "-a " + _algo +
-            $" -s {pool} --user {Globals.DemoUser} -p c=LTC" +
+               $" -s {pool} --user {Globals.DemoUser} -p c=LTC " +
+                failover +
+            proxy +
             $" --api {ApiPort} " + 
             GetDevicesCommandString().Trim();
 
@@ -512,15 +514,6 @@ namespace ZergPoolMiner.Miners
                         if (MiningSetup.CurrentAlgorithmType == AlgorithmType.Autolykos &&
                             MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.IronFish)
                         {
-                            if (Form_Main.isZilRound && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype))
-                            {
-                                mPair.Device.MiningHashrate = 0;
-                                mPair.Device.MiningHashrateSecond = 0;
-                                mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.SecondAlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.DaggerHashimoto;
-                            }
-                            else
                             {
                                 mPair.Device.MiningHashrateThird = 0;
                                 mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
@@ -531,15 +524,6 @@ namespace ZergPoolMiner.Miners
                         if (MiningSetup.CurrentAlgorithmType == AlgorithmType.Octopus &&
                             MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.IronFish)
                         {
-                            if (Form_Main.isZilRound && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype))
-                            {
-                                mPair.Device.MiningHashrate = 0;
-                                mPair.Device.MiningHashrateSecond = 0;
-                                mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.SecondAlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.DaggerHashimoto;
-                            }
-                            else
                             {
                                 mPair.Device.MiningHashrateThird = 0;
                                 mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
@@ -548,26 +532,14 @@ namespace ZergPoolMiner.Miners
                             }
                         }
                         */
-                        //
-
 
                         if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
                         {
-                            if (Form_Main.isZilRound && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype))
-                            {
-                                mPair.Device.MiningHashrate = 0;
-                                mPair.Device.AlgorithmID = (int)AlgorithmType.NONE;
-                                mPair.Device.SecondAlgorithmID = (int)AlgorithmType.Ethash;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
-                            else
-                            {
-                                mPair.Device.MiningHashrateSecond = 0;
-                                mPair.Device.MiningHashrateThird = 0;
-                                mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
-                                mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
-                                mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
-                            }
+                            mPair.Device.MiningHashrateSecond = 0;
+                            mPair.Device.MiningHashrateThird = 0;
+                            mPair.Device.AlgorithmID = (int)MiningSetup.CurrentAlgorithmType;
+                            mPair.Device.SecondAlgorithmID = (int)MiningSetup.CurrentSecondaryAlgorithmType;
+                            mPair.Device.ThirdAlgorithmID = (int)AlgorithmType.NONE;
                         }
                         dev++;
                     }
@@ -590,64 +562,24 @@ namespace ZergPoolMiner.Miners
                     ad.SecondaryAlgorithmID = MiningSetup.CurrentSecondaryAlgorithmType;
                 }
 
-                ad.ZilRound = false;
                 ad.Speed = total;
                 ad.SecondarySpeed = total2;
                 ad.ThirdSpeed = total3;
+                ad.ThirdSpeed = 0;
+                ad.ThirdAlgorithmID = AlgorithmType.NONE;
 
-                if (Form_Main.isZilRound && Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.GMiner, devtype))
+                if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
                 {
-                    if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
-                    {
-                        if (_algo.ToLower().Contains("zil") && total3 > 0)//dual+zil
-                        {
-                            ad.Speed = 0;
-                            ad.SecondarySpeed = 0;
-                            ad.ThirdSpeed = total3;
-                            ad.ZilRound = true;
-                            ad.AlgorithmID = AlgorithmType.NONE;
-                            ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                            ad.ThirdAlgorithmID = AlgorithmType.Ethash;
-                        }
-                    }
-                    else
-                    {
-                        if (_algo.ToLower().Contains("zil") && total2 > 0)//+zil
-                        {
-                            ad.Speed = 0;
-                            ad.SecondarySpeed = total2;
-                            ad.ThirdSpeed = 0;
-                            ad.ZilRound = true;
-                            ad.AlgorithmID = AlgorithmType.NONE;
-                            ad.SecondaryAlgorithmID = AlgorithmType.Ethash;
-                        }
-                    }
+                    ad.Speed = total;
+                    ad.SecondarySpeed = total2;
                 }
                 else
                 {
-                    ad.ZilRound = false;
-                    ad.ThirdSpeed = 0;
-                    ad.ThirdAlgorithmID = AlgorithmType.NONE;
-
-                    if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
-                    {
-                        //if (_algo.ToLower().Contains("zil"))//dual
-                        {
-                            ad.Speed = total;
-                            ad.SecondarySpeed = total2;
-                        }
-                    }
-                    else
-                    {
-                        //if (_algo.ToLower().Contains("zil"))
-                        {
-                            ad.Speed = total;
-                            ad.SecondarySpeed = 0;
-                            ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                        }
-                    }
+                    ad.Speed = total;
+                    ad.SecondarySpeed = 0;
+                    ad.SecondaryAlgorithmID = AlgorithmType.NONE;
                 }
-
+                
                 if (ad.Speed == 0 && ad.SecondarySpeed == 0 && ad.ThirdSpeed == 0)
                 {
                     CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
@@ -663,30 +595,8 @@ namespace ZergPoolMiner.Miners
                 }
 
             }
-            /*
-            Helpers.ConsolePrint("*******", "CurrentAlgorithmType: " + MiningSetup.CurrentAlgorithmType.ToString() +
-       " CurrentSecondaryAlgorithmType: " + MiningSetup.CurrentSecondaryAlgorithmType.ToString() +
-       " Form_Main.isZilRound: " + Form_Main.isZilRound.ToString());
-            */
             Thread.Sleep(100);
-            /*
-            //������� ��-�� ���� � Anti-hacking
-            if (fs.Length > offset)
-            {
-                int count = (int)(fs.Length - offset);
-                byte[] array = new byte[count];
-                fs.Read(array, 0, count);
-                offset = (int)fs.Length;
-                string textFromFile = System.Text.Encoding.Default.GetString(array).Trim();
-                //Helpers.ConsolePrint(MinerTag(), textFromFile);
-                if (textFromFile.Contains("Anti-hacking"))
-                {
-                    Helpers.ConsolePrint(MinerTag(), "GMiner Anti-hacking bug detected.");
-                    ad.Speed = 0;
-                    CurrentMinerReadStatus = MinerApiReadStatus.RESTART;
-                }
-            }
-            */
+            
             return ad;
         }
     }

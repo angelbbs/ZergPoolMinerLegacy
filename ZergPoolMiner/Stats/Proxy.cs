@@ -113,7 +113,18 @@ namespace ZergPoolMiner.Stats
             proxy.Valid = true;
             proxy.Speed = 2;
             HttpsProxyList.Add(proxy);
+            
+            /*
+            proxy.Ip = "192.168.1.110";
+            proxy.HTTPSPort = 13150;
+            proxy.Socks5Port = 13155;
+            proxy.Valid = true;
+            proxy.Speed = 1;
+            HttpsProxyList.Add(proxy);
+            */
 
+            Stats.CurrentProxyIP = HttpsProxyList[0].Ip;
+            Stats.CurrentProxySocks5SPort = HttpsProxyList[0].Socks5Port;
             HttpsProxyList = HttpsProxyList.OrderBy(s => s.Speed).ToList();
             /*
             foreach (var p in HttpsProxyList)

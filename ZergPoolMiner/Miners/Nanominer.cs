@@ -64,7 +64,7 @@ namespace ZergPoolMiner.Miners
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = "pool1 = " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.tls_port.ToString();
+                ret = "pool1 = " + Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.port.ToString();
             }
             catch (Exception ex)
             {
@@ -78,8 +78,6 @@ namespace ZergPoolMiner.Miners
         {
             IsInBenchmark = false;
             var param = "";
-            bool zilEnabled = false;
-            bool zilPoolEnabled = false;
             DeviceType devtype = DeviceType.NVIDIA;
             foreach (var pair in MiningSetup.MiningPairs)
             {
@@ -105,26 +103,6 @@ namespace ZergPoolMiner.Miners
                     param = ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.CPU).Trim();
                 }
             }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Nanominer, devtype))
-            {
-                ZilClient.needConnectionZIL = true;
-                ZilClient.StartZilMonitor();
-            }
-
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Nanominer, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 1)
-            {
-                zilEnabled = true;
-                zilPoolEnabled = false;
-            }
-            if (Form_additional_mining.isAlgoZIL(MiningSetup.AlgorithmName, MinerBaseType.Nanominer, devtype) &&
-                ConfigManager.GeneralConfig.ZIL_mining_state == 2)
-            {
-                zilEnabled = true;
-                zilPoolEnabled = true;
-            }
-
 
             try
             {
@@ -161,7 +139,55 @@ namespace ZergPoolMiner.Miners
                    + String.Format("watchdog = false\n")
                    + GetServer("verushash");
             }
-            
+            if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.KawPow))
+            {
+                try
+                {
+                    if (File.Exists("miners\\Nanominer\\" + GetLogFileName()))
+                        File.Delete("miners\\Nanominer\\" + GetLogFileName());
+                }
+                catch (Exception ex)
+                {
+                    Helpers.ConsolePrint("GetStartCommand", ex.ToString());
+                }
+                cfgFile =
+                   String.Format("webPort = {0}", ApiPort) + "\n"
+                   + String.Format("mport = 0\n")
+                   + String.Format("logPath=" + GetLogFileName() + "\n")
+                   + String.Format(param) + "\n"
+                   + String.Format("coin = RVN\n")
+                   + String.Format("devices = {0}", GetDevicesCommandString()) + "\n"
+                   + String.Format("wallet = {0}", wallet.Trim()) + "\n"
+                   + String.Format("rigPassword= {0}", password.Trim()) + "\n"
+                   + String.Format("protocol = stratum\n")
+                   + String.Format("watchdog = false\n")
+                   + GetServer("kawpow");
+            }
+            if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.Ethash))
+            {
+                try
+                {
+                    if (File.Exists("miners\\Nanominer\\" + GetLogFileName()))
+                        File.Delete("miners\\Nanominer\\" + GetLogFileName());
+                }
+                catch (Exception ex)
+                {
+                    Helpers.ConsolePrint("GetStartCommand", ex.ToString());
+                }
+                cfgFile =
+                   String.Format("webPort = {0}", ApiPort) + "\n"
+                   + String.Format("mport = 0\n")
+                   + String.Format("logPath=" + GetLogFileName() + "\n")
+                   + String.Format(param) + "\n"
+                   + String.Format("coin = ETHW\n")
+                   + String.Format("devices = {0}", GetDevicesCommandString()) + "\n"
+                   + String.Format("wallet = {0}", wallet.Trim()) + "\n"
+                   + String.Format("rigPassword= {0}", password.Trim()) + "\n"
+                   + String.Format("protocol = stratum\n")
+                   + String.Format("watchdog = false\n")
+                   + GetServer("ethash");
+            }
+
             try
             {
                 FileStream fs = new FileStream("miners\\Nanominer\\config_zp_" + platform + ".ini", FileMode.Create, FileAccess.Write);
@@ -400,6 +426,32 @@ namespace ZergPoolMiner.Miners
                     w.Close();
                 _benchmarkTimeWait = time;
             }
+                if (algorithm.ZergPoolID == AlgorithmType.Ethash)
+                {
+                    var cfgFile =
+                       String.Format("webPort = {0}", ApiPort) + "\n"
+                       + String.Format("mport = 0\n")
+                       + String.Format("protocol = stratum\n")
+                       + String.Format("watchdog = false\n")
+                       + ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.AMD).TrimStart(' ') + (char)10
+                       + ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.NVIDIA).TrimStart(' ') + (char)10
+                       + ExtraLaunchParametersParser.ParseForMiningSetup(MiningSetup, DeviceType.INTEL).TrimStart(' ') + (char)10
+                       + String.Format("[ethash]\n")
+                       + String.Format("devices = {0}", GetDevicesCommandString().Trim(' ')) + "\n"
+                       + string.Format("wallet = {0}", Globals.DemoUser) + "\n"
+                       + string.Format("rigPassword= {0}", "c=LTC" +
+                       ",ID=" + Miner.GetFullWorkerName()) + "\n"
+                       + string.Format("protocol = stratum\n")
+                       + string.Format("watchdog = false\n")
+                       + GetServer("ethash");
+
+                    FileStream fs = new FileStream("miners\\Nanominer\\bench_zp_" + platform + GetDevicesCommandString().Trim(' ') + ".ini", FileMode.Create, FileAccess.Write);
+                    StreamWriter w = new StreamWriter(fs);
+                    w.WriteAsync(cfgFile);
+                    w.Flush();
+                    w.Close();
+                    _benchmarkTimeWait = time;
+                }
             }
             catch (Exception ex)
             {
@@ -586,6 +638,34 @@ namespace ZergPoolMiner.Miners
                     var cSpeed1 = (json.Algorithms[0].Kawpow);
                     if (cSpeed1 == null) return ad;
                     var cSpeed = (json.Algorithms[0].Kawpow.Total.Hashrate);
+                    dSpeed1 = (int)Convert.ToDouble(cSpeed, CultureInfo.InvariantCulture.NumberFormat);
+                    string token = "";
+                    foreach (var mPair in sortedMinerPairs)
+                    {
+                        string gpu = "";
+                        if (platform.Contains("intel"))
+                        {
+                            gpu = mPair.Device.ID.ToString();
+                        }
+                        else
+                        {
+                            gpu = mPair.Device.lolMinerBusID.ToString();
+                        }
+
+                        sortedMinerPairs[i].Device.MiningHashrate = dSpeed1;
+                        //_power = sortedMinerPairs[i].Device.PowerUsage;
+                        _power = mPair.Device.PowerUsage;
+                        i++;
+                    }
+                }
+
+                if (MiningSetup.CurrentAlgorithmType.Equals(AlgorithmType.Ethash) && MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.NONE))
+                {
+                    dynamic json = JsonConvert.DeserializeObject(ResponseFromNanominer.Replace("GPU ", "GPU"));
+                    if (json == null) return ad;
+                    var cSpeed1 = (json.Algorithms[0].Ethash);
+                    if (cSpeed1 == null) return ad;
+                    var cSpeed = (json.Algorithms[0].Ethash.Total.Hashrate);
                     dSpeed1 = (int)Convert.ToDouble(cSpeed, CultureInfo.InvariantCulture.NumberFormat);
                     string token = "";
                     foreach (var mPair in sortedMinerPairs)

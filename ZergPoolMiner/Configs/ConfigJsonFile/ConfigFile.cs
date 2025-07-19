@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ZergPoolMiner.Configs.ConfigJsonFile
 {
@@ -135,7 +136,6 @@ namespace ZergPoolMiner.Configs.ConfigJsonFile
                     tempFile.Flush();
                     tempFile.Close();
                 });
-
             }
             catch (Exception ex)
             {
@@ -151,7 +151,8 @@ namespace ZergPoolMiner.Configs.ConfigJsonFile
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("WriteAllTextWithBackup", ex.ToString());
+                Helpers.ConsolePrint("WriteAllTextWithBackup", "tempPath: " + tempPath +
+                    " path: " + path + " - " + ex.ToString());
             }
             writeFinished = true;
             return;

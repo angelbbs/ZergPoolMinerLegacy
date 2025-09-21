@@ -9,9 +9,8 @@
 
 */
 
-using ZergPoolMiner;
+using NvidiaGPUGetDataHost;
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 // ReSharper disable All
 #pragma warning disable
@@ -104,9 +103,9 @@ namespace NVIDIA.NVAPI
 
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
-    public struct NvPhysicalGpuHandle
+    internal struct NvPhysicalGpuHandle
     {
-        public IntPtr ptr;
+        private readonly IntPtr ptr;
     }
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     internal struct NvPState
@@ -260,7 +259,7 @@ namespace NVIDIA.NVAPI
             }
             catch (Exception e)
             {
-                Helpers.ConsolePrint("NVAPI", e.ToString());
+                Logger.ConsolePrint("NVAPI", e.ToString());
                 return;
             }
 

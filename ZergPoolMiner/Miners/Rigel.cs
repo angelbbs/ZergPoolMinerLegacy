@@ -89,7 +89,7 @@ namespace ZergPoolMiner.Miners
                 _algo = _algo.Replace("equihash144", "equihash144_5 --pers auto");
 
                 return " -a " + _algo +
-                " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
+                " " + $"--api-bind 127.0.0.1:{ApiPort} " + " --no-strict-ssl " +
                         "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                         proxy + " " +
                         _wallet + " " + _password +
@@ -99,13 +99,20 @@ namespace ZergPoolMiner.Miners
             else //dual
             {
                 string _wallet = "-u [1]" + wallet + " -u [2]" + wallet;
-                string _password = "-p [1]" + password + " " +
-                    " -p [2]" + password + " ";
+                string coin1 = password.Split(',')[2].Replace("mc=", "").Split('+')[0];
+                string coin2 = password.Split(',')[2].Replace("mc=", "").Split('+')[1];
+
+                string password1 = password.Replace("mc=" + coin1 + "+" + coin2, "mc=" + coin1);
+                string password2 = password.Replace("mc=" + coin1 + "+" + coin2, "mc=" + coin2);
+
+                string _password = "-p [1]" + password1.Trim().Replace("+", "/") + " " +
+                    " -p [2]" + password2.Trim().Replace("+", "/") + " ";
+
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
                 var _algo2 = MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower();
 
                 return " -a " + _algo + "+" + _algo2 +
-                " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
+                " " + $"--api-bind 127.0.0.1:{ApiPort} " + " --no-strict-ssl " +
                         GetServerDual(MiningSetup.CurrentAlgorithmType.ToString().ToLower(),
                         MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
                         proxy + " " +
@@ -121,8 +128,8 @@ namespace ZergPoolMiner.Miners
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
-                var _a2 = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo2.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
+                var _a2 = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo2.ToLower());
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
                 ret = "-o [1]" + Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " " +
@@ -249,7 +256,7 @@ namespace ZergPoolMiner.Miners
                     KillProcessAndChildren(pid);
                     BenchmarkHandle.Kill();
                     BenchmarkHandle.Close();
-                    if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
+                    //if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
                 }
                 catch { }
                 finally
@@ -308,6 +315,9 @@ namespace ZergPoolMiner.Miners
                 case AlgorithmType.KarlsenHashV2:
                     failover = $"-o stratum+tcp://kls.2miners.com:2020 -u bc1qun08kg08wwdsszrymg8z4la5d6ygckg9nxh4pq -p x ";
                     break;
+                case AlgorithmType.SHA512256d:
+                    failover = $"-o stratum+tcp://sha512256d.eu.mine.zpool.ca:3342 -u LPeihdgf7JRQUNq5cwZbBQQgEmh1m7DSgH -p c=LTC ";
+                    break;
                 default:
                     break;
             }
@@ -318,7 +328,7 @@ namespace ZergPoolMiner.Miners
                 string password = " -p c=LTC ";
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
 
-                ret = " --no-colour -a " + _algo +
+                ret = " --no-strict-ssl --no-colour -a " + _algo +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         "-o stratum+ssl://" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                         wallet + " " + password + " " +
@@ -333,7 +343,7 @@ namespace ZergPoolMiner.Miners
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
                 var _algo2 = MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower();
 
-                return " --no-colour -a " + _algo + "+" + _algo2 +
+                return " --no-strict-ssl --no-colour -a " + _algo + "+" + _algo2 +
                 " " + $"--api-bind 127.0.0.1:{ApiPort} " + " " +
                         GetServerDual(MiningSetup.CurrentAlgorithmType.ToString().ToLower(),
                         MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
@@ -396,25 +406,13 @@ namespace ZergPoolMiner.Miners
                 Reader.Close();
                 Response.Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _apiErrors++;
-                Helpers.ConsolePrint("GetSummaryAsync", "Rigel-API ERRORs count: " + _apiErrors.ToString());
-                if (_apiErrors > 60)
-                {
-                    CurrentMinerReadStatus = MinerApiReadStatus.RESTART;
-                    Helpers.ConsolePrint("GetSummaryAsync", "Need RESTART Rigel");
-                    ad.Speed = 0;
-                    ad.SecondarySpeed = 0;
-                    ad.ThirdSpeed = 0;
-                    return ad;
-                }
+                Helpers.ConsolePrint("rigel API Exception", ex.Message);
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
                 ad.Speed = 0;
                 ad.SecondarySpeed = 0;
                 ad.ThirdSpeed = 0;
-                ad.AlgorithmID = MiningSetup.CurrentAlgorithmType;
-                ad.SecondaryAlgorithmID = MiningSetup.CurrentSecondaryAlgorithmType;
                 return ad;
             }
             //return null;

@@ -30,7 +30,6 @@ namespace ZergPoolMiner.Switching
 
         public static int _ticksForStable;
         private static int _ticksForUnstable;
-        private static double _smaCheckTime = 180;
         public static bool SmaCheckTimerOnElapsedRun = false;
         // Simplify accessing config objects
         public static Interval StableRange => ConfigManager.GeneralConfig.SwitchSmaTicksStable;
@@ -142,7 +141,16 @@ namespace ZergPoolMiner.Switching
                 Helpers.ConsolePrint("AlgorithmSwitchingManager", "Start");
                 //_smaCheckTimer = new System.Timers.Timer(1000);
                 _smaCheckTimer = new System.Timers.Timer();
-                _smaCheckTimer.Interval = 120 * 1000;//не менять. используется для подсчета продолжительности майнинга монеты
+                _smaCheckTimer.Interval = 60 * 1000;
+                /*
+                if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                {
+                    _smaCheckTimer.Interval = 300 * 1000;
+                } else
+                {
+                    _smaCheckTimer.Interval = 60 * 1000;
+                }
+                */
                 _smaCheckTimer.Elapsed += SmaCheckTimerOnElapsed;
                 _smaCheckTimer.Start();
             }
@@ -203,7 +211,7 @@ namespace ZergPoolMiner.Switching
             }
             if (_hasStarted)
             {
-                Helpers.ConsolePrint(Tag, sb.ToString());
+                //Helpers.ConsolePrint(Tag, sb.ToString());
             }
             else
             {
@@ -262,6 +270,14 @@ namespace ZergPoolMiner.Switching
                 */
                 foreach (var algo in history.Keys)
                 {
+                    var _c = Stats.Stats.CoinList.Find(a => a.algo.ToLower() == algo.ToString().ToLower());
+                    if (_c is object && _c != null)
+                    {
+
+                    } else
+                    {
+                        continue;
+                    }
                     AlgosProfitData.TryGetPaying(algo, out var paying);
                     ticks = GetTicks(algo);
                     
@@ -336,12 +352,13 @@ namespace ZergPoolMiner.Switching
                         {
                             foreach (var c in Stats.Stats.coinsMining)
                             {
-                                //Helpers.ConsolePrint("coin: " + coin + " coinsMining", c.symbol);
+                                //Helpers.ConsolePrint("coin: " + coin, "coinsMining: " + c.symbol);
                             }
                             if (Stats.Stats.coinsMining.Exists(a => a.symbol == coin))
                             {
                                 if (Stats.Stats.coinsBlocked.ContainsKey(coin))
                                 {
+                                    //Helpers.ConsolePrint("coin: " + coin, "Майнится. Удаляем из списка");
                                     //Майнится. Удаляем из списка
                                     bool result = Stats.Stats.coinsBlocked.TryRemove(coin, out var removedItem);
                                 }
@@ -356,6 +373,7 @@ namespace ZergPoolMiner.Switching
                                     }
                                     else
                                     {
+                                        //Helpers.ConsolePrint("coin: " + coin, "НЕ добавлено. НЕ майнится. Добавляем");
                                         //НЕ добавлено. НЕ майнится. Добавляем
                                         _cb.coin = coin;
                                         _cb.checkTime = 0;
@@ -374,8 +392,10 @@ namespace ZergPoolMiner.Switching
                     int ct = _cb.Value.checkTime;
                     ct++;
                     _cb.Value.checkTime = ct;
+                    //Helpers.ConsolePrint("UpdateProfits", _cb.Value.coin + " blocked count: " + ct.ToString());
+                    //Helpers.ConsolePrint("coin: " + _cb.Value.coin, "Добавлено. Обновляем " + ct.ToString());
                     Stats.Stats.coinsBlocked.AddOrUpdate(_cb.Value.coin, _cb.Value, (k, v) => _cb.Value);
-                    if (ct >= 60)//1 hour
+                    if (ct >= 180)//3 hour
                     {
                         toRemove = _cb.Value.coin;
                     }
@@ -455,6 +475,12 @@ namespace ZergPoolMiner.Switching
                 {
                     _ticksForStable = 60;
                     _ticksForUnstable = 60;
+                }
+                if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                {
+                    var interval = _smaCheckTimer.Interval / 1000;
+                    _ticksForStable = 15;//10 min
+                    _ticksForUnstable = 30;//30 min
                 }
             }
         }

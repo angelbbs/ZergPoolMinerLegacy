@@ -25,6 +25,7 @@ namespace ZergPoolMiner.Miners.Grouping
         public double PowerRate { get; set; }
         public string Key { get; }
         public List<int> DevIndexes { get; }
+        public List<int> DevBusIdIndexes { get; }
 
         public double TotalPower { get; }
 
@@ -51,11 +52,13 @@ namespace ZergPoolMiner.Miners.Grouping
                     var deviceNames = new List<string>();
                     int MaxDevices = 0;
                     DevIndexes = new List<int>();
+                    DevBusIdIndexes = new List<int>();
                     foreach (var pair in miningPairs.OrderBy(pair => pair.Device.IDByBus))
                     {
                         deviceType = pair.Device.DeviceType;
                         deviceNames.Add(pair.Device.NameCount);
                         DevIndexes.Add(pair.Device.Index);
+                        DevBusIdIndexes.Add(pair.Device.BusID);
                         MaxDevices = Math.Max(MaxDevices, deviceNames.Count);
                         //TotalPower += pair.Device.PowerUsage;
                         TotalPower += pair.Algorithm.PowerUsage;

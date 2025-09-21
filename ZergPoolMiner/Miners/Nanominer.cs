@@ -60,7 +60,7 @@ namespace ZergPoolMiner.Miners
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
@@ -506,7 +506,7 @@ namespace ZergPoolMiner.Miners
                     KillProcessAndChildren(pid);
                     BenchmarkHandle.Kill();
                     BenchmarkHandle.Close();
-                    if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
+                    //if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
                 }
                 catch { }
                 finally
@@ -572,10 +572,13 @@ namespace ZergPoolMiner.Miners
             }
             catch (Exception ex)
             {
-                hashrateErrorCount++;
+                //hashrateErrorCount++;
+                Helpers.ConsolePrint("NanoMiner API Exception", ex.Message);
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
-                Helpers.ConsolePrint("API", ex.Message);
-                return null;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             ad = new ApiData(MiningSetup.CurrentAlgorithmType, MiningSetup.CurrentSecondaryAlgorithmType, MiningSetup.MiningPairs[0]);

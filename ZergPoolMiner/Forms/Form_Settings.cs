@@ -170,6 +170,7 @@ namespace ZergPoolMiner.Forms
         private void InitializeToolTip()
         {
             // Setup Tooltips
+            //toolTip1.AutoPopDelay = 5000;
             toolTip1.SetToolTip(comboBox_Language, International.GetText("Form_Settings_ToolTip_Language"));
             toolTip1.SetToolTip(label_Language, International.GetText("Form_Settings_ToolTip_Language"));
 
@@ -255,6 +256,9 @@ namespace ZergPoolMiner.Forms
             toolTip1.SetToolTip(buttonProfileAdd, International.GetText("Form_Settings_ToolTip_ProfileAdd"));
             toolTip1.SetToolTip(buttonProfileDel, International.GetText("Form_Settings_ToolTip_ProfileDel"));
 
+            toolTip1.SetToolTip(checkBox_suspendMining,
+                string.Format(International.GetText("FormSettings_ToolTip_checkSuspendMining"), ConfigManager.GeneralConfig.GPUoverheatSuspendTime));
+
             Text = International.GetText("Form_Settings_Title");
 
             AlgorithmSettingsControl();
@@ -298,6 +302,7 @@ namespace ZergPoolMiner.Forms
             checkBox_RunAtStartup.Text = International.GetText("Form_Settings_General_RunAtStartup");
             checkBox_MinimizeMiningWindows.Text = International.GetText("Form_Settings_General_MinimizeMiningWindows");
             checkBoxShowMinersVersions.Text = International.GetText("Form_Settings_General_ShowMinersVersions");
+            checkBoxShowEffort.Text = International.GetText("Form_Settings_General_ShowAverageEffor");
 
             checkBoxCheckingCUDA.Text = International.GetText("Form_Settings_checkBox_CheckingCUDA");
             checkBoxRestartDriver.Text = International.GetText("Form_Settings_checkBox_RestartDriver");
@@ -463,6 +468,10 @@ namespace ZergPoolMiner.Forms
             checkBox24hEstimate.Text = International.GetText("FormSettings_checkBox24hEstimate");
             checkBox24hActual.Text = International.GetText("FormSettings_checkBox24hActual");
             checkBoxAdaptive.Text = International.GetText("FormSettings_checkBoxAdaptive");
+
+            checkBox_suspendMining.Text = International.GetText("FormSettings_checkSuspendMining");
+            label_GPUcore.Text = International.GetText("FormSettings_labelGPUcore");
+            label_GPUmem.Text = International.GetText("FormSettings_labelGPUmem");
 
             checkBox_Force_mining_if_nonprofitable.Text = International.GetText("Form_Settings_checkBox_Force_mining_if_nonprofitable");
             checkBox_Show_profit_with_power_consumption.Text = International.GetText("Form_Settings_checkBox_Show_profit_with_power_consumption");
@@ -796,6 +805,14 @@ namespace ZergPoolMiner.Forms
                 textBox_SwitchProfitabilityThreshold.ForeColor = Form_Main._foreColor;
                 textBox_SwitchProfitabilityThreshold.BorderStyle = BorderStyle.FixedSingle;
 
+                textBox_GPUcore.BackColor = Form_Main._backColor;
+                textBox_GPUcore.ForeColor = Form_Main._foreColor;
+                textBox_GPUcore.BorderStyle = BorderStyle.FixedSingle;
+
+                textBox_GPUmem.BackColor = Form_Main._backColor;
+                textBox_GPUmem.ForeColor = Form_Main._foreColor;
+                textBox_GPUmem.BorderStyle = BorderStyle.FixedSingle;
+
                 comboBox_TimeUnit.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
                 comboBoxZones.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
                 currencyConverterCombobox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
@@ -865,6 +882,7 @@ namespace ZergPoolMiner.Forms
                 checkBox_AllowMultipleInstances.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBox_MinimizeMiningWindows.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBoxShowMinersVersions.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
+                checkBoxShowEffort.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBoxCheckingCUDA.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBoxRestartDriver.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBoxDriverWarning.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
@@ -907,6 +925,7 @@ namespace ZergPoolMiner.Forms
                 checkBox_ABDefault_program_closing.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBox_ABMinimize.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 checkBoxEnableProxy.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
+                checkBox_suspendMining.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 //checkBoxProxyAsFailover.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
                 //checkBoxStale.CheckedChanged += GeneralCheckBoxes_CheckedChanged;
             }
@@ -921,6 +940,8 @@ namespace ZergPoolMiner.Forms
                 textBox_mb.Leave += GeneralTextBoxes_Leave;
                 textBoxAddAMD.Leave += GeneralTextBoxes_Leave;
                 textBox_SwitchProfitabilityThreshold.Leave += GeneralTextBoxes_Leave;
+                textBox_GPUcore.Leave += GeneralTextBoxes_Leave;
+                textBox_GPUmem.Leave += GeneralTextBoxes_Leave;
 
                 textBoxScheduleFrom1.Leave += GeneralTextBoxes_Leave;
                 textBoxScheduleTo1.Leave += GeneralTextBoxes_Leave;
@@ -1009,6 +1030,7 @@ namespace ZergPoolMiner.Forms
                 checkBox_AllowMultipleInstances.Checked = ConfigManager.GeneralConfig.AllowMultipleInstances;
                 checkBox_RunAtStartup.Checked = IsInStartupRegistry();
                 checkBoxShowMinersVersions.Checked = ConfigManager.GeneralConfig.ShowMinersVersions;
+                checkBoxShowEffort.Checked = ConfigManager.GeneralConfig.ShowEffort;
                 checkBox_MinimizeMiningWindows.Checked = ConfigManager.GeneralConfig.MinimizeMiningWindows;
                 checkBox_MinimizeMiningWindows.Enabled = !ConfigManager.GeneralConfig.HideMiningWindows;
                 checkBoxCheckingCUDA.Checked = ConfigManager.GeneralConfig.CheckingCUDA;
@@ -1061,9 +1083,23 @@ namespace ZergPoolMiner.Forms
                 checkBox24hEstimate.Checked = ConfigManager.GeneralConfig._24hEstimate;
                 checkBox24hActual.Checked = ConfigManager.GeneralConfig._24hActual;
                 checkBoxAdaptive.Checked = ConfigManager.GeneralConfig.AdaptiveAlgo;
+                checkBox_suspendMining.Checked = ConfigManager.GeneralConfig.suspendMiningOverheat;
+
+                label_SwitchProfitabilityThreshold.Enabled = !checkBoxAdaptive.Checked;
+                label_switching_algorithms.Enabled = !checkBoxAdaptive.Checked;
+                textBox_SwitchProfitabilityThreshold.Enabled = !checkBoxAdaptive.Checked;
+                comboBox_switching_algorithms.Enabled = !checkBoxAdaptive.Checked;
                 checkBoxCurrentEstimate.Enabled = !checkBoxAdaptive.Checked;
                 checkBox24hEstimate.Enabled = !checkBoxAdaptive.Checked;
                 checkBox24hActual.Enabled = !checkBoxAdaptive.Checked;
+                checkBoxShortTerm.Enabled = !checkBoxAdaptive.Checked;
+
+                label4.Enabled = checkBox_suspendMining.Checked;
+                label5.Enabled = checkBox_suspendMining.Checked;
+                label_GPUcore.Enabled = checkBox_suspendMining.Checked;
+                label_GPUmem.Enabled = checkBox_suspendMining.Checked;
+                textBox_GPUcore.Enabled = checkBox_suspendMining.Checked;
+                textBox_GPUmem.Enabled = checkBox_suspendMining.Checked;
 
                 ConfigManager.GeneralConfig.ProxyAsFailover = false; //отключим до лучших времён
                 ConfigManager.GeneralConfig.StaleProxy = false;
@@ -1088,6 +1124,17 @@ namespace ZergPoolMiner.Forms
                 else
                 {
                     textBoxAPIport.Enabled = false;
+                }
+
+                if (!checkBox_suspendMining.Checked)
+                {
+                    textBox_GPUcore.Enabled = false;
+                    textBox_GPUmem.Enabled = false;
+                }
+                else
+                {
+                    textBox_GPUcore.Enabled = true;
+                    textBox_GPUmem.Enabled = true;
                 }
             }
 
@@ -1119,6 +1166,8 @@ namespace ZergPoolMiner.Forms
                 textBox_psu.Text = ConfigManager.GeneralConfig.PowerPSU.ToString();
                 textBox_mb.Text = ConfigManager.GeneralConfig.PowerMB.ToString();
                 textBoxAddAMD.Text = ConfigManager.GeneralConfig.PowerAddAMD.ToString();
+                textBox_GPUcore.Text = ConfigManager.GeneralConfig.GPUcoreTempTreshold.ToString();
+                textBox_GPUmem.Text = ConfigManager.GeneralConfig.GPUmemTempTreshold.ToString();
 
                 SetZoneTable(ConfigManager.GeneralConfig.PowerTarif);
             }
@@ -1519,6 +1568,7 @@ namespace ZergPoolMiner.Forms
             ConfigManager.GeneralConfig.AllowMultipleInstances = checkBox_AllowMultipleInstances.Checked;
             ConfigManager.GeneralConfig.MinimizeMiningWindows = checkBox_MinimizeMiningWindows.Checked;
             ConfigManager.GeneralConfig.ShowMinersVersions = checkBoxShowMinersVersions.Checked;
+            ConfigManager.GeneralConfig.ShowEffort = checkBoxShowEffort.Checked;
             ConfigManager.GeneralConfig.RestartDriverOnCUDA_GPU_Lost = checkBoxRestartDriver.Checked;
             ConfigManager.GeneralConfig.CheckingCUDA = checkBoxCheckingCUDA.Checked;
             ConfigManager.GeneralConfig.ShowDriverVersionWarning = checkBoxDriverWarning.Checked;
@@ -1565,14 +1615,8 @@ namespace ZergPoolMiner.Forms
             ConfigManager.GeneralConfig.Disable_extra_launch_parameter_checking = checkBox_Disable_extra_launch_parameter_checking.Checked;
             ConfigManager.GeneralConfig.Hide_unused_algorithms = checkBoxHideUnused.Checked;
             ConfigManager.GeneralConfig.Hide_unused_algorithms = checkBoxHideUnused2.Checked;
-            //ConfigManager.GeneralConfig.Zilliqua_GMiner = checkBox_Zil_GMiner.Checked;
-            /*
-            Zil_GMiner = checkBox_Zil_GMiner.Checked;
-            if (!checkBox_Zil_GMiner.Checked)
-            {
-                //ConfigManager.GeneralConfig.ZilFactor = 0.000d;
-            }
-            */
+
+            ConfigManager.GeneralConfig.suspendMiningOverheat = checkBox_suspendMining.Checked;
             ConfigManager.GeneralConfig.ABEnableOverclock = checkBox_ABEnableOverclock.Checked;
             ConfigManager.GeneralConfig.ABMaintaiming = checkBox_AB_maintaining.Checked;
             ConfigManager.GeneralConfig.ABDefaultMiningStopped = checkBox_ABDefault_mining_stopped.Checked;
@@ -1625,6 +1669,9 @@ namespace ZergPoolMiner.Forms
             ConfigManager.GeneralConfig.SwitchProfitabilityThreshold =
                 Helpers.ParseDouble(textBox_SwitchProfitabilityThreshold.Text) / 100;
 
+            ConfigManager.GeneralConfig.GPUcoreTempTreshold = Helpers.ParseInt(textBox_GPUcore.Text);
+            ConfigManager.GeneralConfig.GPUmemTempTreshold = Helpers.ParseInt(textBox_GPUmem.Text);
+
             ConfigManager.GeneralConfig.PowerMB = Helpers.ParseInt(textBox_mb.Text);
             ConfigManager.GeneralConfig.PowerAddAMD = Helpers.ParseInt(textBoxAddAMD.Text);
             ConfigManager.GeneralConfig.PowerPSU = Helpers.ParseInt(textBox_psu.Text);
@@ -1647,6 +1694,8 @@ namespace ZergPoolMiner.Forms
             textBox_psu.Text = ConfigManager.GeneralConfig.PowerPSU.ToString("");
             textBox_mb.Text = ConfigManager.GeneralConfig.PowerMB.ToString("");
             textBoxAddAMD.Text = ConfigManager.GeneralConfig.PowerAddAMD.ToString("");
+            textBox_GPUcore.Text = ConfigManager.GeneralConfig.GPUcoreTempTreshold.ToString();
+            textBox_GPUmem.Text = ConfigManager.GeneralConfig.GPUmemTempTreshold.ToString();
         }
 
         private void GeneralComboBoxes_Leave(object sender, EventArgs e)
@@ -3766,7 +3815,7 @@ namespace ZergPoolMiner.Forms
                 checkBoxCurrentEstimate.Checked = true;
             }
             ConfigManager.GeneralConfig.CurrentEstimate = checkBoxCurrentEstimate.Checked;
-            Stats.Stats.LoadAlgoritmsListAsync(true);
+            Stats.Stats.LoadCoinListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3778,7 +3827,7 @@ namespace ZergPoolMiner.Forms
                 checkBox24hEstimate.Checked = true;
             }
             ConfigManager.GeneralConfig._24hEstimate = checkBox24hEstimate.Checked;
-            Stats.Stats.LoadAlgoritmsListAsync(true);
+            Stats.Stats.LoadCoinListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3790,7 +3839,7 @@ namespace ZergPoolMiner.Forms
                 checkBox24hActual.Checked = true;
             }
             ConfigManager.GeneralConfig._24hActual = checkBox24hActual.Checked;
-            Stats.Stats.LoadAlgoritmsListAsync(true);
+            Stats.Stats.LoadCoinListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
@@ -3836,17 +3885,24 @@ namespace ZergPoolMiner.Forms
         {
             if (!_isInitFinished) return;
 
+            label_SwitchProfitabilityThreshold.Enabled = !checkBoxAdaptive.Checked;
+            label_switching_algorithms.Enabled = !checkBoxAdaptive.Checked;
+            textBox_SwitchProfitabilityThreshold.Enabled = !checkBoxAdaptive.Checked;
+            comboBox_switching_algorithms.Enabled = !checkBoxAdaptive.Checked;
             checkBoxCurrentEstimate.Enabled = !checkBoxAdaptive.Checked;
             checkBox24hEstimate.Enabled = !checkBoxAdaptive.Checked;
             checkBox24hActual.Enabled = !checkBoxAdaptive.Checked;
+            checkBoxShortTerm.Enabled = !checkBoxAdaptive.Checked;
 
             ConfigManager.GeneralConfig.AdaptiveAlgo = checkBoxAdaptive.Checked;
-            Stats.Stats.LoadAlgoritmsListAsync(true);
+            
+            Stats.Stats.LoadCoinListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
         }
 
         private void checkBoxAutoupdate_CheckedChanged(object sender, EventArgs e)
         {
+            /*
             if (!ConfigManager.GeneralConfig.AutoStartMining && checkBoxAutoupdate.Checked)
             {
                 MessageBox.Show(International.GetText("Form_Settings_checkBoxAutoupdate2"),
@@ -3855,6 +3911,7 @@ namespace ZergPoolMiner.Forms
                 checkBoxAutoupdate.Checked = false;
                 ConfigManager.GeneralConfig.ProgramAutoUpdate = false;
             }
+            */
         }
 
         private void checkBoxEnableProxy_CheckedChanged(object sender, EventArgs e)
@@ -3863,7 +3920,7 @@ namespace ZergPoolMiner.Forms
             if (checkBoxEnableProxy.Checked)
             {
                 Stats.Stats.GetWalletBalance(null, null);
-                if (!Stats.Socks5Relay.started)
+                if (!Socks5Relay.Listener.Server.IsBound)
                 {
                     Socks5Relay.Socks5RelayStart();
                 }
@@ -3875,6 +3932,45 @@ namespace ZergPoolMiner.Forms
             if (ConfigManager.GeneralConfig.ColorProfileIndex != 14) return;
             GroupBox box = sender as GroupBox;
             Form_Main.DrawGroupBox(box, e.Graphics, Form_Main._foreColor, Form_Main._grey);
+        }
+
+        private void textBox_GPUcore_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void textBox_GPUmem_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void textBox_SwitchProfitabilityThreshold_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != '.')
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void checkBox_suspendMining_CheckedChanged(object sender, EventArgs e)
+        {
+            label4.Enabled = checkBox_suspendMining.Checked;
+            label5.Enabled = checkBox_suspendMining.Checked;
+            label_GPUcore.Enabled = checkBox_suspendMining.Checked;
+            label_GPUmem.Enabled = checkBox_suspendMining.Checked;
+            textBox_GPUcore.Enabled = checkBox_suspendMining.Checked;
+            textBox_GPUmem.Enabled = checkBox_suspendMining.Checked;
+        }
+
+        private void checkBoxShowEffort_CheckedChanged(object sender, EventArgs e)
+        {
+            //ConfigManager.GeneralConfig.ShowEffort = checkBoxShowEffort.Checked;
         }
     }
 }

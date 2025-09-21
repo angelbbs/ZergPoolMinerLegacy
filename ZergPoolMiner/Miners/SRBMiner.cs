@@ -36,6 +36,7 @@ namespace ZergPoolMiner.Miners
 
         public override void Start(string wallet, string password)
         {
+            new Task(() => Form_Main.DelWinDivert()).Start();
             LastCommandLine = GetStartCommand(wallet, password);
             ProcessHandle = _Start();
         }
@@ -45,7 +46,7 @@ namespace ZergPoolMiner.Miners
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
@@ -129,6 +130,7 @@ namespace ZergPoolMiner.Miners
                 string _password = " --password " + password;
                 var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
                 _algo = _algo.Replace("sha512256d", "sha512_256d_radiant");
+                _algo = _algo.Replace("argon2d16000", "argon2d_16000");
 
                 if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
                 {
@@ -152,6 +154,7 @@ namespace ZergPoolMiner.Miners
                         _wallet + " " + _password.Replace("mc=" + pass1 + "+" + pass2, "mc=" + pass1) + " " +
                         " --algorithm " + _algo2 + " " +
                         GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()) + " " +
+                        proxy + " " +
                         _wallet + " " + _password.Replace("mc=" + pass1 + "+" + pass2, "mc=" + pass2) + " " +
                         " " + disablePlatform + $"--api-enable --api-port {ApiPort} {extras} " +
                         " --gpu-id " +
@@ -182,6 +185,7 @@ namespace ZergPoolMiner.Miners
 
         private string GetStartBenchmarkCommand(string btcAddress, string worker)
         {
+            new Task(() => Form_Main.DelWinDivert()).Start();
             string disablePlatform = "--disable-gpu-nvidia ";
             DeviceType devtype = DeviceType.NVIDIA;
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
@@ -221,11 +225,12 @@ namespace ZergPoolMiner.Miners
                 "mine.zergpool.com";
 
             var algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
-            Stats.Stats.MiningAlgorithms _a = new();
 
             var _algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
             _algo = _algo.Replace("sha512256d", "sha512_256d_radiant");
+            _algo = _algo.Replace("argon2d16000", "argon2d_16000");
 
+            string mainWallet = Globals.DemoUser;
             string failoverPool = "";
             string failoverWallet = "";
             string failoverPassword = "";
@@ -396,8 +401,8 @@ namespace ZergPoolMiner.Miners
                     failoverWallet = $",{Globals.DemoUser}";
                     break;
                 case AlgorithmType.PhiHash:
-                    failoverPool = ",stratum+tcp://phihash.eu.mine.zpool.ca:1329";
-                    failoverWallet = $",{Globals.DemoUser}";
+                    failoverPool = ",stratum+tcp://eu.neuropool.net:10110";
+                    failoverWallet = $",PmM5d7PbhocvoUgFK3E1tdNBeN1hU2ipXs";//exbitron
                     break;
                 case AlgorithmType.MeowPow:
                     failoverPool = ",stratum+tcp://meowpow.eu.mine.zpool.ca:1327";
@@ -420,12 +425,21 @@ namespace ZergPoolMiner.Miners
                 default:
                     break;
             }
-
+            //,mc=* без этого не работает бенч meraki
             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)
             {
+                var mainpool = GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()).Trim();
+                if (mainpool.Contains("error"))
+                {
+                    mainpool = " --pool " + failoverPool.Replace(",", "");
+                    failoverPool = "";
+                    mainWallet = "";
+                    failoverWallet = failoverWallet.Replace(",", "");
+                }
+
                 return " " + disablePlatform + "--algorithm " + _algo + " " +
-                    GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()).Trim() + failoverPool + " " +
-                    $"--wallet {Globals.DemoUser}{failoverWallet} --password c=LTC{failoverPassword}" + " " +
+                    mainpool + failoverPool + " " +
+                    $"--wallet {mainWallet}{failoverWallet} --password c=LTC{failoverPassword},mc=*" + " " +
                     proxy + " " +
                     $"--api-enable --api-port {ApiPort} {extras}" + " --give-up-limit 1 --retry-time 1 --gpu-id " +
                     GetDevicesCommandString().Trim();
@@ -437,10 +451,10 @@ namespace ZergPoolMiner.Miners
 
                 return " " + disablePlatform + "--algorithm " + _algo + " " +
                      GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()).Trim() + failoverPool + " " +
-                    $"--wallet {Globals.DemoUser}{failoverWallet} --password c=LTC{failoverPassword}" + " " +
+                    $"--wallet {Globals.DemoUser}{failoverWallet} --password c=LTC{failoverPassword},mc=*" + " " +
                     "--algorithm " + _algo2 + " " +
                     GetServer(MiningSetup.CurrentSecondaryAlgorithmType.ToString().ToLower()).Trim() + failoverPool2 + " " +
-                    $"--wallet {Globals.DemoUser}{failoverWallet2} --password c=LTC{failoverPassword2}" + " " +
+                    $"--wallet {Globals.DemoUser}{failoverWallet2} --password c=LTC{failoverPassword2},mc=*" + " " +
                      proxy + " " +
                     $"--api-enable --api-port {ApiPort} {extras}" + " --give-up-limit 1 --retry-time 1 --gpu-id " +
                     GetDevicesCommandString().Trim();
@@ -509,14 +523,17 @@ namespace ZergPoolMiner.Miners
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("API Exception", ex.Message);
+                Helpers.ConsolePrint("SRBMiner API Exception", ex.Message);
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
-                return null;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             dynamic resp = JsonConvert.DeserializeObject(ResponseFromSRBMiner);
             //Helpers.ConsolePrint("API ->:", ResponseFromSRBMiner.ToString());
-            
+
             if (!MiningSetup.CurrentSecondaryAlgorithmType.Equals(AlgorithmType.NONE))
             {
                 ad.SecondaryAlgorithmID = MiningSetup.CurrentSecondaryAlgorithmType;
@@ -657,7 +674,7 @@ namespace ZergPoolMiner.Miners
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("API error", ex.ToString());
+                //Helpers.ConsolePrint("API error", ex.ToString());
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
                 ad.Speed = 0;
                 return ad;
@@ -665,20 +682,20 @@ namespace ZergPoolMiner.Miners
 
             ad.Speed = totalsMain;
             ad.SecondarySpeed = totalsSecond;
-                ad.ThirdSpeed = 0;
-                ad.ThirdAlgorithmID = AlgorithmType.NONE;
+            ad.ThirdSpeed = 0;
+            ad.ThirdAlgorithmID = AlgorithmType.NONE;
 
-                if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
-                {
-                        ad.Speed = totalsMain;
-                        ad.SecondarySpeed = totalsSecond;
-                }
-                else
-                {
-                        ad.Speed = totalsMain;
-                        ad.SecondarySpeed = 0;
-                        ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-                }
+            if (MiningSetup.CurrentSecondaryAlgorithmType != AlgorithmType.NONE)//dual
+            {
+                ad.Speed = totalsMain;
+                ad.SecondarySpeed = totalsSecond;
+            }
+            else
+            {
+                ad.Speed = totalsMain;
+                ad.SecondarySpeed = 0;
+                ad.SecondaryAlgorithmID = AlgorithmType.NONE;
+            }
 
             Thread.Sleep(1);
             return ad;

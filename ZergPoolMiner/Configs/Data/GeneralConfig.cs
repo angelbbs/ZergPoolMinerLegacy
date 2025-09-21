@@ -61,7 +61,7 @@ namespace ZergPoolMiner.Configs.Data
         public int ProfileIndex = 0;
         public string ProfileName = "Default";
 
-        public int ServiceLocation = 0;
+        public int ServiceLocation = 2;
         public bool ForceAutoLocation = true;
         public bool AutoStartMining = false;
         public int AutoStartMiningDelay = 0;
@@ -69,6 +69,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool MinimizeToTray = false;
         public bool AlwaysOnTop = false;
         public bool ShowFanAsPercent = false;
+        public bool ForceShowFanAsPercent = true;
         public bool ShowToolsFolder = false;
         public bool GetMinersVersions = true;
         public bool InstallRootCerts = true;
@@ -182,6 +183,7 @@ namespace ZergPoolMiner.Configs.Data
         public bool Show_NVdevice_manufacturer = true;
         public bool Show_NVIDIA_LHR = true;
         public bool ShortTerm = false;
+        public bool ShowEffort = false;
 
         public bool Show_memory_temperature = true;
         public bool Show_AMDdevice_manufacturer = true;
@@ -221,6 +223,10 @@ namespace ZergPoolMiner.Configs.Data
 
         public bool AllowMultipleInstances = false;
 
+        public bool suspendMiningOverheat = false;
+        public int GPUcoreTempTreshold = 84;
+        public int GPUmemTempTreshold = 106;
+        public int GPUoverheatSuspendTime = 30;
         // device enabled disabled stuff
         public List<ComputeDeviceConfig> LastDevicesSettup = new List<ComputeDeviceConfig>();
 

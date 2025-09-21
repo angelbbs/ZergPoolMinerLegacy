@@ -128,12 +128,14 @@ namespace ZergPoolMiner.Switching
                         Helpers.ConsolePrint("AlgosProfitData", "AlgosProfitData API bug. " + algo.ToString() + ": " +
                             "old value: " + _currentAlgosProfit[algo].Paying.ToString() + " new value: " + paying);
                         paying = _currentAlgosProfit[algo].Paying;
+                        HasData = true;
                         return;
                     }
 
                     if (paying > 1000000)
                     {
                         Helpers.ConsolePrint("AlgosProfitData", "AlgosProfitData API bug. " + algo.ToString() + ": " + paying);
+                        HasData = true;
                         return;
                     }
 
@@ -141,21 +143,21 @@ namespace ZergPoolMiner.Switching
                     if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
                         paying > _currentAlgosProfit[algo].Paying * 2)
                     {
-                        Helpers.ConsolePrint("AlgosProfitData", "(" + algo.ToString() + ") New profit is above 100%. Averaging.");
+                        Helpers.ConsolePrint("AlgosProfitData", algo.ToString() + " (" + coin + ") New profit is above 100%. Averaging.");
                         paying = _currentAlgosProfit[algo].Paying + paying / 50;
                     }
 
                     if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
                         paying > _currentAlgosProfit[algo].Paying * 1.5)
                     {
-                        Helpers.ConsolePrint("AlgosProfitData", "(" + algo.ToString() + ") New profit is above 50%. Averaging.");
+                        Helpers.ConsolePrint("AlgosProfitData", algo.ToString() + " (" + coin + ") New profit is above 50%. Averaging.");
                         paying = _currentAlgosProfit[algo].Paying + paying / 25;
                     }
 
                     if (paying > 0 && _currentAlgosProfit[algo].Paying > 0 &&
                         paying > _currentAlgosProfit[algo].Paying * 1.2)
                     {
-                        Helpers.ConsolePrint("AlgosProfitData", "(" + algo.ToString() + ") New profit is above 20%. Averaging.");
+                        Helpers.ConsolePrint("AlgosProfitData", algo.ToString() + " (" + coin + ") New profit is above 20%. Averaging.");
                         paying = _currentAlgosProfit[algo].Paying + paying / 10;
                     }
 
@@ -245,11 +247,7 @@ namespace ZergPoolMiner.Switching
             {
                 paying.profit = sma.Paying;
                 paying.coin = sma.Coin;
-                if (algo == AlgorithmType.KawPowLite && !AlgorithmSwitchingManager.KawpowLiteGoodEpoch)
-                {
-                    paying.profit = 0.0d;
-                }
-
+                
                 //чтоб отображалась правильная ставка алгоритма и текущей монеты
                 paying.currentProfit = paying.profit;
                 var c = Stats.Stats.CoinList.Find(e => e.symbol.Equals(sma.Coin));
@@ -257,7 +255,15 @@ namespace ZergPoolMiner.Switching
                 {
                     if (algo.ToString().ToLower().Equals(c.algo.ToLower()))
                     {
-                        var current_profit = c.estimate_current * c.adaptive_factor;
+                        //var current_profit = c.estimate_current * c.adaptive_factor;
+                        double current_profit = 0d;
+                        if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                        {
+                            current_profit = c.adaptive_profit;
+                        } else
+                        {
+                            current_profit = c.profit;
+                        }
                         paying.currentProfit = current_profit;
                         paying.profit = current_profit;
                     }

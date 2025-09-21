@@ -38,6 +38,7 @@
 
         Allium = 1000,//
         Argon2d1000 = 1005,//_UNUSED
+        Argon2d16000 = 1006,
         BMW512 = 1010,//_UNUSED
         CPUPower = 1020,
         Cryptonight_GPU = 1030,
@@ -99,6 +100,8 @@
         YescryptR32 = 1510,
         Yespower = 1520,
         YespowerADVC = 1522,
+        YespowerEQPAY = 1526,
+        YespowerINTERCHAINED = 1528,
         YespowerLTNCG = 1530,
         YespowerMGPC = 1540,
         YespowerR16 = 1550,

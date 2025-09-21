@@ -17,6 +17,7 @@
 - Fast benchmark - 1-2 min per algo.
 - Auto-switch between most profitable algorithms and coins taking into account the consumption of devices and the cost of electricity.
 - Tariff zones for electricity.
+- Limiting the maximum temperature of GPUs core and GPUs memory
 - GPU overclocking via MSI Afterburner.
 - Support overclocking profiles, benchmarks, miners additional parameters.
 - Program automatic update and backup.

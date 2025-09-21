@@ -242,7 +242,7 @@ namespace ZergPoolMiner.Miners
                     KillProcessAndChildren(pid);
                     BenchmarkHandle.Kill();
                     BenchmarkHandle.Close();
-                    if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
+                    //if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
                 }
                 catch { }
                 finally
@@ -282,9 +282,8 @@ namespace ZergPoolMiner.Miners
             string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                 "mine.zergpool.com";
             var algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
-            Stats.Stats.MiningAlgorithms _a = new();
             var pool = "";
-            _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+            var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
 
             string proxy = "";
             if (ConfigManager.GeneralConfig.EnableProxy)
@@ -300,9 +299,9 @@ namespace ZergPoolMiner.Miners
             }
             else
             {
-                Helpers.ConsolePrint("GMiner", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
+                Helpers.ConsolePrint("GMiner", "Not found " + algo + " in CoinList. Try fix it.");
                 algo = algo.Replace("_", "-");
-                _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
                 pool = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + 
                     ":" + _a.port.ToString() + " ";
             }
@@ -335,7 +334,7 @@ namespace ZergPoolMiner.Miners
                 failover +
             proxy +
             $" --api {ApiPort} " + 
-            GetDevicesCommandString().Trim();
+            GetDevicesCommandString().Trim() + " --color 0";
 
             //duals
 
@@ -428,9 +427,10 @@ namespace ZergPoolMiner.Miners
                 Reader.Close();
                 Response.Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _apiErrors++;
+                /*
                 Helpers.ConsolePrint("GetSummaryAsync", "GMINER-API ERRORs count: " + _apiErrors.ToString());
                 if (_apiErrors > 60)
                 {
@@ -442,6 +442,8 @@ namespace ZergPoolMiner.Miners
                     ad.ThirdSpeed = 0;
                     return ad;
                 }
+                */
+                Helpers.ConsolePrint("gminer API Exception", ex.Message);
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
                 ad.Speed = 0;
                 ad.SecondarySpeed = 0;

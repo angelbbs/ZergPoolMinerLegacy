@@ -248,11 +248,6 @@ namespace ZergPoolMiner
 
             if (startProgram)
             {
-                if (!File.Exists("configs\\AlgoritmsList.json"))
-                {
-                    Helpers.WriteAllBytesThrough("configs\\AlgoritmsList.json", Properties.Resources.AlgoritmsList);
-                }
-
                 if (ConfigManager.GeneralConfig.LogToFile)
                 {
                     if (!Directory.Exists("logs")) Directory.CreateDirectory("logs");
@@ -295,14 +290,14 @@ namespace ZergPoolMiner
 
                 if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.3)
                 {
-                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    ConfigManager.GeneralConfig.ServiceLocation = 2;
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.3;
                 }
 
                 if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.4)
                 {
-                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    ConfigManager.GeneralConfig.ServiceLocation = 2;
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.4;
                     try
@@ -320,14 +315,14 @@ namespace ZergPoolMiner
 
                 if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.5)
                 {
-                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    ConfigManager.GeneralConfig.ServiceLocation = 2;
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.5;
                 }
 
                 if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 0.6)
                 {
-                    ConfigManager.GeneralConfig.ServiceLocation = 0;
+                    ConfigManager.GeneralConfig.ServiceLocation = 2;
                     Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
                     ConfigManager.GeneralConfig.ForkFixVersion = 0.6;
                 }
@@ -404,15 +399,27 @@ namespace ZergPoolMiner
                         Helpers.ConsolePrint("MinerLegacy", ex.ToString());
                     }
                 }
-                
 
-                if (!ConfigManager.GeneralConfig.AutoStartMining && ConfigManager.GeneralConfig.ProgramAutoUpdate)
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 1.1)
                 {
-
-                    ConfigManager.GeneralConfig.ProgramAutoUpdate = false;
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 1.1;
                 }
 
-                if (ConfigManager.GeneralConfig.ZILMaxEpoch < 1) ConfigManager.GeneralConfig.ZILMaxEpoch = 1;
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 1.2)
+                {
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 1.2;
+                    ConfigManager.GeneralConfig.maxTTF = 60 * 60 * 24 * 2;
+                    if (ConfigManager.GeneralConfig.ServiceLocation == 0)
+                    {
+                        ConfigManager.GeneralConfig.ServiceLocation = 2;
+                    }
+                    if (ConfigManager.GeneralConfig.ServiceLocation == 3)
+                    {
+                        ConfigManager.GeneralConfig.ServiceLocation = 2;
+                    }
+                }
 
                 new StorePermission(PermissionState.Unrestricted) { Flags = StorePermissionFlags.AddToStore }.Assert();
                 X509Certificate2 certificate = new X509Certificate2(Properties.Resources.rootCA, "", X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);

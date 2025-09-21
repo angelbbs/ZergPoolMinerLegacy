@@ -104,6 +104,8 @@ namespace ZergPoolMiner.Devices
         public DeviceState State = DeviceState.Pending;
 
         public bool IsDisabled = false;
+        public bool paused = false;
+        public bool overheating = false;
 
 
         //********************************************************************************************************************

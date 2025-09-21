@@ -32,7 +32,7 @@ namespace ZergPoolMiner.Miners
             : base("lolMiner")
         {
             GPUPlatformNumber = ComputeDeviceManager.Available.AmdOpenCLPlatformNum;
-            IsKillAllUsedMinerProcs = true;
+            //IsKillAllUsedMinerProcs = true;
             IsNeverHideMiningWindow = true;
 
         }
@@ -283,12 +283,7 @@ namespace ZergPoolMiner.Miners
             }
             */
             _benchmarkTimeWait = time;
-            string sColor = "";
-            if (Form_Main.GetWinVer(Environment.OSVersion.Version) < 8)
-            {
-                sColor = " --nocolor";
-            }
-            CommandLine += sColor;
+            CommandLine += " --nocolor";
             return CommandLine;
 
         }
@@ -392,9 +387,14 @@ namespace ZergPoolMiner.Miners
                 Reader.Close();
                 Response.Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                Helpers.ConsolePrint("lolMiner API Exception", ex.Message);
+                CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             if (ResponseFromlolMiner == null)

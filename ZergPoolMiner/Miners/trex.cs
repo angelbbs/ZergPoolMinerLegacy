@@ -35,7 +35,7 @@ namespace ZergPoolMiner.Miners
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
@@ -255,8 +255,12 @@ namespace ZergPoolMiner.Miners
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("API", ex.Message);
-                return null;
+                Helpers.ConsolePrint("trex API Exception", ex.Message);
+                CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             ad = new ApiData(MiningSetup.CurrentAlgorithmType, MiningSetup.CurrentSecondaryAlgorithmType);

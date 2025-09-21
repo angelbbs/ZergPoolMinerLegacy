@@ -498,7 +498,7 @@ namespace ZergPoolMiner
 
             toolStripStatusLabelGlobalRateText.Text = International.GetText("Form_Main_global_rate");
             toolStripStatusLabelBTCDayText.Text =
-                ConfigManager.GeneralConfig.PayoutCurrency + "/" + 
+                ConfigManager.GeneralConfig.PayoutCurrency + "/" +
                 International.GetText(ConfigManager.GeneralConfig.TimeUnit.ToString());
             /*
             toolStripStatusLabelBalanceText.Text = (ExchangeRateApi.ActiveDisplayCurrency + "/") +
@@ -601,7 +601,7 @@ namespace ZergPoolMiner
             {
                 Helpers.ConsolePrint("InitMainConfigGuiData", ex.ToString());
             }
-            
+
             _demoMode = false;
 
             // init active display currency after config load
@@ -672,7 +672,7 @@ namespace ZergPoolMiner
 
             _minerStatsCheck = new Timer();
             _minerStatsCheck.Tick += MinerStatsCheck_Tick;
-            _minerStatsCheck.Interval = 1000;
+            _minerStatsCheck.Interval = 1000 * 2;//rigel ругается на частые запросы
 
             devicesListViewEnableControl1.Visible = true;
             if (ConfigManager.GeneralConfig.StartChartWithProgram == true)
@@ -839,7 +839,7 @@ namespace ZergPoolMiner
                 public string Url;
             }
         }
-        
+
         static void ArrayRearrangeAfterItemMove<T>(T[] array, int indexFrom, int indexTo)
         {
             if (indexFrom == indexTo) return;
@@ -1226,7 +1226,7 @@ namespace ZergPoolMiner
             {
                 Helpers.ConsolePrint("StartupTimer_Tick", ex.ToString());
             }
-            
+
             _loadingScreen.SetValueAndMsg(26, "Checking proxy");
             //new Task(() => Stats.ProxyCheck.GetHttpsProxy()).Start();
             Stats.ProxyCheck.GetHttpsProxy();
@@ -1264,7 +1264,7 @@ namespace ZergPoolMiner
             _loadingScreen.SetValueAndMsg(55, International.GetText("Form_Main_loadtext_GetAlgosProfit"));
             Helpers.DisableWindowsErrorReporting(ConfigManager.GeneralConfig.DisableWindowsErrorReporting);
             AlgosProfitData.InitializeIfNeeded();
-            Stats.Stats.LoadAlgoritmsListAsync(true);
+            Stats.Stats.LoadCoinListAsync(true);
             AlgosProfitData.FinalizeAlgosProfitList();
             Application.DoEvents();
             try
@@ -1293,9 +1293,9 @@ namespace ZergPoolMiner
                 " (Gate.io)");
             exchanges_rates.Add(ExchangeRateApi.GetRatesgateio());
             Application.DoEvents();
-            _loadingScreen.SetValueAndMsg(58, International.GetText("Form_Main_loadtext_GetBTCRate") +
-                " (Tradeogre)");
-            exchanges_rates.Add(ExchangeRateApi.GetRatesTradeogre());
+            //_loadingScreen.SetValueAndMsg(58, International.GetText("Form_Main_loadtext_GetBTCRate") +
+            //  " (Tradeogre)");
+            //exchanges_rates.Add(ExchangeRateApi.GetRatesTradeogre());
             Application.DoEvents();
             _loadingScreen.SetValueAndMsg(59, International.GetText("Form_Main_loadtext_GetBTCRate") +
                 " (Nonkyc)");
@@ -1310,7 +1310,7 @@ namespace ZergPoolMiner
             exchanges_rates.Add(ExchangeRateApi.GetRatesMexc());
             Application.DoEvents();
             //_loadingScreen.SetValueAndMsg(62, International.GetText("Form_Main_loadtext_GetBTCRate") +
-              //  " (SafeTrade)");
+            //  " (SafeTrade)");
             //exchanges_rates.Add(ExchangeRateApi.GetRatesSafetrade());
             Application.DoEvents();
             ExchangeRateApi.GetBTCRate(exchanges_rates);
@@ -1352,6 +1352,10 @@ namespace ZergPoolMiner
                 Application.DoEvents();
             }
             */
+
+            new Task(() => DelWinDivert()).Start();
+
+
             _loadingScreen.SetValueAndMsg(70, International.GetText("Form_Main_loadtext_CheckLatestVersion"));
             _loadingScreen.Update();
             //new Task(() => CheckUpdates()).Start();
@@ -1415,9 +1419,9 @@ namespace ZergPoolMiner
                             Form_Downloading.ActiveForm.Close();
                             MakeRestart(600);
                         }
-                        
 
-                        
+
+
                     }
                     //блокировка формы блокирует всё
                     /*
@@ -1577,7 +1581,7 @@ namespace ZergPoolMiner
                 }
 
             }
-            
+
             Stats.Stats.CheckNewAlgo();
 
             _loadingScreen.SetValueAndMsg(100, International.GetText("Form_Main_loadtext_Check_VC_redistributable"));
@@ -1592,6 +1596,39 @@ namespace ZergPoolMiner
 
         }
 
+        public static void DelWinDivert()
+        {
+            var CMDconfigHandleWD = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "sc.exe"
+                }
+            };
+
+            CMDconfigHandleWD.StartInfo.Arguments = "stop WinDivert1.4";
+            CMDconfigHandleWD.StartInfo.UseShellExecute = false;
+            CMDconfigHandleWD.StartInfo.CreateNoWindow = true;
+            CMDconfigHandleWD.Start();
+            Application.DoEvents();
+            CMDconfigHandleWD.StartInfo.Arguments = "delete WinDivert1.4";
+            CMDconfigHandleWD.StartInfo.UseShellExecute = false;
+            CMDconfigHandleWD.StartInfo.CreateNoWindow = true;
+            CMDconfigHandleWD.Start();
+            Application.DoEvents();
+
+            CMDconfigHandleWD.StartInfo.Arguments = "stop WinDivert1.1";
+            CMDconfigHandleWD.StartInfo.UseShellExecute = false;
+            CMDconfigHandleWD.StartInfo.CreateNoWindow = true;
+            CMDconfigHandleWD.Start();
+            Application.DoEvents();
+
+            CMDconfigHandleWD.StartInfo.Arguments = "delete WinDivert1.1";
+            CMDconfigHandleWD.StartInfo.UseShellExecute = false;
+            CMDconfigHandleWD.StartInfo.CreateNoWindow = true;
+            CMDconfigHandleWD.Start();
+            Application.DoEvents();
+        }
         private static void MinersGetVersionWatchdog()
         {
             Thread.Sleep(100);
@@ -1763,6 +1800,14 @@ namespace ZergPoolMiner
                 //CudaComputeDevice.GetNVMLData();
             }
             Profiles.Profile.CheckShedule();
+            if (ConfigManager.GeneralConfig.suspendMiningOverheat)
+            {
+                new Task(() => Devices.HeatingControl.CheckTemperature()).Start();
+            }
+        }
+        public static void CancelAutoStart()
+        {
+            firstRun = true;
         }
         private void AutoStartTimerDelay_Tick(object sender, EventArgs e)
         {
@@ -2104,6 +2149,7 @@ namespace ZergPoolMiner
 
             Stats.Stats.GetAlgosAsync();
             AlgosProfitData.FinalizeAlgosProfitList();
+            //MiningSession.SwichMostProfitableGroupUpMethod(null, null);
 
             _updateTimerCount++;
             int period = 0;
@@ -2405,11 +2451,13 @@ namespace ZergPoolMiner
         }
         private async void MinerStatsCheck_Tick(object sender, EventArgs e)
         {
+            /*
             ticks++;
             if (ticks > 5)
             {
                 _minerStatsCheck.Interval = 1000 * 5;
             }
+            */
             if (!_deviceStatusTimer.Enabled & buttonStartMining.Enabled)
             {
                 Helpers.ConsolePrint("ERROR", "_deviceStatusTimer fail");
@@ -2527,25 +2575,18 @@ namespace ZergPoolMiner
         }
 
 
-        public void AddRateInfo(string groupName, string deviceStringInfo, ApiData iApiData, double paying, double power,
-           DateTime StartMinerTime, bool isApiGetException, string processTag, GroupMiner groupMiners, int groupCount)
+        public void AddRateInfo(string groupName, ApiData iApiData, bool isApiGetException, string processTag, 
+            GroupMiner groupMiners, int groupCount)
         {
-            //Helpers.ConsolePrint("trace", new System.Diagnostics.StackTrace().ToString());
+            var deviceStringInfo = groupMiners.DevicesInfoString;
+            var paying = groupMiners.CurrentRate;
+            var power = groupMiners.PowerRate;
+            var StartMinerTime = groupMiners.StartMinerTime;
 
             var apiGetExceptionString = isApiGetException ? " **" : "";
             string speedString = "";
             string algoName = iApiData.AlgorithmName;
-
-            if (Form_additional_mining.isAlgoZIL(algoName, groupMiners.MinerBaseType, groupMiners.DeviceType) &&
-                        ConfigManager.GeneralConfig.AdditionalMiningPlusSymbol)
-            {
-                algoName = algoName + "+";
-            }
-
-            if (isZilRound && iApiData.AlgorithmID == AlgorithmType.NONE)
-            {
-                algoName = "ZIL";
-            }
+            string coin = "";
 
             speedString = Helpers.FormatDualSpeedOutput(iApiData.Speed, iApiData.SecondarySpeed,
                 iApiData.ThirdSpeed,
@@ -2588,10 +2629,25 @@ namespace ZergPoolMiner
             try
             {
                 var rateBtcString = FormatPayingOutput(paying, power);
+
+                bool paused = false;
+                bool overheating = false;
+                foreach (var dev in ComputeDeviceManager.Available.Devices)
+                {
+                    var busID = dev.BusID;
+                    if (groupMiners.DevBusIdIndexes.Contains(busID))
+                    {
+                        paused = dev.paused;
+                        overheating = dev.overheating;
+                        coin = dev.Coin;
+                    }
+                }
+
                 if (_flowLayoutPanelRatesIndex >= groupCount) return;
                 // flowLayoutPanelRatesIndex may be OOB, so catch
                 ((GroupProfitControl)flowLayoutPanelRates.Controls[_flowLayoutPanelRatesIndex++])
-                    .UpdateProfitStats(algoName, groupName, deviceStringInfo, speedString, StartMinerTime, rateBtcString, rateCurrencyString, processTag);
+                    .UpdateProfitStats(algoName, coin, groupName, deviceStringInfo, speedString, StartMinerTime, 
+                    rateBtcString, rateCurrencyString, processTag, paused, overheating);
 
             }
             catch (Exception ex)
@@ -3098,9 +3154,10 @@ namespace ZergPoolMiner
                 foreach (var process in Process.GetProcessesByName("NvidiaGPUGetDataHost"))
                 {
                     process.Kill();
-                    if (Socks5Relay.started)
+                    if (Socks5Relay.Listener.Server.IsBound)
                     {
                         Socks5Relay.Listener.Stop();
+                        Socks5Relay.Listener.Server.Dispose();
                     }
                 }
 

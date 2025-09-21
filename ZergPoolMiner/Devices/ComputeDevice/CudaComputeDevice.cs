@@ -112,14 +112,15 @@ namespace ZergPoolMiner.Devices
         {
             get
             {
-                if (ConfigManager.GeneralConfig.DisableMonitoringNVIDIA || Form_Main.NvAPIerror)
+                if (ConfigManager.GeneralConfig.DisableMonitoringNVIDIA || 
+                    (Form_Main.NvAPIerror && !_cudaDevice.DeviceName.Contains("CMP")) )
                 {
                     return -1;
                 }
 
                 var tempMem = -1;
                 var nvHandle = GetNvPhysicalGpuHandle();
-                if (!nvHandle.HasValue)
+                if (!nvHandle.HasValue && !_cudaDevice.DeviceName.Contains("CMP"))
                 {
                     Helpers.ConsolePrint("NVAPI", $"TempMemory nvHandle == null", TimeSpan.FromMinutes(5));
                     return -1;
@@ -161,7 +162,7 @@ namespace ZergPoolMiner.Devices
 
             var handles = new NvPhysicalGpuHandle[NVAPI.MAX_PHYSICAL_GPUS];
             var status = NVAPI.NvAPI_EnumPhysicalGPUs(handles, out _);
-            if (status != NvStatus.OK)
+            if (status != NvStatus.OK && !_cudaDevice.DeviceName.Contains("CMP"))
             {
                 Helpers.ConsolePrint("GetNvPhysicalGpuHandle", $"Enum physical GPUs failed with status: {status}", TimeSpan.FromMinutes(5));
             }
@@ -263,81 +264,105 @@ namespace ZergPoolMiner.Devices
         {
             get
             {
-                if (ConfigManager.GeneralConfig.DisableMonitoringNVIDIA || Form_Main.NvAPIerror)
+                if (ConfigManager.GeneralConfig.DisableMonitoringNVIDIA || 
+                    (Form_Main.NvAPIerror && !_cudaDevice.DeviceName.Contains("CMP")))
                 {
                     return -1;
                 }
-
                 var fanSpeed = -1;
 
                 // we got the lock
                 var nvHandle = GetNvPhysicalGpuHandle();
-                if (!nvHandle.HasValue)
+                if (!nvHandle.HasValue && !_cudaDevice.DeviceName.Contains("CMP"))
                 {
                     Helpers.ConsolePrint("NVAPI", $"FanSpeed nvHandle == null", TimeSpan.FromMinutes(5));
                     return -1;
                 }
-
-                if (NVAPI.NvAPI_GPU_GetTachReading != null)
+                try
                 {
-                    var result = NVAPI.NvAPI_GPU_GetTachReading(nvHandle.Value, out fanSpeed);
-                    if (result != NvStatus.OK)
+                    if (NVAPI.NvAPI_GPU_GetTachReading != null)
                     {
-                        var coolersStatus = GetFanCoolersStatus();
-                        if (coolersStatus.Count > 0)
+                        nvmlDevice _nvmlDevice = new nvmlDevice();
+                        var ret = NvmlNativeMethods.nvmlDeviceGetHandleByIndex((uint)_cudaDevice.DeviceID, ref _nvmlDevice);
+                        if (ret != nvmlReturn.Success && ret != nvmlReturn.NVML_ERROR_NO_DATA)
                         {
-                            uint CurrentLevel = coolersStatus.Items[0].CurrentLevel;
-                            uint CurrentRpm = coolersStatus.Items[0].CurrentRpm;
-                            fanSpeed = (int)CurrentRpm;
+                            Helpers.ConsolePrint("FanSpeedRPM", "nvmlDeviceGetHandleByIndex error: " + ret.ToString());
                         }
-                    }
-                    if (result != NvStatus.OK && result != NvStatus.NOT_SUPPORTED)
-                    {
-                        // GPUs without fans are not uncommon, so don't treat as error and just return -1
-                        /*
-                        Helpers.ConsolePrint("NVAPI", "Tach get failed with status: " + result);
-                        Helpers.ConsolePrint("NVAPI", "_nvmlDevice: " + _nvmlDevice.ToString());
-                        Helpers.ConsolePrint("NVAPI", "_nvHandle: " + _nvHandle.ToString());
-                        Helpers.ConsolePrint("NVAPI", "fanSpeed: " + fanSpeed.ToString());
-                        */
-                        //сомнительно...
+                        //Helpers.ConsolePrint(nvHandle.Value.ToString(), _nvHandle.ToString());
+                        //var handle = GPUApi.GetPhysicalGPUFromGPUID(gpu.GPUId);
+                        //var result = NVAPI.NvAPI_GPU_GetTachReading(nvHandle.Value, out fanSpeed);
+                        //var nvmlHandle = new nvmlDevice();
+                        //ret = NvmlNativeMethods.nvmlDeviceGetHandleByIndex(_cudaDevice.DeviceID, ref nvmlHandle);
+                        //NvPhysicalGpuHandle pgh = new NvPhysicalGpuHandle();
+                        //pgh.ptr = _NvPhysicalGpuHandle.Value.ptr;
+                        //var result = NVAPI.NvAPI_GPU_GetTachReading(_NvPhysicalGpuHandle.Value, out fanSpeed);
+                        var result = NVAPI.NvAPI_GPU_GetTachReading(_nvHandle, out fanSpeed);
+                        //var result = NVAPI.NvAPI_GPU_GetTachReading((NvPhysicalGpuHandle)nvHandle.Value, out fanSpeed);
 
-                        if (result == NvStatus.NVIDIA_DEVICE_NOT_FOUND && ConfigManager.GeneralConfig.CheckingCUDA)
+                        if (result != NvStatus.OK)
                         {
+                            var coolersStatus = GetFanCoolersStatus();
+                            if (coolersStatus.Count > 0)
+                            {
+                                uint CurrentLevel = coolersStatus.Items[0].CurrentLevel;
+                                uint CurrentRpm = coolersStatus.Items[0].CurrentRpm;
+                                fanSpeed = (int)CurrentRpm;
+                            }
+                        }
+
+                        if (result != NvStatus.OK && result != NvStatus.NOT_SUPPORTED)
+                        {
+                            // GPUs without fans are not uncommon, so don't treat as error and just return -1
                             /*
+                            Helpers.ConsolePrint("NVAPI", "Tach get failed with status: " + result);
                             Helpers.ConsolePrint("NVAPI", "_nvmlDevice: " + _nvmlDevice.ToString());
+                            Helpers.ConsolePrint("NVAPI", "fanSpeed: " + fanSpeed.ToString());
                             Helpers.ConsolePrint("NVAPI", "_nvHandle: " + _nvHandle.ToString());
+                            //Helpers.ConsolePrint("NVAPI", "nvHandle.Value: " + nvHandle.Value.ToString().ToString());
                             */
-                            errorcount++;
-                            int check = ComputeDeviceManager.Query.CheckVideoControllersCountMismath();
-                            if (ConfigManager.GeneralConfig.RestartWindowsOnCUDA_GPU_Lost && errorcount > 5)
+                            
+                            //сомнительно...
+                            if (result == NvStatus.NVIDIA_DEVICE_NOT_FOUND && ConfigManager.GeneralConfig.CheckingCUDA)
                             {
-                                var onGpusLost = new ProcessStartInfo(Directory.GetCurrentDirectory() + "\\OnGPUsLost.bat")
+                                /*
+                                Helpers.ConsolePrint("NVAPI", "_nvmlDevice: " + _nvmlDevice.ToString());
+                                Helpers.ConsolePrint("NVAPI", "_nvHandle: " + _nvHandle.ToString());
+                                */
+                                errorcount++;
+                                int check = ComputeDeviceManager.Query.CheckVideoControllersCountMismath();
+                                if (ConfigManager.GeneralConfig.RestartWindowsOnCUDA_GPU_Lost && errorcount > 5)
                                 {
-                                    WindowStyle = ProcessWindowStyle.Minimized
-                                };
-                                onGpusLost.Arguments = "1 " + check;
-                                Helpers.ConsolePrint("ERROR", "Restart Windows due CUDA GPU#" + check.ToString() + " is lost");
-                                Process.Start(onGpusLost);
-                                Thread.Sleep(2000);
-                            }
-                            if (ConfigManager.GeneralConfig.RestartDriverOnCUDA_GPU_Lost && errorcount > 5)
-                            {
-                                var onGpusLost = new ProcessStartInfo(Directory.GetCurrentDirectory() + "\\OnGPUsLost.bat")
+                                    var onGpusLost = new ProcessStartInfo(Directory.GetCurrentDirectory() + "\\OnGPUsLost.bat")
+                                    {
+                                        WindowStyle = ProcessWindowStyle.Minimized
+                                    };
+                                    onGpusLost.Arguments = "1 " + check;
+                                    Helpers.ConsolePrint("ERROR", "Restart Windows due CUDA GPU#" + check.ToString() + " is lost");
+                                    Process.Start(onGpusLost);
+                                    Thread.Sleep(2000);
+                                }
+                                if (ConfigManager.GeneralConfig.RestartDriverOnCUDA_GPU_Lost && errorcount > 5)
                                 {
-                                    WindowStyle = ProcessWindowStyle.Minimized
-                                };
-                                onGpusLost.Arguments = "2 " + check;
-                                Helpers.ConsolePrint("ERROR", "Restart driver due CUDA GPU#" + check.ToString() + " is lost");
-                                Form_Benchmark.RunCMDAfterBenchmark();
-                                Thread.Sleep(1000);
-                                Process.Start(onGpusLost);
-                                Thread.Sleep(2000);
+                                    var onGpusLost = new ProcessStartInfo(Directory.GetCurrentDirectory() + "\\OnGPUsLost.bat")
+                                    {
+                                        WindowStyle = ProcessWindowStyle.Minimized
+                                    };
+                                    onGpusLost.Arguments = "2 " + check;
+                                    Helpers.ConsolePrint("ERROR", "Restart driver due CUDA GPU#" + check.ToString() + " is lost");
+                                    Form_Benchmark.RunCMDAfterBenchmark();
+                                    Thread.Sleep(1000);
+                                    Process.Start(onGpusLost);
+                                    Thread.Sleep(2000);
+                                }
                             }
-                        }
 
-                        return -1;
+                            return -1;
+                        }
                     }
+                } catch (Exception ex)
+                {
+                    Helpers.ConsolePrint("FanSpeedRPM", ex.ToString());
+                    return -1;
                 }
                 return fanSpeed;
             }

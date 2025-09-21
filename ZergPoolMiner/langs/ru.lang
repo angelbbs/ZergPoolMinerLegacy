@@ -178,6 +178,7 @@
     "Form_Settings_General_RunAtStartup": "Запуск с Windows",
     "Form_Settings_General_MinimizeMiningWindows": "Минимизировать окна майнинга",
     "Form_Settings_General_ShowMinersVersions": "Показывать версию майнеров",
+    "Form_Settings_General_ShowAverageEffor": "Показывать усилие при поиске блока",
     "Form_Settings_General_RunScriptOnCUDA_GPU_Lost": "Запуск скрипта при потере NVIDIA GPU",
 
     "Form_Settings_General_Language": "Язык",
@@ -503,7 +504,7 @@
 		"Form_Settings_checkBox_ShortTerm": "Игнорировать краткосрочное изменение прибыльности",
                 "Form_Settings_groupBox1": "Устройства",
 		"Form_Settings_groupBoxAPIkeys": "Ключи API:",
-                "Form_Settings_label_switching_algorithms": "Переключение алгоритмов при превышении порогового значения",
+                "Form_Settings_label_switching_algorithms": "Переключение алгоритмов",
                 "Form_Settings_comboBox_switching_algorithms1": "через 1 мин",
                 "Form_Settings_comboBox_switching_algorithms3": "через 3 мин",
                 "Form_Settings_comboBox_switching_algorithms5": "через 5 мин",
@@ -601,6 +602,12 @@
 "Form_Main_current_power": "Потребление",
 "Form_Main_unpaidAmount": "Невыплаченный баланс",
 "Form_Main_chart": "Прибыльность",
+"Form_Main_RestartMiner": "Перезапуск майнера",
+"Form_Main_SuspendMiner": "Приостановка майнинга",
+"Form_Main_ResumeMiner": "Возобновление майнинга",
+"Form_Main_SuspendedByUser": "Приостановлено пользователем",
+"Form_Main_SuspendedOverheating": "Приостановлено - ПЕРЕГРЕВ",
+
 "Form_Main_NHstatusNotConnected": "Не подключен",
 "Form_Main_NHstatusConnecting": "Подключение...",
 "Form_Main_NHstatusConnected": "Подключен",
@@ -643,6 +650,12 @@
 "FormSettings_checkBox24hEstimate": "Использовать оценку прибыльности за 24 часа",
 "FormSettings_checkBox24hActual": "Использовать фактическую прибыльность за 24 часа",
 "FormSettings_checkBoxAdaptive": "Использовать адаптивный алгоритм",
+
+"FormSettings_checkSuspendMining": "Приостановка майнинга при температуре:",
+"FormSettings_labelGPUcore": "ядро GPU",
+"FormSettings_labelGPUmem": "память GPU",
+"FormSettings_ToolTip_checkSuspendMining": "Если включено, то майнинг будет приостановлен при превышении температуры на {0} секунд.",
+
 "FormSettings_CheckAllDisabled": "Должен быть включен хотя бы один параметр {0}",
 "FormSettings_NoSameDevices": "Нет одинаковых устройств",
 "MSIAB_Starting": "Запуск MSI Afterburner",

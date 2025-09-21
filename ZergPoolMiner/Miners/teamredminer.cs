@@ -28,7 +28,7 @@ namespace ZergPoolMiner.Miners
             : base("teamredminer")
         {
             GPUPlatformNumber = ComputeDeviceManager.Available.AmdOpenCLPlatformNum;
-            IsKillAllUsedMinerProcs = true;
+            //IsKillAllUsedMinerProcs = true;
             IsNeverHideMiningWindow = true;
 
         }
@@ -91,7 +91,7 @@ namespace ZergPoolMiner.Miners
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
                 ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.port.ToString();
@@ -395,10 +395,14 @@ namespace ZergPoolMiner.Miners
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Helpers.ConsolePrint("trm API Exception", ex.Message);
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
-                return null;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             CurrentMinerReadStatus = MinerApiReadStatus.GOT_READ;

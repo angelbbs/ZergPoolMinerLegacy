@@ -101,7 +101,7 @@ namespace ZergPoolMiner.Miners
             " " + " --telemetry=" + ApiPort +
             " --url=ssl://" + wallet + "@" + GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " " +
                     proxy + " " +
-                    _password + " --retrydelay=1 " +
+                    _password + " --retries=2 --retrydelay=10 " +
                     GetDevicesCommandString().Trim();
         }
 
@@ -171,24 +171,42 @@ namespace ZergPoolMiner.Miners
                     proxy = "--socks=127.0.0.1:" + Socks5Relay.Port + " --socksdns ";
                 }
 
-                string failover = "";//не работает
-                /*
+                string failover = "";
                 switch (MiningSetup.CurrentAlgorithmType)
                 {
                     case AlgorithmType.Equihash125:
                         failover = " --url=tcp://t1e4GBC9UUZVaJSeML9HgrKbJUm61GQ3Y8q@" + "flux.2miners.com:9090 --pass x ";
                         break;
+                    case AlgorithmType.Equihash144:
+                        failover = $" --url=tcp://{Globals.DemoUser}@" + "equihash125.eu.mine.zpool.ca:2125 --pass c=LTC ";
+                        break;
+                    case AlgorithmType.Equihash192:
+                        failover = $" --url=tcp://{Globals.DemoUser}@" + "equihash192.eu.mine.zpool.ca:2192 --pass c=LTC ";
+                        break;
+                    case AlgorithmType.EvrProgPow:
+                        failover = " --url=tcp://EbdCsvB491DULZQjfpBGKEhaHURDEFH9Rk@" + "eu.evrpool.org:1111 --pass x ";
+                        break;
+                    case AlgorithmType.ProgPowZ:
+                        failover = " --url=tcp://iZ2NyxEHg87VTyQzUyYL7zgSDbA9Q3zk9V9kZQKwm2ucCw43nHXaTLWVhrDW3Up5tFgEjjZi6Yxh6gouWdLCKddxRVwBGFkFXQw4t5PxP@" + "zano.luckypool.io:8866 --pass x ";
+                        break;
+                    case AlgorithmType.Ethashb3:
+                        failover = " --url=tcp://0xcd0E6454702D676B165cE7Dc6E42f3F692f7F147@" + "eu.mining4people.com:3454 --pass x ";
+                        break;
+                    case AlgorithmType.Meraki:
+                        failover = $" --url=tcp://{Globals.DemoUser}@" + "meraki.eu.mine.zpool.ca:3387 --pass x ";
+                        break;
                     default:
                         break;
                 }
-                */
+
+                //mc=* без этого не подключается к meraki
                 ret = GetDevicesCommandString() +
                       " --nocolour --par=" + _algo +
                       " --url=ssl://" + Globals.DemoUser + "@" + 
-                      GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " --pass c=LTC " +
+                      GetServer(MiningSetup.CurrentAlgorithmType.ToString().ToLower()) + " --pass c=LTC,mc=* " +
                       failover +
                       proxy + " " + 
-                      "--telemetry=" + ApiPort;
+                      "--telemetry=" + ApiPort + " --nocolour --retries=2 --retrydelay=10";
                 _benchmarkTimeWait = time;
 
             }
@@ -274,7 +292,10 @@ namespace ZergPoolMiner.Miners
         public override async Task<ApiData> GetSummaryAsync()
         {
             CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
-            ad = new ApiData(MiningSetup.CurrentAlgorithmType);
+            if (ad == null)
+            {
+                ad = new ApiData(MiningSetup.CurrentAlgorithmType);
+            }
             /*
             if (firstStart)
             //          if (ad.Speed <= 0.0001)
@@ -302,7 +323,7 @@ namespace ZergPoolMiner.Miners
 
                 StreamReader Reader = new StreamReader(nwStream);
                 Reader.BaseStream.ReadTimeout = 3 * 1000;
-                respStr = await Reader.ReadToEndAsync();
+                respStr = Reader.ReadToEnd();
 
                 //Helpers.ConsolePrint("miniZ API:", respStr);
                 respStr = respStr.Substring(respStr.IndexOf('{'), respStr.Length - respStr.IndexOf('{'));
@@ -329,10 +350,13 @@ namespace ZergPoolMiner.Miners
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint("miniZ API error", ex.Message);
+                Helpers.ConsolePrint("miniZ API Exception", ex.Message);
                 errorCount++;
                 CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
                 ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
                 /*
                 if (errorCount > 20)
                 {
@@ -439,7 +463,6 @@ namespace ZergPoolMiner.Miners
             ad.ThirdAlgorithmID = AlgorithmType.NONE;
             ad.SecondarySpeed = 0;
             ad.SecondaryAlgorithmID = AlgorithmType.NONE;
-
             return ad;
         }
         private double readCSV(int gpiId)

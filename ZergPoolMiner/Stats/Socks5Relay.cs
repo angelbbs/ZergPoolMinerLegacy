@@ -19,14 +19,12 @@ namespace ZergPoolMiner.Stats
     public static class Socks5Relay
     {
         public static int Port = 13600;
-        public static readonly TcpListener Listener = new TcpListener(IPAddress.Any, Port);
-        public static bool started = false;
+        public static volatile TcpListener Listener = new TcpListenerEx(IPAddress.Any, Port);
         const int BufferSize = 4096;
 
         public static void Socks5RelayStart()
         {
-            if (started) return;
-            started = true;
+            if (Socks5Relay.Listener.Server.IsBound) return;
             while (CheckRelayPort(Port))
             {
                 Port++;
@@ -36,6 +34,8 @@ namespace ZergPoolMiner.Stats
             ConfigManager.GeneralConfig.RelayPort = Port;
             try
             {
+                Listener.Server.Dispose();
+                Listener = new TcpListener(IPAddress.Any, Port);
                 Listener.Start();
                 new Task(() =>
                 {
@@ -53,7 +53,6 @@ namespace ZergPoolMiner.Stats
                         } catch (Exception ex)
                         {
                             Helpers.ConsolePrintError("Socks5Relay", ex.Message);
-                            started = false;
                             break;
                         }
                     }
@@ -61,7 +60,6 @@ namespace ZergPoolMiner.Stats
             } catch (Exception ex)
             {
                 Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
-                started = false;
             }
         }
 
@@ -77,7 +75,6 @@ namespace ZergPoolMiner.Stats
             }
             catch (Exception ex)
             {
-                started = false;
                 Helpers.ConsolePrintError("Socks5Relay", ex.ToString());
                 if (minerClient is object && minerClient != null)
                 {
@@ -150,7 +147,6 @@ namespace ZergPoolMiner.Stats
             }
         }
 
-
         public static bool CheckRelayPort(int Port)
         {
             try
@@ -174,8 +170,6 @@ namespace ZergPoolMiner.Stats
                         Helpers.ConsolePrintError("CheckRelayPort", "Relay port in use by " + _allConnections[i].OwningProcess);
                         return true;
                     }
-                    
-                    Thread.Sleep(1);
                 }
                 _allConnections.Clear();
                 _allConnections = null;
@@ -194,6 +188,5 @@ namespace ZergPoolMiner.Stats
             return false;
         }
     }
-
-    
+   
 }

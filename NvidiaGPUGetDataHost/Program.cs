@@ -2,6 +2,7 @@
 using NvAPIWrapper.Native;
 using NvAPIWrapper.Native.General;
 using NvAPIWrapper.Native.GPU.Structures;
+using NVIDIA.NVAPI;
 using NvidiaGPUGetDataHost.Properties;
 using System;
 using System.Collections.Generic;
@@ -205,46 +206,97 @@ namespace NvidiaGPUGetDataHost
                         
                         Thread.Sleep(50);
                         bool nvApierror = false;
+                        bool GetPhysicalGPUsError = false;
+                        bool GetTCCPhysicalGPUsError = false;
+                        string _GetPhysicalGPUsError = "";
+                        string _GetTCCPhysicalGPUsError = "";
                         try
                         {
                             var gpus0 = NvAPIWrapper.GPU.PhysicalGPU.GetPhysicalGPUs();
                         } catch (Exception ex)
                         {
-                            Logger.ConsolePrint("NvidiaGPUGetDataHost", "NvAPIWrapper error: " + ex.ToString());
+                            GetPhysicalGPUsError = true;
+                            _GetPhysicalGPUsError = ex.Message;
+                        }
+
+                        try
+                        {
+                            var gpus0 = NvAPIWrapper.GPU.PhysicalGPU.GetTCCPhysicalGPUs();
+                        }
+                        catch (Exception ex1)
+                        {
+                            GetTCCPhysicalGPUsError = true;
+                            _GetTCCPhysicalGPUsError = ex1.Message;
+                        }
+                        if (GetPhysicalGPUsError && GetTCCPhysicalGPUsError)
+                        {
+                            Logger.ConsolePrint("NvidiaGPUGetDataHost", "NvAPIWrapper error: " + _GetPhysicalGPUsError + " " +
+                                _GetTCCPhysicalGPUsError);
                             nvApierror = true;
                         }
 
                         if (!nvApierror)
                         {
-                            var gpus = NvAPIWrapper.GPU.PhysicalGPU.GetPhysicalGPUs();
+                            /*
+                            List<int> physicalBusIds = new List<int>();
+                            int count;
+                            var gpuHandles = new NVIDIA.NVAPI.NvPhysicalGpuHandle[64];
+                            NvStatus status = NVAPI.NvAPI_EnumPhysicalGPUs(gpuHandles, out count);
+
+                            if (status == NvStatus.OK)
+                            {
+                                foreach (var h in gpuHandles)
+                                {
+                                    NVAPI.NvAPI_GPU_GetBusID(h, out int busid);
+                                    if (!physicalBusIds.Contains(busid))
+                                    {
+                                        physicalBusIds.Add(busid);
+                                    }
+                                }
+                            } else
+                            {
+                                Logger.ConsolePrint("QueryCudaDevices", "Enum physical GPUs failed with status: " + status);
+                            }
+                            */
+
+                            List<NvAPIWrapper.GPU.PhysicalGPU> gpus = new List<NvAPIWrapper.GPU.PhysicalGPU>();
+                            if (!GetPhysicalGPUsError)
+                            {
+                                gpus.AddRange(NvAPIWrapper.GPU.PhysicalGPU.GetPhysicalGPUs());
+                            }
+                            if (!GetTCCPhysicalGPUsError)
+                            {
+                                gpus.AddRange(NvAPIWrapper.GPU.PhysicalGPU.GetTCCPhysicalGPUs());
+                            }
+                            //NvAPIWrapper.GPU.PhysicalGPU[] gpus = NvAPIWrapper.GPU.PhysicalGPU.GetTCCPhysicalGPUs();
                             var sorted = gpus.OrderBy(x => x.GPUId).ToArray();
 
                             if (sorted.Count() != devCount)
+                            //if (count != devCount)
                             {
                                 Logger.ConsolePrint("NvidiaGPUGetDataHost", "GetPhysicalGPUs count missmath: " + sorted.Count().ToString());
-
+                                
                                 List<int> busIds = new List<int>();
                                 foreach (var _g in sorted)
                                 {
                                     busIds.Add(_g.BusInformation.BusId);
                                 }
-
+                                
                                 foreach (var g in GpuDataList)
                                 {
                                     if (!busIds.Contains((int)g.busID))
+                                    //if (!physicalBusIds.Contains((int)g.busID))
                                     {
                                         Logger.ConsolePrint("NvidiaGPUGetDataHost", "Stuck GPU: " + g.Name + " BusId: " + g.busID.ToString());
                                     }
                                 }
-
                             }
                             var gpu = sorted[dev];
                             NvmlNativeMethods.nvmlDeviceGetName(_nvmlDevice, out string name);
                             //Logger.ConsolePrint("NvidiaGPUGetDataHost", "dev: " + dev + " nvml.name: " + name + " api.FullName: " + gpu.FullName + " api.GPUId: " + gpu.GPUId.ToString());
-                            
+
                             var handle = GPUApi.GetPhysicalGPUFromGPUID(gpu.GPUId);
                             // find bits
-
                             var maxBit = 0;
                             for (; maxBit < 32; maxBit++)
                             {
@@ -275,7 +327,12 @@ namespace NvidiaGPUGetDataHost
                             {
                                 // ignore
                             }
-
+                            /*
+                            for (int i = 0; i < maxBit;i++)
+                            {
+                                Logger.ConsolePrint("NvidiaGPUGetDataHost", "t1[" + i.ToString() + "]: " + t1[i].ToString());
+                            }
+                            */
                             if (t1.Length >= 10)
                             {
                                 _tempMem = (uint)t1[9];// 2-hotspot, 9-mem

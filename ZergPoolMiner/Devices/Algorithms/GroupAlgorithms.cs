@@ -28,7 +28,9 @@ namespace ZergPoolMiner.Devices.Algorithms
             {
                 algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
                 {
-                    AlgorithmType.Ethash
+                    AlgorithmType.Ethash,
+                    AlgorithmType.EthashSHA256dt,
+                    AlgorithmType.EthashSHA512256d
                 });
             }
 
@@ -82,7 +84,15 @@ namespace ZergPoolMiner.Devices.Algorithms
                         AlgorithmType.EvrProgPow
                     });
             }
-
+/*
+            if (device.GpuRam < (ulong)(25769803776))
+            {
+                algoSettings = FilterMinerAlgos(algoSettings, new List<AlgorithmType>
+                    {
+                        AlgorithmType.PhiHash
+                    });
+            }
+*/
 
             if (algoSettings.ContainsKey(MinerBaseType.GMiner))
             {
@@ -315,6 +325,36 @@ namespace ZergPoolMiner.Devices.Algorithms
                     }
                 }
             }
+            if (algoSettings.ContainsKey(MinerBaseType.CryptoDredge)) //not supported
+            {
+                foreach (var algo in algoSettings[MinerBaseType.CryptoDredge])
+                {
+                    if (device.DeviceType == DeviceType.NVIDIA &&
+                        (algo.DualZergPoolID == AlgorithmType.NeoScrypt || 
+                        algo.DualZergPoolID == AlgorithmType.SHA256csm ||
+                        algo.DualZergPoolID == AlgorithmType.Allium) &&
+                        (device.Name.Contains("CMP")))
+                    {
+                        algo.Enabled = false;
+                        algo.Hidden = true;
+                    }
+                }
+            }
+            /*
+            if (algoSettings.ContainsKey(MinerBaseType.miniZ)) //not supported
+            {
+                foreach (var algo in algoSettings[MinerBaseType.miniZ])
+                {
+                    if (device.DeviceType == DeviceType.NVIDIA &&
+                        (algo.DualZergPoolID == AlgorithmType.Equihash125) &&
+                        (device.Name.Contains("CMP")))
+                    {
+                        algo.Enabled = false;
+                        algo.Hidden = true;
+                    }
+                }
+            }
+            */
             /*
             if (algoSettings.ContainsKey(MinerBaseType.NBMiner)) //not supported
             {

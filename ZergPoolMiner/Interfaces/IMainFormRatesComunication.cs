@@ -7,8 +7,8 @@ namespace ZergPoolMiner.Interfaces
     {
         void ClearRatesAll();
 
-        void AddRateInfo(string groupName, string deviceStringInfo, ApiData iApiData, double paying, double power,
-           DateTime StartMinerTime, bool isApiGetException, string ProcessTag, GroupMiner groupMiners, int groupCount);
+        void AddRateInfo(string groupName, ApiData iApiData, bool isApiGetException, string ProcessTag, 
+            GroupMiner groupMiners, int groupCount);
         //void RaiseAlertSharesNotAccepted(string algoName);
 
         // The following four must use an invoker since they may be called from non-UI thread

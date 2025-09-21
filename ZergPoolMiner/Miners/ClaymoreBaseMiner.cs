@@ -41,7 +41,7 @@ namespace ZergPoolMiner.Miners
             : base(minerDeviceName)
         {
             ConectionType = NhmConectionType.STRATUM_SSL;
-            IsKillAllUsedMinerProcs = true;
+            //IsKillAllUsedMinerProcs = true;
         }
 
         // return true if a secondary algo is being used
@@ -90,6 +90,11 @@ namespace ZergPoolMiner.Miners
             catch (Exception ex)
             {
                 Helpers.ConsolePrint(MinerTag(), "GetSummary exception: " + ex.Message);
+                CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             ad = new ApiData(MiningSetup.CurrentAlgorithmType, MiningSetup.CurrentSecondaryAlgorithmType);

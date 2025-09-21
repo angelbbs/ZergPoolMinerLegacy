@@ -33,6 +33,7 @@ namespace ZergPoolMiner.Miners.Grouping
         public List<Algorithm> Algorithms = new List<Algorithm>();
         public double diff = 0d;
         public double diffPercent = 0d;
+        public double CurrentProfit = 0d;
         public bool needSwitch;
         public string GetMostProfitableString()
         {
@@ -58,6 +59,8 @@ namespace ZergPoolMiner.Miners.Grouping
         // prev state
         public AlgorithmType CurrentProfitableAlgorithmType { get; private set; }
         public string DeviceCurrentMiningCoin { get; set; }
+
+        public string CoinChange { get; set; } = "";
 
         public MinerBaseType CurrentProfitableMinerBaseType { get; private set; }
 
@@ -85,18 +88,6 @@ namespace ZergPoolMiner.Miners.Grouping
                 a.DualZergPoolID == CurrentProfitableAlgorithmType && a.MinerBaseType == CurrentProfitableMinerBaseType);
         }
 
-        public double GetMostProfitValue
-        {
-            get
-            {
-                var mostProfitableIndex = GetMostProfitableIndex();
-                if (mostProfitableIndex > -1)
-                {
-                    return Algorithms[mostProfitableIndex].CurrentProfit;
-                }
-                return 0;
-            }
-        }
         public double GetMostProfitValueWithoutPower
         {
             get
@@ -104,7 +95,19 @@ namespace ZergPoolMiner.Miners.Grouping
                 var mostProfitableIndex = GetMostProfitableIndex();
                 if (mostProfitableIndex > -1)
                 {
-                    return Algorithms[mostProfitableIndex].CurrentProfitWithoutPower;
+                    return Algorithms[mostProfitableIndex].MostProfit;
+                }
+                return 0;
+            }
+        }
+        public double GetMostProfitValueWithPower
+        {
+            get
+            {
+                var mostProfitableIndex = GetMostProfitableIndex();
+                if (mostProfitableIndex > -1)
+                {
+                    return Algorithms[mostProfitableIndex].MostProfitWithPower;
                 }
                 return 0;
             }
@@ -113,6 +116,24 @@ namespace ZergPoolMiner.Miners.Grouping
         {
             get
             {
+                /*
+                var _c = Stats.Stats.CoinList.Find(a => (a.symbol.ToLower() == DeviceCurrentMiningCoin.ToLower()) &&
+                                (a.algo.ToLower() == CurrentProfitableAlgorithmType.ToString().ToLower()));
+                if (!DeviceCurrentMiningCoin.ToLower().Equals("none"))
+                {
+                    if (_c is object && _c != null)
+                    {
+                        if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                        {
+                            return _c.adaptive_profit;
+                        }
+                        else
+                        {
+                            return _c.profit;
+                        }
+                    }
+                }
+                */
                 var currentProfitableIndex = GetCurrentProfitableIndex();
                 if (currentProfitableIndex > -1)
                 {
@@ -122,6 +143,8 @@ namespace ZergPoolMiner.Miners.Grouping
                 {
                     return 0;
                 }
+                
+                return 0;
             }
         }
 
@@ -158,16 +181,19 @@ namespace ZergPoolMiner.Miners.Grouping
                 return "None";
             }
         }
-        public double GetCurrentProfitValueWithoutPower
+        public double GetCurrentProfitValueWithPower
         {
             get
             {
+                double p = 0d;
                 var currentProfitableIndex = GetCurrentProfitableIndex();
                 if (currentProfitableIndex > -1)
                 {
-                    return Algorithms[currentProfitableIndex].CurrentProfitWithoutPower;
+                   // Helpers.ConsolePrint("---", CurrentProfitableAlgorithmType.ToString() + " (" +
+                     //   DeviceCurrentMiningCoin + ") " + p.ToString() + " " + 
+                       // Algorithms[currentProfitableIndex].CurrentProfitWithoutPower.ToString());
+                    return Algorithms[currentProfitableIndex].CurrentProfitWithPower;
                 }
-
                 return 0;
             }
         }
@@ -224,7 +250,6 @@ namespace ZergPoolMiner.Miners.Grouping
                 if (c._Algorithm.Equals(CurrentProfitableAlgorithmType) ||
                     c._DualAlgorithm.Equals(CurrentProfitableAlgorithmType))
                 {
-                    //coin = c._Coin;
                     DeviceCurrentMiningCoin = c._Coin;
                 }
             }
@@ -246,9 +271,9 @@ namespace ZergPoolMiner.Miners.Grouping
 
                 foreach (var algo in Algorithms)
                 {
-                    if (maxProfit < algo.CurrentProfit)
+                    if (maxProfit < algo.MostProfit)
                     {
-                        maxProfit = algo.CurrentProfit;
+                        maxProfit = algo.MostProfit;
                         MostProfitableAlgorithmType = algo.DualZergPoolID;
 
                         algo.MostProfitCoin = profits[algo.ZergPoolID].coin;
@@ -272,9 +297,10 @@ namespace ZergPoolMiner.Miners.Grouping
                             */
                             //algo.CurrentMiningCoin = DeviceCurrentMiningCoin;
                         }
-
-                        algo.CurrentMiningCoin = DeviceCurrentMiningCoin;
-
+                        if (CurrentProfitableAlgorithmType == algo.ZergPoolID || CurrentProfitableAlgorithmType == algo.DualZergPoolID)
+                        {
+                            algo.CurrentMiningCoin = DeviceCurrentMiningCoin;
+                        }
                         if (algo is DualAlgorithm algoDual)
                         {
                             
@@ -288,6 +314,12 @@ namespace ZergPoolMiner.Miners.Grouping
                     if (algo.Forced)
                     {
                         maxProfit = algo.CurrentProfit;
+                        if (maxProfit == 0)
+                        {
+                            algo.CurrentProfit = 0.001;
+                            algo.MostProfit = 0.001;
+                            algo.MostProfitWithPower = 0.001;
+                        }
                         MostProfitableAlgorithmType = algo.DualZergPoolID;
 
                         algo.MostProfitCoin = profits[algo.ZergPoolID].coin;

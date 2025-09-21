@@ -159,10 +159,17 @@ namespace ZergPoolMiner.Forms
             this.checkBox_By_profitability_of_all_devices = new System.Windows.Forms.CheckBox();
             this.label_switching_algorithms = new System.Windows.Forms.Label();
             this.comboBox_switching_algorithms = new System.Windows.Forms.ComboBox();
-            this.textBox_SwitchProfitabilityThreshold = new System.Windows.Forms.TextBox();
             this.label_SwitchProfitabilityThreshold = new System.Windows.Forms.Label();
+            this.textBox_SwitchProfitabilityThreshold = new System.Windows.Forms.TextBox();
             this.checkbox_Group_same_devices = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.textBox_GPUmem = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label_GPUmem = new System.Windows.Forms.Label();
+            this.textBox_GPUcore = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label_GPUcore = new System.Windows.Forms.Label();
+            this.checkBox_suspendMining = new System.Windows.Forms.CheckBox();
             this.checkBoxINTELmonitoring = new System.Windows.Forms.CheckBox();
             this.labelDisableMonitoring = new System.Windows.Forms.Label();
             this.checkBox_DisableDetectionINTEL = new System.Windows.Forms.CheckBox();
@@ -237,6 +244,7 @@ namespace ZergPoolMiner.Forms
             this.buttonLicence = new System.Windows.Forms.Button();
             this.label_profile = new System.Windows.Forms.Label();
             this.comboBox_profile = new System.Windows.Forms.ComboBox();
+            this.checkBoxShowEffort = new System.Windows.Forms.CheckBox();
             this.tabControlGeneral.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
             this.groupBoxConnection.SuspendLayout();
@@ -681,7 +689,7 @@ namespace ZergPoolMiner.Forms
             // label_TimeUnit
             // 
             this.label_TimeUnit.AutoSize = true;
-            this.label_TimeUnit.Location = new System.Drawing.Point(184, 22);
+            this.label_TimeUnit.Location = new System.Drawing.Point(182, 22);
             this.label_TimeUnit.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label_TimeUnit.Name = "label_TimeUnit";
             this.label_TimeUnit.Size = new System.Drawing.Size(52, 13);
@@ -733,6 +741,7 @@ namespace ZergPoolMiner.Forms
             // 
             // groupBox_Misc
             // 
+            this.groupBox_Misc.Controls.Add(this.checkBoxShowEffort);
             this.groupBox_Misc.Controls.Add(this.checkBoxInstall_root_certificates);
             this.groupBox_Misc.Controls.Add(this.checkBox_DisableTooltips);
             this.groupBox_Misc.Controls.Add(this.labelRestartProgram);
@@ -749,7 +758,7 @@ namespace ZergPoolMiner.Forms
             this.groupBox_Misc.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.groupBox_Misc.Name = "groupBox_Misc";
             this.groupBox_Misc.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.groupBox_Misc.Size = new System.Drawing.Size(288, 237);
+            this.groupBox_Misc.Size = new System.Drawing.Size(288, 266);
             this.groupBox_Misc.TabIndex = 391;
             this.groupBox_Misc.TabStop = false;
             this.groupBox_Misc.Text = "Misc:";
@@ -760,7 +769,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBoxInstall_root_certificates.AutoSize = true;
             this.checkBoxInstall_root_certificates.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxInstall_root_certificates.Location = new System.Drawing.Point(8, 162);
+            this.checkBoxInstall_root_certificates.Location = new System.Drawing.Point(8, 186);
             this.checkBoxInstall_root_certificates.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxInstall_root_certificates.Name = "checkBoxInstall_root_certificates";
             this.checkBoxInstall_root_certificates.Size = new System.Drawing.Size(128, 17);
@@ -783,7 +792,7 @@ namespace ZergPoolMiner.Forms
             // labelRestartProgram
             // 
             this.labelRestartProgram.AutoSize = true;
-            this.labelRestartProgram.Location = new System.Drawing.Point(2, 212);
+            this.labelRestartProgram.Location = new System.Drawing.Point(5, 235);
             this.labelRestartProgram.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelRestartProgram.Name = "labelRestartProgram";
             this.labelRestartProgram.Size = new System.Drawing.Size(82, 13);
@@ -806,7 +815,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.comboBoxRestartProgram.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxRestartProgram.FormattingEnabled = true;
-            this.comboBoxRestartProgram.Location = new System.Drawing.Point(134, 209);
+            this.comboBoxRestartProgram.Location = new System.Drawing.Point(137, 232);
             this.comboBoxRestartProgram.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBoxRestartProgram.Name = "comboBoxRestartProgram";
             this.comboBoxRestartProgram.Size = new System.Drawing.Size(138, 21);
@@ -817,7 +826,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox_program_monitoring.AutoSize = true;
             this.checkBox_program_monitoring.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox_program_monitoring.Location = new System.Drawing.Point(8, 185);
+            this.checkBox_program_monitoring.Location = new System.Drawing.Point(8, 209);
             this.checkBox_program_monitoring.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_program_monitoring.Name = "checkBox_program_monitoring";
             this.checkBox_program_monitoring.Size = new System.Drawing.Size(116, 17);
@@ -1816,14 +1825,14 @@ namespace ZergPoolMiner.Forms
             this.groupBox_Miners.Controls.Add(this.checkBox_By_profitability_of_all_devices);
             this.groupBox_Miners.Controls.Add(this.label_switching_algorithms);
             this.groupBox_Miners.Controls.Add(this.comboBox_switching_algorithms);
-            this.groupBox_Miners.Controls.Add(this.textBox_SwitchProfitabilityThreshold);
             this.groupBox_Miners.Controls.Add(this.label_SwitchProfitabilityThreshold);
+            this.groupBox_Miners.Controls.Add(this.textBox_SwitchProfitabilityThreshold);
             this.groupBox_Miners.Controls.Add(this.checkbox_Group_same_devices);
             this.groupBox_Miners.Location = new System.Drawing.Point(6, 6);
             this.groupBox_Miners.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.groupBox_Miners.Name = "groupBox_Miners";
             this.groupBox_Miners.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.groupBox_Miners.Size = new System.Drawing.Size(657, 177);
+            this.groupBox_Miners.Size = new System.Drawing.Size(657, 166);
             this.groupBox_Miners.TabIndex = 389;
             this.groupBox_Miners.TabStop = false;
             this.groupBox_Miners.Text = "Miners:";
@@ -1833,7 +1842,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBoxAdaptive.AutoSize = true;
             this.checkBoxAdaptive.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxAdaptive.Location = new System.Drawing.Point(11, 153);
+            this.checkBoxAdaptive.Location = new System.Drawing.Point(11, 19);
             this.checkBoxAdaptive.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxAdaptive.Name = "checkBoxAdaptive";
             this.checkBoxAdaptive.Size = new System.Drawing.Size(134, 17);
@@ -1846,7 +1855,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox24hActual.AutoSize = true;
             this.checkBox24hActual.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox24hActual.Location = new System.Drawing.Point(11, 130);
+            this.checkBox24hActual.Location = new System.Drawing.Point(302, 65);
             this.checkBox24hActual.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox24hActual.Name = "checkBox24hActual";
             this.checkBox24hActual.Size = new System.Drawing.Size(124, 17);
@@ -1859,7 +1868,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox24hEstimate.AutoSize = true;
             this.checkBox24hEstimate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox24hEstimate.Location = new System.Drawing.Point(11, 107);
+            this.checkBox24hEstimate.Location = new System.Drawing.Point(302, 42);
             this.checkBox24hEstimate.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox24hEstimate.Name = "checkBox24hEstimate";
             this.checkBox24hEstimate.Size = new System.Drawing.Size(134, 17);
@@ -1872,7 +1881,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBoxShortTerm.AutoSize = true;
             this.checkBoxShortTerm.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxShortTerm.Location = new System.Drawing.Point(302, 84);
+            this.checkBoxShortTerm.Location = new System.Drawing.Point(302, 88);
             this.checkBoxShortTerm.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxShortTerm.Name = "checkBoxShortTerm";
             this.checkBoxShortTerm.Size = new System.Drawing.Size(257, 17);
@@ -1885,7 +1894,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox_withPower.AutoSize = true;
             this.checkBox_withPower.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox_withPower.Location = new System.Drawing.Point(11, 61);
+            this.checkBox_withPower.Location = new System.Drawing.Point(10, 134);
             this.checkBox_withPower.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_withPower.Name = "checkBox_withPower";
             this.checkBox_withPower.Size = new System.Drawing.Size(216, 17);
@@ -1897,7 +1906,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBoxCurrentEstimate.AutoSize = true;
             this.checkBoxCurrentEstimate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBoxCurrentEstimate.Location = new System.Drawing.Point(11, 84);
+            this.checkBoxCurrentEstimate.Location = new System.Drawing.Point(302, 19);
             this.checkBoxCurrentEstimate.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxCurrentEstimate.Name = "checkBoxCurrentEstimate";
             this.checkBoxCurrentEstimate.Size = new System.Drawing.Size(167, 17);
@@ -1910,7 +1919,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkBox_By_profitability_of_all_devices.AutoSize = true;
             this.checkBox_By_profitability_of_all_devices.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkBox_By_profitability_of_all_devices.Location = new System.Drawing.Point(432, 36);
+            this.checkBox_By_profitability_of_all_devices.Location = new System.Drawing.Point(10, 88);
             this.checkBox_By_profitability_of_all_devices.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBox_By_profitability_of_all_devices.Name = "checkBox_By_profitability_of_all_devices";
             this.checkBox_By_profitability_of_all_devices.Size = new System.Drawing.Size(155, 17);
@@ -1921,7 +1930,7 @@ namespace ZergPoolMiner.Forms
             // label_switching_algorithms
             // 
             this.label_switching_algorithms.AutoSize = true;
-            this.label_switching_algorithms.Location = new System.Drawing.Point(8, 18);
+            this.label_switching_algorithms.Location = new System.Drawing.Point(7, 41);
             this.label_switching_algorithms.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label_switching_algorithms.Name = "label_switching_algorithms";
             this.label_switching_algorithms.Size = new System.Drawing.Size(103, 13);
@@ -1933,38 +1942,39 @@ namespace ZergPoolMiner.Forms
             // 
             this.comboBox_switching_algorithms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox_switching_algorithms.FormattingEnabled = true;
-            this.comboBox_switching_algorithms.Location = new System.Drawing.Point(11, 34);
+            this.comboBox_switching_algorithms.Location = new System.Drawing.Point(154, 38);
             this.comboBox_switching_algorithms.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.comboBox_switching_algorithms.Name = "comboBox_switching_algorithms";
-            this.comboBox_switching_algorithms.Size = new System.Drawing.Size(170, 21);
+            this.comboBox_switching_algorithms.Size = new System.Drawing.Size(95, 21);
             this.comboBox_switching_algorithms.TabIndex = 403;
             this.comboBox_switching_algorithms.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboBox_switching_algorithms_DrawItem);
             this.comboBox_switching_algorithms.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
-            // textBox_SwitchProfitabilityThreshold
-            // 
-            this.textBox_SwitchProfitabilityThreshold.Location = new System.Drawing.Point(394, 34);
-            this.textBox_SwitchProfitabilityThreshold.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.textBox_SwitchProfitabilityThreshold.Name = "textBox_SwitchProfitabilityThreshold";
-            this.textBox_SwitchProfitabilityThreshold.Size = new System.Drawing.Size(34, 20);
-            this.textBox_SwitchProfitabilityThreshold.TabIndex = 333;
-            this.textBox_SwitchProfitabilityThreshold.TextChanged += new System.EventHandler(this.textBox_SwitchProfitabilityThreshold_TextChanged);
-            // 
             // label_SwitchProfitabilityThreshold
             // 
             this.label_SwitchProfitabilityThreshold.AutoSize = true;
-            this.label_SwitchProfitabilityThreshold.Location = new System.Drawing.Point(189, 37);
+            this.label_SwitchProfitabilityThreshold.Location = new System.Drawing.Point(7, 67);
             this.label_SwitchProfitabilityThreshold.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label_SwitchProfitabilityThreshold.Name = "label_SwitchProfitabilityThreshold";
             this.label_SwitchProfitabilityThreshold.Size = new System.Drawing.Size(177, 13);
             this.label_SwitchProfitabilityThreshold.TabIndex = 361;
             this.label_SwitchProfitabilityThreshold.Text = "Switching threshold of profitability, %";
             // 
+            // textBox_SwitchProfitabilityThreshold
+            // 
+            this.textBox_SwitchProfitabilityThreshold.Location = new System.Drawing.Point(215, 64);
+            this.textBox_SwitchProfitabilityThreshold.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.textBox_SwitchProfitabilityThreshold.Name = "textBox_SwitchProfitabilityThreshold";
+            this.textBox_SwitchProfitabilityThreshold.Size = new System.Drawing.Size(34, 20);
+            this.textBox_SwitchProfitabilityThreshold.TabIndex = 333;
+            this.textBox_SwitchProfitabilityThreshold.TextChanged += new System.EventHandler(this.textBox_SwitchProfitabilityThreshold_TextChanged);
+            this.textBox_SwitchProfitabilityThreshold.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_SwitchProfitabilityThreshold_KeyPress);
+            // 
             // checkbox_Group_same_devices
             // 
             this.checkbox_Group_same_devices.AutoSize = true;
             this.checkbox_Group_same_devices.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkbox_Group_same_devices.Location = new System.Drawing.Point(302, 61);
+            this.checkbox_Group_same_devices.Location = new System.Drawing.Point(10, 111);
             this.checkbox_Group_same_devices.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkbox_Group_same_devices.Name = "checkbox_Group_same_devices";
             this.checkbox_Group_same_devices.Size = new System.Drawing.Size(123, 17);
@@ -1974,6 +1984,13 @@ namespace ZergPoolMiner.Forms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.textBox_GPUmem);
+            this.groupBox1.Controls.Add(this.label5);
+            this.groupBox1.Controls.Add(this.label_GPUmem);
+            this.groupBox1.Controls.Add(this.textBox_GPUcore);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.label_GPUcore);
+            this.groupBox1.Controls.Add(this.checkBox_suspendMining);
             this.groupBox1.Controls.Add(this.checkBoxINTELmonitoring);
             this.groupBox1.Controls.Add(this.labelDisableMonitoring);
             this.groupBox1.Controls.Add(this.checkBox_DisableDetectionINTEL);
@@ -2001,15 +2018,85 @@ namespace ZergPoolMiner.Forms
             this.groupBox1.Controls.Add(this.checkBox_DisableDetectionCPU);
             this.groupBox1.Controls.Add(this.checkBox_Additional_info_about_device);
             this.groupBox1.Controls.Add(this.checkBox_DisableDetectionAMD);
-            this.groupBox1.Location = new System.Drawing.Point(5, 189);
+            this.groupBox1.Location = new System.Drawing.Point(6, 178);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.groupBox1.Size = new System.Drawing.Size(658, 204);
+            this.groupBox1.Size = new System.Drawing.Size(658, 237);
             this.groupBox1.TabIndex = 394;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Devices:";
             this.groupBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.groupBox1_Paint);
+            // 
+            // textBox_GPUmem
+            // 
+            this.textBox_GPUmem.Location = new System.Drawing.Point(204, 203);
+            this.textBox_GPUmem.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.textBox_GPUmem.Name = "textBox_GPUmem";
+            this.textBox_GPUmem.Size = new System.Drawing.Size(28, 20);
+            this.textBox_GPUmem.TabIndex = 433;
+            this.textBox_GPUmem.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_GPUmem_KeyPress);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(234, 206);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(18, 13);
+            this.label5.TabIndex = 432;
+            this.label5.Text = "°C";
+            // 
+            // label_GPUmem
+            // 
+            this.label_GPUmem.AutoSize = true;
+            this.label_GPUmem.Location = new System.Drawing.Point(131, 206);
+            this.label_GPUmem.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label_GPUmem.Name = "label_GPUmem";
+            this.label_GPUmem.Size = new System.Drawing.Size(69, 13);
+            this.label_GPUmem.TabIndex = 431;
+            this.label_GPUmem.Text = "GPU memory";
+            // 
+            // textBox_GPUcore
+            // 
+            this.textBox_GPUcore.Location = new System.Drawing.Point(65, 203);
+            this.textBox_GPUcore.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.textBox_GPUcore.Name = "textBox_GPUcore";
+            this.textBox_GPUcore.Size = new System.Drawing.Size(28, 20);
+            this.textBox_GPUcore.TabIndex = 430;
+            this.textBox_GPUcore.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_GPUcore_KeyPress);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(95, 206);
+            this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(18, 13);
+            this.label4.TabIndex = 429;
+            this.label4.Text = "°C";
+            // 
+            // label_GPUcore
+            // 
+            this.label_GPUcore.AutoSize = true;
+            this.label_GPUcore.Location = new System.Drawing.Point(7, 206);
+            this.label_GPUcore.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label_GPUcore.Name = "label_GPUcore";
+            this.label_GPUcore.Size = new System.Drawing.Size(54, 13);
+            this.label_GPUcore.TabIndex = 428;
+            this.label_GPUcore.Text = "GPU core";
+            // 
+            // checkBox_suspendMining
+            // 
+            this.checkBox_suspendMining.AutoSize = true;
+            this.checkBox_suspendMining.Location = new System.Drawing.Point(10, 180);
+            this.checkBox_suspendMining.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.checkBox_suspendMining.Name = "checkBox_suspendMining";
+            this.checkBox_suspendMining.Size = new System.Drawing.Size(200, 17);
+            this.checkBox_suspendMining.TabIndex = 427;
+            this.checkBox_suspendMining.Text = "Suspension of mining at temperature:";
+            this.checkBox_suspendMining.UseVisualStyleBackColor = true;
+            this.checkBox_suspendMining.CheckedChanged += new System.EventHandler(this.checkBox_suspendMining_CheckedChanged);
             // 
             // checkBoxINTELmonitoring
             // 
@@ -2132,7 +2219,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxCheckingCUDA
             // 
             this.checkBoxCheckingCUDA.AutoSize = true;
-            this.checkBoxCheckingCUDA.Location = new System.Drawing.Point(10, 180);
+            this.checkBoxCheckingCUDA.Location = new System.Drawing.Point(10, 157);
             this.checkBoxCheckingCUDA.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxCheckingCUDA.Name = "checkBoxCheckingCUDA";
             this.checkBoxCheckingCUDA.Size = new System.Drawing.Size(227, 17);
@@ -2192,7 +2279,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxDriverWarning
             // 
             this.checkBoxDriverWarning.AutoSize = true;
-            this.checkBoxDriverWarning.Location = new System.Drawing.Point(10, 157);
+            this.checkBoxDriverWarning.Location = new System.Drawing.Point(10, 134);
             this.checkBoxDriverWarning.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxDriverWarning.Name = "checkBoxDriverWarning";
             this.checkBoxDriverWarning.Size = new System.Drawing.Size(165, 17);
@@ -2214,7 +2301,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxRestartDriver
             // 
             this.checkBoxRestartDriver.AutoSize = true;
-            this.checkBoxRestartDriver.Location = new System.Drawing.Point(547, 180);
+            this.checkBoxRestartDriver.Location = new System.Drawing.Point(547, 179);
             this.checkBoxRestartDriver.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxRestartDriver.Name = "checkBoxRestartDriver";
             this.checkBoxRestartDriver.Size = new System.Drawing.Size(54, 17);
@@ -2226,7 +2313,7 @@ namespace ZergPoolMiner.Forms
             // checkBoxRestartWindows
             // 
             this.checkBoxRestartWindows.AutoSize = true;
-            this.checkBoxRestartWindows.Location = new System.Drawing.Point(473, 180);
+            this.checkBoxRestartWindows.Location = new System.Drawing.Point(473, 179);
             this.checkBoxRestartWindows.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkBoxRestartWindows.Name = "checkBoxRestartWindows";
             this.checkBoxRestartWindows.Size = new System.Drawing.Size(70, 17);
@@ -2239,7 +2326,7 @@ namespace ZergPoolMiner.Forms
             // 
             this.checkbox_Use_OpenHardwareMonitor.AutoSize = true;
             this.checkbox_Use_OpenHardwareMonitor.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.checkbox_Use_OpenHardwareMonitor.Location = new System.Drawing.Point(10, 134);
+            this.checkbox_Use_OpenHardwareMonitor.Location = new System.Drawing.Point(10, 111);
             this.checkbox_Use_OpenHardwareMonitor.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.checkbox_Use_OpenHardwareMonitor.Name = "checkbox_Use_OpenHardwareMonitor";
             this.checkbox_Use_OpenHardwareMonitor.Size = new System.Drawing.Size(216, 17);
@@ -2937,6 +3024,18 @@ namespace ZergPoolMiner.Forms
             this.comboBox_profile.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboBox_profile_DrawItem);
             this.comboBox_profile.SelectedIndexChanged += new System.EventHandler(this.comboBox_profile_SelectedIndexChanged);
             // 
+            // checkBoxShowEffort
+            // 
+            this.checkBoxShowEffort.AutoSize = true;
+            this.checkBoxShowEffort.Location = new System.Drawing.Point(8, 163);
+            this.checkBoxShowEffort.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.checkBoxShowEffort.Name = "checkBoxShowEffort";
+            this.checkBoxShowEffort.Size = new System.Drawing.Size(211, 17);
+            this.checkBoxShowEffort.TabIndex = 410;
+            this.checkBoxShowEffort.Text = "Show effort when searching for a block";
+            this.checkBoxShowEffort.UseVisualStyleBackColor = true;
+            this.checkBoxShowEffort.CheckedChanged += new System.EventHandler(this.checkBoxShowEffort_CheckedChanged);
+            // 
             // Form_Settings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3230,5 +3329,13 @@ namespace ZergPoolMiner.Forms
         private System.Windows.Forms.CheckBox checkBoxAdaptive;
         private System.Windows.Forms.GroupBox groupBoxConnection;
         private System.Windows.Forms.CheckBox checkBoxEnableProxy;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label_GPUcore;
+        private System.Windows.Forms.CheckBox checkBox_suspendMining;
+        private System.Windows.Forms.TextBox textBox_GPUcore;
+        private System.Windows.Forms.TextBox textBox_GPUmem;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label_GPUmem;
+        private System.Windows.Forms.CheckBox checkBoxShowEffort;
     }
 }

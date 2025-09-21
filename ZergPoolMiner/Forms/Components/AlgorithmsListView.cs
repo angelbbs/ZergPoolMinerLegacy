@@ -137,6 +137,10 @@ namespace ZergPoolMiner.Forms.Components
                         lvi.BackColor = UnbenchmarkedColor;
                     }
 
+                    if (algorithm.CurPayingRatio == 0 && !algorithm.Forced)
+                    {
+                        lvi.ForeColor = DisabledForeColor;
+                    }
                 }
             }
         }
@@ -772,6 +776,9 @@ namespace ZergPoolMiner.Forms.Components
                     contextMenuStrip1.Items.Clear();
                     Bitmap _EnableBitmap = new Bitmap(Properties.Resources.Ok_normal, 14, 14);
                     Bitmap _DisableBitmap = new Bitmap(Properties.Resources.Delete_normal, 14, 14);
+                    Bitmap _ResetBitmap = new Bitmap(Properties.Resources.back, 14, 14);
+                    Bitmap _RunBitmap = new Bitmap(Properties.Resources.Run, 14, 14);
+                    Bitmap _StopBitmap = new Bitmap(Properties.Resources.Stop, 14, 14);
                     // enable all
                     {
                         var enableAllItems = new ToolStripMenuItem
@@ -858,7 +865,7 @@ namespace ZergPoolMiner.Forms.Components
                         }
                         var clearItem = new ToolStripMenuItem
                         {
-                            Image = _DisableBitmap,
+                            Image = _ResetBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = _text
                         };
@@ -875,7 +882,7 @@ namespace ZergPoolMiner.Forms.Components
                         }
                         var clearItemAllDevices = new ToolStripMenuItem
                         {
-                            Image = _DisableBitmap,
+                            Image = _ResetBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = _text
                         };
@@ -884,7 +891,7 @@ namespace ZergPoolMiner.Forms.Components
                         //
                         var clearItemAll = new ToolStripMenuItem
                         {
-                            Image = _DisableBitmap,
+                            Image = _ResetBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = International.GetText("AlgorithmsListView_ContextMenu_ClearItemAll")
                         };
@@ -933,7 +940,7 @@ namespace ZergPoolMiner.Forms.Components
                         this.contextMenuStrip1.Items.Add(new ToolStripSeparator());
                         var forceItem = new ToolStripMenuItem
                         {
-                            Image = _EnableBitmap,
+                            Image = _RunBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = International.GetText("AlgorithmsListView_ContextMenu_ForceItem") + " " +
                             listViewAlgorithms.SelectedItems[0].SubItems[1].Text +
@@ -955,7 +962,7 @@ namespace ZergPoolMiner.Forms.Components
 
                         var DisableforceItem = new ToolStripMenuItem
                         {
-                            Image = _DisableBitmap,
+                            Image = _StopBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = International.GetText("AlgorithmsListView_ContextMenu_DisableForceItem") + " " +
                             listViewAlgorithms.SelectedItems[0].SubItems[1].Text +

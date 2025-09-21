@@ -103,7 +103,7 @@ namespace ZergPoolMiner.Miners
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
 
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
@@ -152,9 +152,8 @@ namespace ZergPoolMiner.Miners
             string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                 "mine.zergpool.com";
             var algo = MiningSetup.CurrentAlgorithmType.ToString().ToLower();
-            Stats.Stats.MiningAlgorithms _a = new();
             var pool = "";
-            _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+            var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
 
             string proxy = "";
             if (ConfigManager.GeneralConfig.EnableProxy)
@@ -171,7 +170,7 @@ namespace ZergPoolMiner.Miners
             {
                 Helpers.ConsolePrint("XMRig", "Not found " + algo + " in MiningAlgorithmsList. Try fix it.");
                 algo = algo.Replace("_", "-");
-                _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
                 pool = Links.CheckDNS(algo + serverUrl) + ":" + _a.port.ToString() + " ";
             }
 
@@ -268,7 +267,12 @@ namespace ZergPoolMiner.Miners
             }
             catch (Exception ex)
             {
-                Helpers.ConsolePrint(MinerTag(), ex.Message);
+                Helpers.ConsolePrint("lolMiner API Exception", ex.Message);
+                CurrentMinerReadStatus = MinerApiReadStatus.READ_SPEED_ZERO;
+                ad.Speed = 0;
+                ad.SecondarySpeed = 0;
+                ad.ThirdSpeed = 0;
+                return ad;
             }
 
             return ad;

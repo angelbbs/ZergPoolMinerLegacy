@@ -97,7 +97,9 @@ namespace ZergPoolMiner.Algorithms
         /// Current profit for this algorithm in BTC/Day
         /// </summary>
         public double CurrentProfit { get; set; }
-        public double CurrentProfitWithoutPower { get; set; }
+        public double CurrentProfitWithPower { get; set; }
+        public double MostProfit { get; set; }
+        public double MostProfitWithPower { get; set; }
         /// <summary>
         /// Current SMA profitability for this algorithm type in BTC/GH/Day
         /// </summary>
@@ -335,10 +337,12 @@ namespace ZergPoolMiner.Algorithms
 
         public virtual void UpdateCurProfit(Dictionary<AlgorithmType, AlgorithmSwitchingManager.MostProfitableCoin> profits, DeviceType devtype, MinerBaseType mbt)
         {
+            //AlgosProfitData.TryGetPaying(ZergPoolID, out var paying);
             profits.TryGetValue(ZergPoolID, out var paying);
             profits.TryGetValue(SecondaryZergPoolID, out var payingSecond);
             double _paying = 0d;
             double _payingSecond = 0d;
+
             if (paying != null)
             {
                 _paying = paying.profit;
@@ -347,15 +351,74 @@ namespace ZergPoolMiner.Algorithms
             {
                 _payingSecond = payingSecond.profit;
             }
+
             CurNhmSmaDataVal = _paying;
-            CurrentProfit = (CurNhmSmaDataVal * AvaragedSpeed + _payingSecond * BenchmarkSecondarySpeed) * Mult;
-            /*
-            if (Form_additional_mining.isAlgoZIL(AlgorithmName, mbt, devtype))
+
+            if (CurrentMiningCoin.ToLower().Equals("none") && !paying.coin.ToLower().Equals("unknown"))
             {
-                CurrentProfit += CurrentProfit * Form_Main.ZilFactor;
+                CurrentMiningCoin = paying.coin;
             }
-            */
-            CurrentProfitWithoutPower = CurrentProfit;
+
+
+            var _c = Stats.Stats.CoinList.Find(a => (a.symbol.ToLower() == CurrentMiningCoin.ToLower()) &&
+                                    (a.algo.ToLower() == ZergPoolID.ToString().ToLower()));
+            if (_c is object && _c != null)
+            {
+                if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                {
+                    _paying = _c.adaptive_profit;
+                }
+                else
+                {
+                    _paying = _c.profit;
+                }
+                //надо это отключить, если разные алгоритмы. Пусть будет по старому - сначала удостовериться
+                //в пампе алгоритма, а потом уже _ticks
+                //paying.profit = _paying;
+            } else
+            {
+                _paying = 0;
+            }
+            
+
+            var _c2 = Stats.Stats.CoinList.Find(a => a.algo.ToLower() == SecondaryZergPoolID.ToString().ToLower());
+            if (_c2 is object && _c2 != null)
+            {
+                if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                {
+                    _payingSecond = _c2.adaptive_profit;
+                }
+                else
+                {
+                    _payingSecond = _c2.profit;
+                }
+            } else
+            {
+                _payingSecond = 0;
+            }
+
+            CurrentProfit = (_paying * AvaragedSpeed + _payingSecond * BenchmarkSecondarySpeed) * Mult;
+            CurrentProfitWithPower = CurrentProfit;
+
+            var _m = Stats.Stats.CoinList.Find(a => (a.symbol.ToLower() == paying.coin.ToLower()) &&
+                                (a.algo.ToLower() == ZergPoolID.ToString().ToLower()));
+            if (_m is object && _m != null)
+            {
+                if (ConfigManager.GeneralConfig.AdaptiveAlgo)
+                {
+                    _paying = _m.adaptive_profit;
+                }
+                else
+                {
+                    _paying = _m.profit;
+                }
+            }
+            MostProfit = (_paying * AvaragedSpeed + _payingSecond * BenchmarkSecondarySpeed) * Mult;
+            MostProfitWithPower = CurrentProfit;
+            if (!CurrentMiningCoin.ToLower().Equals("none"))
+            {
+
+            }
             if (ConfigManager.GeneralConfig.with_power)
             {
                 SubtractPowerFromProfit();
@@ -369,7 +432,8 @@ namespace ZergPoolMiner.Algorithms
             // Now it is power usage in BTC/day
             power *= 24 * Form_Main._factorTimeUnit;
             // Now we subtract from profit, which may make profit negative
-            CurrentProfit -= power;
+            CurrentProfitWithPower -= power;
+            MostProfitWithPower -= power;
         }
 
         #endregion

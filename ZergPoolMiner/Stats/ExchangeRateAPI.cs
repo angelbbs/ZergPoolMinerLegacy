@@ -58,7 +58,7 @@ namespace ZergPoolMiner.Stats
         {
             List<ConcurrentDictionary<string, double>> exchanges_rates = new();
             exchanges_rates.Add(GetRatesgateio());
-            exchanges_rates.Add(GetRatesTradeogre());
+            //exchanges_rates.Add(GetRatesTradeogre());
             exchanges_rates.Add(GetRatesNonkyc());
             exchanges_rates.Add(GetRatesCoinex());
             exchanges_rates.Add(GetRatesMexc());
@@ -520,7 +520,7 @@ namespace ZergPoolMiner.Stats
             if (ConfigManager.GeneralConfig.EnableProxy)
             {
                 Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Gate.io " +
-                    "via proxy " + Stats.CurrentProxyIP);
+                    "via proxy " + Stats.CurrentProxyIP + ":" + Stats.CurrentProxyHTTPSPort.ToString());
             } else
             {
                 Helpers.ConsolePrint("ExchangeRateApi", "Trying get cryptocurrency exchange rates from Gate.io");

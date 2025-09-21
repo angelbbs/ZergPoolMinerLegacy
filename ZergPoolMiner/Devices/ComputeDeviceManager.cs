@@ -189,8 +189,9 @@ namespace ZergPoolMiner.Devices
                                 CreateNoWindow = true
                             }
                         };
+                        Helpers.ConsolePrint("GetNvidiaSmiDriver", "Start nvidia-smi.exe");
                         P.Start();
-                        //P.WaitForExit(30 * 1000);
+                        P.WaitForExit(30 * 1000);
 
                         stdOut = P.StandardOutput.ReadToEnd();
                         stdErr = P.StandardError.ReadToEnd();
@@ -675,7 +676,7 @@ namespace ZergPoolMiner.Devices
                         }
                     }
 
-                    GpuRam = (device.GpuRam / 1073741824).ToString().Trim(' ') + "GB";
+                    GpuRam = Math.Round((device.GpuRam * 1.024) / 1073741824, 0).ToString().Trim(' ') + "GB";
                     if (ConfigManager.GeneralConfig.Show_ShowDeviceMemSize && device.DeviceType != DeviceType.CPU)
                     {
                         if (deviceName.Contains(GpuRam))
@@ -708,7 +709,7 @@ namespace ZergPoolMiner.Devices
                             deviceName = deviceName.Replace(ComputeDevice.GetManufacturer(device.Manufacturer), "").Trim(' ');
                         }
 
-                        GpuRam = (device.GpuRam / 1073741824).ToString().Trim(' ') + "GB";
+                        GpuRam = Math.Round((device.GpuRam * 1.024) / 1073741824, 0).ToString().Trim(' ') + "GB";
                         if (ConfigManager.GeneralConfig.Show_ShowDeviceMemSize && device.DeviceType != DeviceType.CPU)
                         {
                             if (deviceName.Contains(GpuRam))
@@ -742,7 +743,7 @@ namespace ZergPoolMiner.Devices
                             deviceName = deviceName.Replace(ComputeDevice.GetManufacturer(device.Manufacturer), "").Trim(' ');
                         }
 
-                        GpuRam = (device.GpuRam / 1073741824).ToString().Trim(' ') + "GB";
+                        GpuRam = Math.Round((device.GpuRam * 1.024) / 1073741824, 0).ToString().Trim(' ') + "GB";
                         if (ConfigManager.GeneralConfig.Show_ShowDeviceMemSize && device.DeviceType != DeviceType.CPU)
                         {
                             if (deviceName.Contains(GpuRam))
@@ -1816,33 +1817,36 @@ break;
                         }
                     }
 
-                    if (string.IsNullOrEmpty(_queryOpenCLDevicesString))
+                    if (_openCLJsonData is object && _openCLJsonData != null)
                     {
-                        Helpers.ConsolePrint(Tag,
-                            "OpenCLDeviceDetection found no devices. OpenCLDeviceDetection returned: " +
-                            _queryOpenCLDevicesString);
-                    }
-                    else
-                    {
-                        _isOpenCLQuerySuccess = true;
-                        var stringBuilder = new StringBuilder();
-                        stringBuilder.AppendLine("");
-                        stringBuilder.AppendLine("AMDOpenCLDeviceDetection found devices success:");
-                        foreach (var oclPlat in _openCLJsonData.Platforms)
+                        if (string.IsNullOrEmpty(_queryOpenCLDevicesString))
                         {
-                            if (oclPlat.PlatformName.ToLower().Contains("intel")) continue;
-                            stringBuilder.AppendLine($"\tFound devices for platform: {oclPlat.PlatformName}");
-                            foreach (var oclDev in oclPlat.Devices)
-                            {
-                                stringBuilder.AppendLine("\t\tDevice:");
-                                stringBuilder.AppendLine($"\t\t\tDevice ID {oclDev.DeviceID}");
-                                stringBuilder.AppendLine($"\t\t\tBUS_ID {oclDev.BUS_ID}");
-                                stringBuilder.AppendLine($"\t\t\tDevice NAME {oclDev._CL_DEVICE_NAME}");
-                                stringBuilder.AppendLine($"\t\t\tDevice TYPE {oclDev._CL_DEVICE_TYPE}");
-                                stringBuilder.AppendLine($"\t\t\tDevice MEM SIZE {oclDev._CL_DEVICE_GLOBAL_MEM_SIZE.ToString()}");
-                            }
+                            Helpers.ConsolePrint(Tag,
+                                "OpenCLDeviceDetection found no devices. OpenCLDeviceDetection returned: " +
+                                _queryOpenCLDevicesString);
                         }
-                        Helpers.ConsolePrint(Tag, stringBuilder.ToString());
+                        else
+                        {
+                            _isOpenCLQuerySuccess = true;
+                            var stringBuilder = new StringBuilder();
+                            stringBuilder.AppendLine("");
+                            stringBuilder.AppendLine("AMDOpenCLDeviceDetection found devices success:");
+                            foreach (var oclPlat in _openCLJsonData.Platforms)
+                            {
+                                if (oclPlat.PlatformName.ToLower().Contains("intel")) continue;
+                                stringBuilder.AppendLine($"\tFound devices for platform: {oclPlat.PlatformName}");
+                                foreach (var oclDev in oclPlat.Devices)
+                                {
+                                    stringBuilder.AppendLine("\t\tDevice:");
+                                    stringBuilder.AppendLine($"\t\t\tDevice ID {oclDev.DeviceID}");
+                                    stringBuilder.AppendLine($"\t\t\tBUS_ID {oclDev.BUS_ID}");
+                                    stringBuilder.AppendLine($"\t\t\tDevice NAME {oclDev._CL_DEVICE_NAME}");
+                                    stringBuilder.AppendLine($"\t\t\tDevice TYPE {oclDev._CL_DEVICE_TYPE}");
+                                    stringBuilder.AppendLine($"\t\t\tDevice MEM SIZE {oclDev._CL_DEVICE_GLOBAL_MEM_SIZE.ToString()}");
+                                }
+                            }
+                            Helpers.ConsolePrint(Tag, stringBuilder.ToString());
+                        }
                     }
                     Helpers.ConsolePrint(Tag, "QueryOpenCLDevices END");
                 }

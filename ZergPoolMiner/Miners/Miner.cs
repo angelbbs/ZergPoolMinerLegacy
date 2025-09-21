@@ -27,6 +27,7 @@ using System.Timers;
 using System.Windows.Forms;
 using Timer = System.Timers.Timer;
 using ZergPoolMinerLegacy.UUID;
+using ZergPoolMiner.Forms.Components;
 
 namespace ZergPoolMiner
 {
@@ -95,6 +96,7 @@ namespace ZergPoolMiner
         public string MinerBinPath;
         public string Arguments;
         public int Pid = -1;
+        public List<int> ids = new();
     }
 
     public abstract class Miner
@@ -122,10 +124,6 @@ namespace ZergPoolMiner
 
         public MiningSetup MiningSetup { get; protected set; }
 
-        // sgminer/zcash claymore workaround
-        protected bool IsKillAllUsedMinerProcs { get; set; }
-
-
         public bool IsRunning { get; protected set; }
         public static bool IsRunningNew { get; protected set; }
         protected string Path { get; private set; }
@@ -141,7 +139,7 @@ namespace ZergPoolMiner
         protected string MinerExeName { get; private set; }
         protected MinerProcess ProcessHandle;
         private MinerPidData _currentPidData;
-        private readonly List<MinerPidData> _allPidData = new List<MinerPidData>();
+        public static List<MinerPidData> _allPidData = new List<MinerPidData>();
 
         // Benchmark stuff
         public bool BenchmarkSignalQuit;
@@ -224,7 +222,7 @@ namespace ZergPoolMiner
             // Only set minimize if hide is false (specific miners will override true after)
             IsNeverHideMiningWindow = ConfigManager.GeneralConfig.MinimizeMiningWindows &&
                                       !ConfigManager.GeneralConfig.HideMiningWindows;
-            IsKillAllUsedMinerProcs = false;
+
             _maxCooldownTimeInMilliseconds = GetMaxCooldownTimeInMilliseconds();
             //
             Helpers.ConsolePrint(MinerTag(), "NEW MINER CREATED");
@@ -234,7 +232,6 @@ namespace ZergPoolMiner
         {
             // free the port
             MinersApiPortsManager.RemovePort(ApiPort);
-            //DHClientsStop();
             Helpers.ConsolePrint(MinerTag(), "MINER DESTROYED");
         }
 
@@ -383,8 +380,21 @@ namespace ZergPoolMiner
             return -1;
         }
 
+        public static List<Process> GetChildProcessList(int ProcessId)
+        {
+            var children = new List<Process>();
+            var mos = new ManagementObjectSearcher(String.Format($"Select * From Win32_Process Where ParentProcessID={ProcessId}"));
+            foreach (ManagementObject mo in mos.Get())
+            {
+                children.Add(Process.GetProcessById(Convert.ToInt32(mo["ProcessID"])));
+            }
+
+            return children;
+        }
+
         public void KillAllUsedMinerProcesses()
         {
+            suspendedPidList.Clear();
             var toRemovePidData = new List<MinerPidData>();
             Helpers.ConsolePrint(MinerTag(), "Trying to close all miner processes for this instance:");
             var algo = (int)MiningSetup.CurrentAlgorithmType;
@@ -459,6 +469,17 @@ namespace ZergPoolMiner
         public virtual void Stop(MinerStopType willswitch = MinerStopType.SWITCH)
         {
             var sortedMinerPairs = MiningSetup.MiningPairs.OrderBy(pair => pair.Device.IDByBus).ToList();
+            try
+            {
+                if (suspendedPidList.Contains(ProcessHandle.Id))
+                {
+                    suspendedPidList.Remove(ProcessHandle.Id);
+                }
+            } catch (Exception ex)
+            {
+
+            }
+
             foreach (var mPair in sortedMinerPairs)
             {
                 mPair.Device.MiningHashrate = 0;
@@ -487,13 +508,16 @@ namespace ZergPoolMiner
             }
             try
             {
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher
-                        ("Select * From Win32_Process Where ParentProcessID=" + pid);
-                ManagementObjectCollection moc = searcher.Get();
-
-                foreach (ManagementObject mo in moc)
+                var mos = new ManagementObjectSearcher(String.Format($"Select * From Win32_Process Where ParentProcessID={pid}"));
+                foreach (ManagementObject mo in mos.Get())
                 {
-                    KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+                    var p = Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]));
+                    if (IsProcessRunning(pid) && p is object && p != null) p.CloseMainWindow();
+                    Thread.Sleep(200);
+                    if (IsProcessRunning(pid) && p is object && p != null) p.Close();
+                    Thread.Sleep(200);
+                    if (IsProcessRunning(pid) && p is object && p != null) p.Kill();
+                    Thread.Sleep(200);
                 }
             }
             catch (Exception er)
@@ -502,14 +526,32 @@ namespace ZergPoolMiner
             }
             finally
             {
-                KillAllUsedMinerProcesses();
+                //KillAllUsedMinerProcesses();
             }
 
+        }
+
+        public static bool IsProcessRunning(int id)
+        {
+            try
+            {
+                Process[] allProcessesOnLocalMachine = Process.GetProcesses();
+                foreach (Process process in allProcessesOnLocalMachine)
+                {
+                    if (process.Id == id) return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return false;
         }
         protected void Stop_cpu_ccminer_sgminer_nheqminer(MinerStopType willswitch)
         {
             var algo = (int)MiningSetup.CurrentAlgorithmType;
             string strPlatform = "";
+            /*
             foreach (var pair in MiningSetup.MiningPairs)
             {
                 pair.Device.MiningHashrate = 0;
@@ -535,6 +577,7 @@ namespace ZergPoolMiner
                     strPlatform = "CPU";
                 }
             }
+            */
             if (IsRunning)
             {
                 Helpers.ConsolePrint(MinerTag(), ProcessTag() + " Shutting down miner");
@@ -548,22 +591,26 @@ namespace ZergPoolMiner
                 int i = ProcessTag().IndexOf(")|bin");
                 var cpid = ProcessTag().Substring(k + 4, i - k - 4).Trim();
                 int pid = int.Parse(cpid, CultureInfo.InvariantCulture);
+                if (!IsProcessRunning(pid)) return;
 
-                
-                    Helpers.ConsolePrint(MinerTag(), ProcessTag() + " SendCtrlC to stop miner");
+                var process = Process.GetProcessById(pid);
+
+                Helpers.ConsolePrint(MinerTag(), ProcessTag() + " SendCtrlC to stop miner");
                     try { ProcessHandle.SendCtrlC((uint)Process.GetCurrentProcess().Id); } catch { }
                     Thread.Sleep(1000);
-
-                KillProcessAndChildren(pid);
+                if (IsProcessRunning(pid)) KillProcessAndChildren(pid);
 
                 try
                 {
-                    if (ProcessHandle is object)
+                    if (process is object)
                     {
-                        if (ProcessHandle != null)
+                        if (process != null)
                         {
                             Helpers.ConsolePrint(MinerTag(), ProcessTag() + " Try force kill miner");
-                            ProcessHandle.Kill();
+                            if (IsProcessRunning(pid)) process.CloseMainWindow();
+                            //process.Kill();
+                            if (IsProcessRunning(pid)) process.Close();
+                            if (IsProcessRunning(pid)) ProcessHandle.Kill();
                         }
                     }
                 } catch
@@ -576,8 +623,6 @@ namespace ZergPoolMiner
                     ProcessHandle.Close();
                     ProcessHandle = null;
                 }
-
-                if (IsKillAllUsedMinerProcs) KillAllUsedMinerProcesses();
             }
         }
 
@@ -693,11 +738,7 @@ namespace ZergPoolMiner
             {
                 benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("miner.exe", "miner275.exe");
             }
-            if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("miniz") && 
-                (commandLine.ToLower().Contains("h125")))
-            {
-                benchmarkHandle.StartInfo.FileName = benchmarkHandle.StartInfo.FileName.Replace("miniZ.exe", "miniZ.22c.exe");
-            }
+
             if (benchmarkHandle.StartInfo.FileName.ToLower().Contains("srbminer") &&
                 (commandLine.ToLower().Contains("meowpow")))
             {
@@ -967,13 +1008,15 @@ namespace ZergPoolMiner
             {
                 Helpers.ConsolePrint(MinerTag(),
                     "Final Speed: " + Helpers.FormatDualSpeedOutput(BenchmarkAlgorithm.BenchmarkSpeed,
-                        BenchmarkAlgorithm.BenchmarkSecondarySpeed, 0, dualAlg.ZergPoolID, dualAlg.DualZergPoolID));
+                        BenchmarkAlgorithm.BenchmarkSecondarySpeed, 0, dualAlg.ZergPoolID, dualAlg.DualZergPoolID) + 
+                        " Power: " + BenchmarkAlgorithm.PowerUsageBenchmark.ToString("F0"));
             }
             else
             {
                 Helpers.ConsolePrint(MinerTag(),
                     "Final Speed: " + Helpers.FormatDualSpeedOutput(BenchmarkAlgorithm.BenchmarkSpeed, 0, 0,
-                        BenchmarkAlgorithm.ZergPoolID, BenchmarkAlgorithm.DualZergPoolID));
+                        BenchmarkAlgorithm.ZergPoolID, BenchmarkAlgorithm.DualZergPoolID) + 
+                        " Power: " + BenchmarkAlgorithm.PowerUsageBenchmark.ToString("F0"));
             }
 
             Helpers.ConsolePrint(MinerTag(), "Benchmark ends");
@@ -1091,7 +1134,7 @@ namespace ZergPoolMiner
 
                 Helpers.ConsolePrint(MinerTag(), "Benchmark should be completed in at least ~" +
                     (_benchmarkTimeWait + showBenchTimeAdd).ToString() + " seconds");
-
+                
                 GetBenchmarkSpeed(_benchmarkTimeWait, benchmarkTimeWait, commandLine, ref _powerUsage, 
                     ref _power, ref repeats, ref delay_before_calc_hashrate, ref summspeed, ref summspeedSecond,
                     ref BenchmarkSpeed, ref BenchmarkSpeedSecond, ref overallbenchmarktime);
@@ -1181,19 +1224,23 @@ namespace ZergPoolMiner
                     var ad = GetSummaryAsync();
                     if (ad.Result != null && ad.Result.Speed > 0)
                     {
-                        _powerUsage += _power;
                         repeats++;
                         double benchProgress = repeats / _benchmarkTimeWait;
                         BenchmarkAlgorithm.BenchmarkProgressPercent = (int)(benchProgress * 100);
+                        _power = MiningSetup.MiningPairs[0].Device.PowerUsage;
                         if (repeats > delay_before_calc_hashrate)
                         {
+                            _powerUsage += _power;
                             if (MiningSetup.CurrentSecondaryAlgorithmType == AlgorithmType.NONE)//single
                             {
-                                Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString());
+                                Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString() +
+                                    " power: " + _power.ToString());
                             }
                             else
                             {
-                                Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString() + " SecondarySpeed: " + ad.Result.SecondarySpeed.ToString());
+                                Helpers.ConsolePrint(MinerTag(), "Useful Speed: " + ad.Result.Speed.ToString() + 
+                                    " SecondarySpeed: " + ad.Result.SecondarySpeed.ToString() +
+                                    " power: " + _power.ToString());
                             }
                             summspeed += ad.Result.Speed;
                             summspeedSecond += ad.Result.SecondarySpeed;
@@ -1239,7 +1286,7 @@ namespace ZergPoolMiner
             {
                 BenchmarkAlgorithm.BenchmarkSpeed = BenchmarkSpeed;
                 BenchmarkAlgorithm.BenchmarkSecondarySpeed = BenchmarkSpeedSecond;
-                BenchmarkAlgorithm.PowerUsageBenchmark = (_powerUsage / repeats);
+                BenchmarkAlgorithm.PowerUsageBenchmark = (_powerUsage / (repeats - delay_before_calc_hashrate));
             }
             else //trex read from log file
             {
@@ -1247,16 +1294,23 @@ namespace ZergPoolMiner
             }
         }
 
-        public string GetServer(string algo)
+        public string GetServer(string algo, bool ssl = true)
         {
             string ret = "";
             try
             {
                 algo = algo.Replace("-", "_");
-                var _a = Stats.Stats.MiningAlgorithmsList.FirstOrDefault(item => item.name.ToLower() == algo.ToLower());
+                var _a = Stats.Stats.CoinList.FirstOrDefault(item => item.algo.ToLower() == algo.ToLower());
+
                 string serverUrl = Form_Main.regionList[ConfigManager.GeneralConfig.ServiceLocation].RegionLocation +
                     "mine.zergpool.com";
-                ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.tls_port.ToString();
+                if (ssl)
+                {
+                    ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.tls_port.ToString();
+                } else
+                {
+                    ret = Links.CheckDNS(algo + serverUrl).Replace("stratum+tcp://", "") + ":" + _a.port.ToString();
+                }
             }
             catch (Exception ex)
             {
@@ -1369,7 +1423,7 @@ namespace ZergPoolMiner
 
         protected virtual MinerProcess _Start()
         {
-            if (!Socks5Relay.started)
+            //if (!Socks5Relay.Listener.Active)
             {
                 Socks5Relay.Socks5RelayStart();
             }
@@ -1430,12 +1484,6 @@ namespace ZergPoolMiner
             if (MiningSetup.MinerPath.ToLower().Contains("gminer") && (LastCommandLine.ToLower().Contains("192_7")))
             {
                 Path = MiningSetup.MinerPath.Replace("miner.exe", "miner275.exe");
-            }
-
-            if (MiningSetup.MinerPath.ToLower().Contains("miniz") && 
-                (LastCommandLine.ToLower().Contains("h125")))
-            {
-                Path = MiningSetup.MinerPath.Replace("miniZ.exe", "miniZ.22c.exe");
             }
 
             if (MiningSetup.MinerPath.ToLower().Contains("srbminer") &&
@@ -1508,7 +1556,7 @@ namespace ZergPoolMiner
                     pair.Device.MinerName = MinerDeviceName;
                     pair.Device.State = DeviceState.Mining;
                     pair.Device.Coin = coin;
-                    
+
                     if (pair.Device.DeviceType == DeviceType.NVIDIA)
                     {
                         strPlatform = "NVIDIA";
@@ -1532,11 +1580,13 @@ namespace ZergPoolMiner
 
                 if (P.Start())
                 {
+                    var _ids = MiningSetup.MiningPairs.Select(cdevs => cdevs.Device.BusID).ToList();
                     _currentPidData = new MinerPidData
                     {
                         MinerBinPath = P.StartInfo.FileName,
                         Pid = P.Id,
-                        Arguments = P.StartInfo.Arguments
+                        Arguments = P.StartInfo.Arguments,
+                        ids = _ids
                     };
                     _allPidData.Add(_currentPidData);
 
@@ -1552,7 +1602,6 @@ namespace ZergPoolMiner
                         strPlatform, coin, false, P.StartInfo.Arguments);
 
                     new Task(() => StartCoolDownTimerChecker()).Start();
-                    //StartCoolDownTimerChecker();
                     return P;
                 }
 
@@ -1684,6 +1733,7 @@ namespace ZergPoolMiner
             if (_isEnded) return;
             var algo = (int)MiningSetup.CurrentAlgorithmType;
             string strPlatform = "";
+            /*
             foreach (var pair in MiningSetup.MiningPairs)
             {
                 pair.Device.MiningHashrate = 0;
@@ -1709,7 +1759,7 @@ namespace ZergPoolMiner
                     strPlatform = "CPU";
                 }
             }
-
+            */
             Helpers.ConsolePrint(MinerTag(), ProcessTag() + " Restarting miner..");
             Stop(MinerStopType.END); // stop miner first
             Thread.Sleep(Math.Max(ConfigManager.GeneralConfig.MinerRestartDelayMS, 500));
@@ -1797,6 +1847,8 @@ namespace ZergPoolMiner
 
         #region Cooldown/retry logic
 
+
+        public static List<int> suspendedPidList = new();
         private void MinerCoolingCheck_Tick(object sender, ElapsedEventArgs e)
         {
             int CooldownCheckFailCount = 30; //150 sec
@@ -1818,7 +1870,7 @@ namespace ZergPoolMiner
             {
                 try
                 {
-                    var p = Process.GetProcessById(ProcessHandle.Id);
+                    Process p = Process.GetProcessById(ProcessHandle.Id);
                 }
                 catch (Exception)
                 {
@@ -1827,6 +1879,11 @@ namespace ZergPoolMiner
                     CooldownCheck = 0;
                     Restart();
                 }
+            }
+
+            if (ProcessHandle != null)
+            {
+                if (suspendedPidList.Contains(ProcessHandle.Id)) return;
             }
 
             switch (CurrentMinerReadStatus)

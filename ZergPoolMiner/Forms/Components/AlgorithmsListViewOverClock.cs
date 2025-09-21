@@ -479,10 +479,10 @@ namespace ZergPoolMiner.Forms.Components
                     contextMenuStrip1.Items.Clear();
                     Bitmap _EnableBitmap = new Bitmap(Properties.Resources.Ok_normal, 14, 14);
                     Bitmap _DisableBitmap = new Bitmap(Properties.Resources.Delete_normal, 14, 14);
-                    Bitmap _GetBitmap = new Bitmap(Properties.Resources.Down, 14, 14);
-                    Bitmap _CheckBitmap = new Bitmap(Properties.Resources.Run, 14, 14);
+                    Bitmap _ImportBitmap = new Bitmap(Properties.Resources.Import, 14, 14);
+                    Bitmap _ExportBitmap = new Bitmap(Properties.Resources.Export, 14, 14);
                     Bitmap _CopyBitmap = new Bitmap(Properties.Resources.Copy, 14, 14);
-                    Bitmap _ResetBitmap = new Bitmap(Properties.Resources.Refresh_normal, 14, 14);
+                    Bitmap _ResetBitmap = new Bitmap(Properties.Resources.back, 14, 14);
                     GetDefMinMax();
                     //get from ab
                     {
@@ -497,7 +497,7 @@ namespace ZergPoolMiner.Forms.Components
 
                         var MSIABGET = new ToolStripMenuItem
                         {
-                            Image = _GetBitmap,
+                            Image = _ImportBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = _text
                         };
@@ -517,7 +517,7 @@ namespace ZergPoolMiner.Forms.Components
                         */
                         var MSIABSAVE = new ToolStripMenuItem
                         {
-                            Image = _CheckBitmap,
+                            Image = _ExportBitmap,
                             ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None,
                             Text = _text
                         };

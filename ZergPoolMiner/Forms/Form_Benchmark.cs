@@ -66,6 +66,7 @@ namespace ZergPoolMiner.Forms
             Icon = Resources.logo;
             Algorithm.BenchmarkActive = true;
             StartMining = false;
+            Form_Main.CancelAutoStart();
 
             // set first device selected
             if (ComputeDeviceManager.Available.Devices.Count > 0)

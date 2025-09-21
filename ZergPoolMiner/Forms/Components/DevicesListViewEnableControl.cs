@@ -264,7 +264,14 @@ namespace ZergPoolMiner.Forms.Components
                 }
                 else
                 {
-                    cFanSpeed = computeDevice.FanSpeedRPM.ToString();
+                    if (computeDevice.FanSpeedRPM < 0 && ConfigManager.GeneralConfig.ForceShowFanAsPercent)
+                    {
+                        cFanSpeed = computeDevice.FanSpeed.ToString() + "%";
+                    }
+                    else
+                    {
+                        cFanSpeed = computeDevice.FanSpeedRPM.ToString();
+                    }
                 }
                 double _PowerUsage = computeDevice.PowerUsage;
                 string cPowerUsage = Math.Truncate(_PowerUsage).ToString();
@@ -557,7 +564,7 @@ namespace ZergPoolMiner.Forms.Components
                                                 if (!devInfo.Contains("NVIDIA")) devInfo = "NVIDIA " + devInfo;
                                             }
 
-                                            GpuRam = (cDev.GpuRam / 1073741824).ToString() + "GB";
+                                            GpuRam = ((cDev.GpuRam * 1.024) / 1073741824).ToString() + "GB";
                                             if (ConfigManager.GeneralConfig.Show_ShowDeviceMemSize)
                                             {
                                                 if (devInfo.Contains(GpuRam))
@@ -586,7 +593,7 @@ namespace ZergPoolMiner.Forms.Components
                                                 devInfo = devInfo.Replace(ComputeDevice.GetManufacturer(cDev.Manufacturer) + " ", "");
                                             }
 
-                                            GpuRam = (cDev.GpuRam / 1073741824).ToString() + "GB";
+                                            GpuRam = ((cDev.GpuRam * 1.024) / 1073741824).ToString() + "GB";
                                             if (ConfigManager.GeneralConfig.Show_ShowDeviceMemSize)
                                             {
                                                 if (devInfo.Contains(GpuRam))

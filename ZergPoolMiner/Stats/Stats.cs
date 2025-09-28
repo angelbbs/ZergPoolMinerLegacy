@@ -217,7 +217,11 @@ namespace ZergPoolMiner.Stats
                     bool success = false;
                     new Thread(() =>
                     {
-                        Thread.Sleep(1000 * 15);
+                        for (int i = 0; i < 15 * 10; i++)
+                        {
+                            if (Form_Main.ProgramClosing) return;
+                            Thread.Sleep(100);
+                        }
                         if (httpClient is object && httpClient is not null && !success)
                         {
                             httpClient.Dispose();

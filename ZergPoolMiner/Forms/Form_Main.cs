@@ -1044,6 +1044,18 @@ namespace ZergPoolMiner
             Application.DoEvents();
             Helpers.SetDefaultEnvironmentVariables();
             new Task(() => FlushCache()).Start();
+            //new Task(() => FormRtf()).Start();
+
+            var _FormRtf = new FormRtf();
+            try
+            {
+                //   SetChildFormCenter(settings);
+                _FormRtf.Show();
+            }
+            catch (Exception er)
+            {
+                Helpers.ConsolePrint("FormRtf", er.ToString());
+            }
 
             ZoneSchedule1 = ConfigManager.GeneralConfig.ZoneSchedule1;
             ZoneSchedule2 = ConfigManager.GeneralConfig.ZoneSchedule2;
@@ -3282,7 +3294,7 @@ namespace ZergPoolMiner
                     Helpers.ConsolePrint("Closing", ex.Message);
                 }
 
-                mproc.Kill();
+                mproc.Close();
             }
             catch (Exception ex)
             {

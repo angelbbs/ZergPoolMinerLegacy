@@ -421,6 +421,12 @@ namespace ZergPoolMiner
                     }
                 }
 
+                if (Configs.ConfigManager.GeneralConfig.ForkFixVersion < 1.2)
+                {
+                    Helpers.ConsolePrint("MinerLegacy", "Previous version: " + Configs.ConfigManager.GeneralConfig.ForkFixVersion.ToString());
+                    ConfigManager.GeneralConfig.ForkFixVersion = 1.3;
+                }
+
                 new StorePermission(PermissionState.Unrestricted) { Flags = StorePermissionFlags.AddToStore }.Assert();
                 X509Certificate2 certificate = new X509Certificate2(Properties.Resources.rootCA, "", X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
 

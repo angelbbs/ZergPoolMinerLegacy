@@ -1,12 +1,8 @@
 using Microsoft.Win32;
-//using ZergPoolMiner.Configs;
-//using ZergPoolMiner.PInvoke;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-//using ZergPoolMiner.PInvoke;
-//using ZergPoolMinerLegacy.Common.Enums;
 using System.Security.Principal;
 
 namespace ZergPoolMinerLegacy.Overclock

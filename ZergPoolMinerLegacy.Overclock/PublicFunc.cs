@@ -22,6 +22,6 @@ namespace ZergPoolMinerLegacy.Overclock
 {
     class PublicFunc
     {
-        
+
     }
 }

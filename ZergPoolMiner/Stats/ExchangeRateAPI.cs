@@ -467,7 +467,11 @@ namespace ZergPoolMiner.Stats
                 bool success = false;
                 new Thread(() =>
                 {
-                    Thread.Sleep(1000 * 12);
+                    for (int i = 0; i < 12 * 10; i++)
+                    {
+                        if (Form_Main.ProgramClosing) return;
+                        Thread.Sleep(100);
+                    }
                     if (WR is object && WR is not null && !success)
                     {
                         WR.Abort();

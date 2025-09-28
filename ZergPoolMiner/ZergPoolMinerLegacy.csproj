@@ -370,6 +370,13 @@
     <Compile Include="Devices\Querying\AmdQuery.cs" />
     <Compile Include="Devices\Querying\OpenCLJsonData.cs" />
     <Compile Include="Devices\Querying\VideoControllerData.cs" />
+    <Compile Include="Forms\FormRtf.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormRtf.Designer.cs">
+      <DependentUpon>FormRtf.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\RtfInfo.cs" />
     <Compile Include="Forms\Components\AlgorithmsListViewOverClock.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -648,6 +655,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormAddProfile.resx">
       <DependentUpon>FormAddProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FormRtf.resx">
+      <DependentUpon>FormRtf.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Form_additional_mining.resx">
       <DependentUpon>Form_additional_mining.cs</DependentUpon>
